@@ -1,0 +1,201 @@
+<apex:component id="idCmpKlgSrcGyomuRenrakuList">
+    <apex:attribute name="gyomuRenrakuList" type="GyomuRenraku__c[]" description="gyomuRenrakuList" />
+    <apex:attribute name="gyomuRenrakuAutoList" type="GyomuRenraku__c[]" description="gyomuRenrakuAutoList" />
+
+    <apex:attribute name="gyomuRenrakuCategoryVal" type="String" description="gyomuRenrakuCategoryVal" />
+    <apex:attribute name="gyomuRenrakuCategoryOpt" type="Object[]" description="gyomuRenrakuCategoryOpt" />
+    <apex:attribute name="shuchiHaniVal" type="String" description="shuchiHaniVal" />
+    <apex:attribute name="shuchiHaniOpt" type="Object[]" description="shuchiHaniOpt" />
+
+    <apex:attribute name="grAllSize" type="String" description="grAllSize" />
+    <apex:attribute name="grPageFrom" type="String" description="grPageFrom" />
+    <apex:attribute name="grPageTo" type="String" description="grPageTo" />
+    <apex:attribute name="grPageVal" type="Integer" description="grPageVal" />
+    <apex:attribute name="grPageOpt" type="Object[]" description="grPageOpt" />
+    <apex:attribute name="grPageMax" type="String" description="grPageMax" />
+
+    <apex:attribute name="grFirstFlg" type="Boolean" description="grFirstFlg" />
+    <apex:attribute name="grBackFlg" type="Boolean" description="grBackFlg" />
+    <apex:attribute name="grNextFlg" type="Boolean" description="grNextFlg" />
+    <apex:attribute name="grLastFlg" type="Boolean" description="grLastFlg" />
+
+    <apex:attribute name="pSortItem" type="String" description="pSortItem" />
+    <apex:attribute name="pSortKey" type="String" description="pSortKey" />
+
+    <div>
+        <div style="display: flex; justify-content: space-between;">
+            <div class="detail_title">業務連絡</div>
+            <div style="display: flex;padding: 5px 0px 5px 5px;height: 20px;">
+                <div>カテゴリ</div>
+                <div style="margin-left: 5px;"><apex:selectList id="idGyomuRenrakuCategory" value="{!gyomuRenrakuCategoryVal}" size="1" multiselect="false" >
+                            <apex:selectOptions value="{!gyomuRenrakuCategoryOpt}"/>
+                        </apex:selectList></div>
+                <div style="margin-left: 15px;">周知範囲</div>
+                <div style="margin-left: 5px;"><apex:selectList id="idShuchiHani" value="{!shuchiHaniVal}" size="1" multiselect="false" >
+                            <apex:selectOptions value="{!shuchiHaniOpt}"/>
+                        </apex:selectList></div>
+                <div style="margin-left: 15px;"><input type="button" onClick="gyomuRenrakuSearch(1);return false;" value="検索" id="idGyomuRenrakuSearchBtn" /></div>
+            </div>
+        </div>
+    </div>
+    
+    <apex:outputPanel id="idGyomuRenrakuPanel">
+        <div style="height: 465px">
+            <table class="dataList_table" width="100%">
+                <tr>
+                    <th width="36px">
+                        既読
+                    </th>
+                    <th width="100px">
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <div>
+                                更新日時
+                            </div>
+                            <div style="margin-left: 5px">
+                                <a href="#" onClick="grSortChange('SaishuKoshinbi__c', 'idGrKoshinNichijiBtn');" id="idGrKoshinNichijiBtn" style="color:{!IF(pSortItem='SaishuKoshinbi__c', 'red', 'white')}" >{!IF(AND(pSortItem='SaishuKoshinbi__c',pSortKey='asc'), '▲', '▼')}</a>
+                            </div>
+                        </div>
+                    </th>
+                    <th width="90px">
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <div>
+                                カテゴリ
+                            </div>
+                            <div style="margin-left: 5px">
+                                <a href="#" onClick="grSortChange('Category__c', 'idGrCategoryBtn');" id="idGrCategoryBtn" style="color:{!IF(pSortItem='Category__c', 'red', 'white')}" >{!IF(AND(pSortItem='Category__c',pSortKey='asc'), '▲', '▼')}</a>
+                            </div>
+                        </div>
+                    </th>
+                    <th style="width:270px">
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <div>
+                                タイトル
+                            </div>
+                            <div style="margin-left: 5px">
+                                <a href="#" onClick="grSortChange('Name', 'idGrNameBtn');" id="idGrNameBtn" style="color:{!IF(pSortItem='Name', 'red', 'white')}" >{!IF(AND(pSortItem='Name',pSortKey='asc'), '▲', '▼')}</a>
+                            </div>
+                        </div>
+                    </th>
+                    <th width="90px">
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <div>
+                                作成者
+                            </div>
+                            <div style="margin-left: 5px">
+                                <a href="#" onClick="grSortChange('CreatedBy.Name', 'idGrCreatedByNameBtn');" id="idGrCreatedByNameBtn" style="color:{!IF(pSortItem='CreatedBy.Name', 'red', 'white')}" >{!IF(AND(pSortItem='CreatedBy.Name',pSortKey='asc'), '▲', '▼')}</a>
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+                <apex:repeat value="{!gyomuRenrakuList}" var="gyomuRenrakuData">
+                <tr>
+                    <td style="text-align: center; padding: 0px;">
+                        <apex:outputText value="{!gyomuRenrakuData.Kidoku__c}" style="color:{!IF(gyomuRenrakuData.Kidoku__c = '未読', 'red', 'black')}"/>
+                    </td>
+                    <td style="text-align: center; padding: 0px;">
+                        <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                            <apex:param value="{!gyomuRenrakuData.SaishuKoshinbi__c + 9/24}"/>
+                        </apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!gyomuRenrakuData.Category__c}" />
+                    </td>
+                    <td>
+                        <a href="#" onClick="openGyomuRenrakuData('{!gyomuRenrakuData.id}');return false">
+                        {!LEFT(gyomuRenrakuData.Name, 24) & IF(LEN(gyomuRenrakuData.Name) > 24, '…', '')}</a>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!gyomuRenrakuData.CreatedBy.Name}" />
+                    </td>
+                </tr>
+                </apex:repeat>
+            </table>
+        </div>
+        <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+            <div style="display: flex;">
+                <div style="padding-top: 4px; width: 22px; text-align: end;"><apex:outputText value="{!grPageFrom}" /></div>
+                <div style="padding-top: 1px;margin-left: 5px;">～</div>
+                <div style="padding-top: 4px;margin-left: 5px; width: 22px; text-align: end;"><apex:outputText value="{!grPageTo}" /></div>
+                <div style="padding-top: 4px;margin-left: 5px;">/</div>
+                <div style="padding-top: 4px;margin-left: 5px; width: 22px; text-align: end;"><apex:outputText value="{!grAllSize}" /></div>
+                <div style="padding-top: 2px;margin-left: 5px;">件</div>
+                <div style="padding-top: 1px;margin-left: 15px;"><apex:selectList id="idGrPageList" value="{!grPageVal}" size="1" multiselect="false" onChange="gyomuRenrakuSearch(this.value);return false;" style="width: 40px; height: 20px;">
+                        <apex:selectOptions value="{!grPageOpt}"/>
+                    </apex:selectList>
+                </div>
+                <div style="padding-top: 4px;margin-left: 5px;">/</div>
+                <div style="padding-top: 4px;margin-left: 5px; width: 15px; text-align: end;"><apex:outputText value="{!grPageMax}" /></div>
+                <div style="padding-top: 2px;margin-left: 5px;">ページ</div>
+                <div style="margin-left: 15px;">
+                    <apex:commandButton onClick="gyomuRenrakuSearch(1);return false;" value=" << " id="idFirstBtn" disabled="{!grFirstFlg}" />
+                </div>
+                <div style="margin-left: 5px;">
+                    <apex:commandButton onClick="gyomuRenrakuSearch({!grPageVal - 1});return false;" value=" < " id="idBackBtn" disabled="{!grBackFlg}" />
+                </div>
+                <div style="padding-top: 2px;margin-left: 5px;">前</div>
+                <div style="padding-top: 2px;margin-left: 10px;">次</div>
+                <div style="margin-left: 5px;">
+                    <apex:commandButton onClick="gyomuRenrakuSearch({!grPageVal + 1});return false;" value=" > " id="idNextBtn" disabled="{!grNextFlg}" />
+                </div>
+                <div style="margin-left: 5px;">
+                    <apex:commandButton onClick="gyomuRenrakuSearch({!grPageMax});return false;" value=" >> " id="idLastBtn" disabled="{!grLastFlg}" />
+                </div>
+            </div>
+            <div><a href="/lightning/o/GyomuRenraku__c/list?filterName=00B2v00000O9K1pEAF&0.source=alohaHeader">すべて</a></div>
+        </div>
+    </apex:outputPanel>
+    <br/>
+    <div class="detail_title">
+        ナレッジ更新情報
+    </div>
+    <div>
+        <table class="dataList_table" width="100%">
+            <tr>
+                <th width="100px">
+                    更新日時
+                </th>
+                <th width="60px">
+                    種別
+                </th>
+                <th width="45px">
+                    区分
+                </th>
+                <th style="width:300px">
+                    タイトル
+                </th>
+                <th width="90px">
+                    最終更新者
+                </th>
+            </tr>
+            <apex:repeat value="{!gyomuRenrakuAutoList}" var="gyomuRenrakuAutoData">
+            <tr>
+                <td style="text-align: center; padding: 0px;">
+                    <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                        <apex:param value="{!gyomuRenrakuAutoData.CreatedDate +9/24}"/>
+                    </apex:outputText>
+                </td>
+                <td>
+                    <apex:outputText value="{!gyomuRenrakuAutoData.Shubetsu__c}" />
+                </td>
+                <td style="text-align: center; padding: 0px;"   >
+                    <apex:outputText value="{!gyomuRenrakuAutoData.KnowledgeUpdateKubun__c}" />
+                </td>
+                <td>
+                    <a href="#" onClick="openKnowledge('{!gyomuRenrakuAutoData.KijiId__c}','{!gyomuRenrakuAutoData.Shubetsu__c}');return false">
+                    {!LEFT(gyomuRenrakuAutoData.Name, 22) & IF(LEN(gyomuRenrakuAutoData.Name) > 22, '…', '')}</a>
+                </td>
+                <td>
+                    <apex:outputText value="{!gyomuRenrakuAutoData.LastModifiedBy.Name}" />
+                </td>
+            </tr>
+            </apex:repeat>
+        </table>
+    </div>
+    <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+        <div></div>
+        <div>
+            <a href="/lightning/o/GyomuRenraku__c/list?filterName=00B2v00000O9K29EAF&0.source=alohaHeader">すべて</a>
+        </div>
+    </div>
+    
+</apex:component>

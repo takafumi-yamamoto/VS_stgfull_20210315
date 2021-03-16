@@ -1,0 +1,100 @@
+<apex:component controller="KnowledgeSearchCtl">
+    <apex:attribute name="searchResultGyomuRenrakuList" type="GyomuRenraku__c[]" description="" />
+    <apex:attribute name="searchResultResultManualList" type="Knowledge__kav[]" description="" />
+    <apex:attribute name="searchResultFaqList" type="Knowledge__kav[]" description="" />
+
+    <div>
+        <div class="detail_title">
+            業務連絡
+        </div>
+        <div>
+            <table class="dataList_table" width="100%">
+                <tr>
+                    <th width="60px">
+                        区分
+                    </th>
+                    <th width="width:calc(100% - 160px)">
+                        タイトル
+                    </th>
+                    <th width="100px">
+                        最終更新日
+                    </th>
+                </tr>
+                <apex:repeat value="{!searchResultGyomuRenrakuList}" var="searchResultGyomuRenrakuDetail">
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!searchResultGyomuRenrakuDetail.Category__c}" />
+                        </td>
+                        <td>
+                            <a href="#" onClick="openGyomuRenrakuData('{!searchResultGyomuRenrakuDetail.id}');return false">{!LEFT(searchResultGyomuRenrakuDetail.Name, 40) & IF(LEN(searchResultGyomuRenrakuDetail.Name) > 40, '…', '')}</a>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                <apex:param value="{!searchResultGyomuRenrakuDetail.LastModifiedDate +9/24}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </div>
+    </div>
+    <div>
+        <div class="detail_title" style="margin-top: 10px">
+            マニュアル
+        </div>
+        <div>
+            <table class="dataList_table" width="100%">
+                <tr>
+                    <th style="width:calc(100% - 100px)">
+                        タイトル
+                    </th>
+                    <th width="100px">
+                        最終更新日
+                    </th>
+                </tr>
+                <apex:repeat value="{!searchResultResultManualList}" var="searchResultResultManualDetail">
+                    <tr>
+                        <td>
+                            <a href="#" onClick="openManualDetail('{!searchResultResultManualDetail.id}');return false">{!LEFT(searchResultResultManualDetail.Title, 45) & IF(LEN(searchResultResultManualDetail.Title) > 45, '…', '')}</a>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                <apex:param value="{!searchResultResultManualDetail.LastModifiedDate +9/24}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </div>
+    </div>
+    <div>
+        <div class="detail_title" style="margin-top: 10px">
+            FAQ
+        </div>
+        <div>
+            <table class="dataList_table" width="100%">
+                <tr>
+                    <th style="width:calc(100% - 100px)">
+                        タイトル
+                    </th>
+                    <th width="100px">
+                        最終更新日
+                    </th>
+                </tr>
+                <apex:repeat value="{!searchResultFaqList}" var="searchResultFaqDetail">
+                    <tr>
+                        <td>
+                            <a href="#" onClick="openFaqDetail('{!searchResultFaqDetail.id}');return false">{!LEFT(searchResultFaqDetail.Title, 45) & IF(LEN(searchResultFaqDetail.Title) > 45, '…', '')}</a>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                <apex:param value="{!searchResultFaqDetail.LastModifiedDate +9/24}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </div>
+    </div>
+
+</apex:component>

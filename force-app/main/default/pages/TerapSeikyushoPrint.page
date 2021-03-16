@@ -1,0 +1,602 @@
+<apex:page docType="html-5.0" applyHtmlTag="false" applyBodyTag="false"
+           showHeader="false" sidebar="false" standardStylesheets="false" 
+           readOnly="true" cache="false"
+           controller="TerapSeikyushoPrint"
+           >
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>請求書</title>
+    <style>
+/* 印刷時の用紙設定 */
+@page {
+    size: A4; /* 用紙サイズ */
+    margin: 0; /* ヘッダー・フッダーを無効化 */
+}
+
+/* 要素の初期化 */
+* {
+    /* マージン・パディングをリセットした方がデザインしやすい */
+    margin: 0;
+    padding: 0;
+    /* デフォルトのフォント */
+    color: #000000;
+    font-family: '游ゴシック Medium', 'Yu Gothic Medium', '游ゴシック体',
+        YuGothic, sans-serif;
+    font-size: 11pt;
+    font-weight: normal;
+    /* 背景色・背景画像を印刷する（Chromeのみで有効） */
+    -webkit-print-color-adjust: exact;
+}
+
+/* リスト初期化 */
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.page-break{
+    page-break-after: always;
+}
+/* ページレイアウト (section.sheet を１ページとする) */
+.sheet {
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    page-break-after: always;
+
+    /* 用紙サイズ A4 */
+    height: 297mm;
+    width: 210mm;
+
+    /* 余白サイズ */
+    padding-top: 12mm;
+    padding-left: 27mm;
+    padding-right: 27mm;
+}
+
+/* プレビュー用のスタイル */
+@media screen {
+    body {
+        background: #e0e0e0;
+    }
+    .sheet {
+        background: white; /* 背景を白く */
+        margin: 5mm auto;
+    }
+}
+
+/* 汎用クラス */
+.text-left {
+    text-align: left;
+}
+.text-center {
+    text-align: center;
+}
+.text-right {
+    text-align: right;
+}
+.clear-element {
+    clear: both;
+}
+
+/* 請求書 */
+div.row_1 {
+    height: 70mm;
+}
+div.row_1 div.col_1 {
+    padding-left: 1mm;
+    float: left;
+    width: 92mm;
+}
+div.row_1 div.col_2 {
+    width: 60mm;
+    padding-left: 101mm;
+    position: absolute;
+    z-index: 2;
+    float: left;
+}
+
+div.row_2 div.col_1 {
+    width: 120mm;
+    float: left;
+}
+
+div.row_2 div.col_2 {
+    position: absolute;
+    z-index: 2;
+    padding-top: 10mm;
+    float: left;
+}
+
+.company {
+    padding-top: 4mm;
+}
+div.row_3 {
+    margin-top: 5mm;
+    margin-bottom: 5mm;
+}
+div.row_4 {
+    height: 26mm;
+}
+
+/* 個別のスタイル指定 */
+
+/* タイトル */
+h1 {
+    font-size: 30px;
+    font-weight: normal;
+    letter-spacing: 8px;
+}
+
+/* 顧客名・自社名 */
+h2 {
+    font-size: 20px;
+    font-weight: normal;
+}
+
+h2.customer_name {
+    text-decoration: underline;
+}
+
+/* 手数料率 */
+.mesai_tesuryo {
+    margin-top: 25px;
+}
+.mesai_tesuryo li {
+    border-bottom: 2px solid #000000;
+    margin-top: 14px;
+    width: 90%;
+}
+
+img.stamp {
+    position: absolute;
+    z-index: -3;
+    top: 40mm;
+    left: 140mm;
+    height: 17mm;
+    width: 17mm;
+}
+
+/* テーブル共通 */
+table,
+th,
+td {
+    border: 1px #000000 solid;
+    border-collapse: collapse;
+    padding: 1px 5px;
+}
+
+table {
+    border-width: 2px;
+}
+table td {
+    text-align: right;
+}
+
+/* テーブル 総額欄 */
+.furikomi {
+    margin-top: 10px;
+}
+
+table.summary {
+    width: 100%;
+    margin-top: 10px;
+}
+table.summary th {
+    width: 19mm;
+}
+table.summary td {
+    width: 40mm;
+}
+
+/* テーブル 明細欄 */
+table.detail {
+    width: 100%;
+}
+table.detail tr {
+    height: 6mm;
+}
+table.detail th.item {
+    width: 50%;
+}
+table.detail th.unit_price {
+    width: 18%;
+}
+table.detail th.amount {
+    width: 14%;
+}
+table.detail th.subtotal {
+    width: 18%;
+}
+
+table.detail td.space {
+    border-left-style: hidden;
+    border-bottom-style: hidden;
+}
+
+/* 問合せ明細書 */
+div.mesai_row_1 {
+    padding-top: 20mm;
+    height: 14mm;
+}
+div.mesai_row_2 {
+    height: 35mm;
+}
+div.mesai_row_2 div.mesai_col_1 {
+    width: 90mm;
+    float: left;
+}
+div.mesai_row_2 div.mesai_col_2 {
+    position: relative;
+    z-index: 2;
+    float: left;
+}
+div.mesai_row_3 {
+    margin-bottom: 5mm;
+}
+div.mesai_row_4 {
+    height: 26mm;
+}
+
+/* テーブル 問い合わせ明細書 明細欄 */
+table.detail {
+    width: 100%;
+}
+table.detail tr {
+    height: 6mm;
+}
+table.detail th.mesai_no {
+    width: 10%;
+}
+table.detail th.mesai_toiawasebi {
+    width: 27%;
+}
+table.detail th.mesai_hoyosyubetu {
+    width: 31%;
+}
+table.detail th.mesai_seshu {
+    width: 32%;
+}
+
+/* テーブル 問い合わせ明細書 備考 */
+table.biko {
+    height: 26mm;
+    width: 100%;
+}
+table.biko th {
+    font-size: 14pt;
+    width: 19%;
+}
+table.biko td {
+    font-size: 14pt;
+    width: 81%;
+}
+
+/* 備考 */
+div.biko {
+    border: 1px solid #000000;
+    min-height: 26mm;
+    padding: 10px;
+}
+div.biko_title {
+    text-decoration: underline;
+    font-weight: bold;
+}
+div.biko_body {
+    white-space: pre-line;
+}
+
+    </style>
+</head>
+<body>
+    <apex:outputText rendered="{!isShowSeikyusho}">
+        <section class="sheet">
+            <div class="row_1">
+                <div class="col_1">
+                    <ul>
+                        <li>
+                            <h2 class="customer_name">{!seikyusho.ToName__c} 御中</h2>
+                        </li>
+                        <li>〒{!seikyusho.ToAddrZipCode__c}</li>
+                        <li>{!seikyusho.ToAddrState__c}{!seikyusho.City__c}</li>
+                        <li>{!seikyusho.Street__c}</li>
+                    </ul>
+                </div>
+                <div class="col_2">
+                    <ul>
+                        <li>日付： 
+                            <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                <apex:param value="{!seikyusho.IssueDate__c}"></apex:param>
+                            </apex:outputtext>
+                        </li>
+                        <li>
+                            請求書番号：{!seikyusho.Name}
+                        </li>
+                    </ul>
+                    <ul class="company">
+                        <li>
+                            <h2>株式会社よりそう</h2>
+                        </li>
+                        <li>〒141-0031</li>
+                        <li>東京都品川区西五反田2-11-17</li>
+                        <li>HI五反田ビル 4F</li>
+                        <li>TEL: 03-5759-4172</li>
+                        <li>経営管理部</li>
+                    </ul>
+                    <apex:image styleClass="stamp" alt="stamp" title="stamp" url="{!$Resource.yoriso_stamp}"/>
+                </div>
+                <div class="clear-element"></div>
+            </div>
+
+            <div class="row_title">
+                <h1 class="text-center">請求書</h1>
+            </div>
+
+            <div class="row_2">
+                <div class="col_1">
+                    <div class="furikomi">
+                        <p>下記のとおりご請求申し上げます。</p>
+                        <table class="summary">
+                            <thead>
+                                <tr>
+                                    <th>小計</th>
+                                    <th>消費税</th>
+                                    <th>合計金額</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><apex:outputField value="{!seikyusho.ZeinukiKingaku__c}" />円</td>
+                                    <td><apex:outputField value="{!seikyusho.Tax__c}" />円</td>
+                                    <td><apex:outputField value="{!seikyusho.ZeikomiKingaku__c}" />円</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="summary">
+                            <tbody>
+                                <tr>
+                                    <th>振込期日</th>
+                                    <td class="text-left">
+                                        <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                            <apex:param value="{!seikyusho.ShiharaiKijitsu__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>振込先</th>
+                                    <td class="text-left">
+                                        <apex:outputtext value="{0} ({1})">
+                                            <apex:param value="{!seikyusho.FriKzGinkoName__c}"></apex:param>
+                                            <apex:param value="{!seikyusho.FriKzGinkoCode__c}"></apex:param>
+                                        </apex:outputtext>
+                                        <br />
+                                        <apex:outputtext value="{0} ({1})">
+                                            <apex:param value="{!seikyusho.FriKzShitenName__c}"></apex:param>
+                                            <apex:param value="{!seikyusho.FriKzShitenCode__c}"></apex:param>
+                                        </apex:outputtext>
+                                        <br />
+                                        <apex:outputtext value="{0} {1}">
+                                            <apex:param value="{!seikyusho.FriKzKouzaType__c}"></apex:param>
+                                            <apex:param value="{!seikyusho.FriKzKouzaBango__c}"></apex:param>
+                                        </apex:outputtext>
+                                        <br />
+                                        <apex:outputtext value="{0}">
+                                            <apex:param value="{!seikyusho.FriKzMeigiName__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col_2">
+                </div>
+                <div class="clear-element"></div>
+            </div>
+
+            <div class="row_3">
+                <table class="detail">
+                    <thead>
+                        <tr>
+                            <th class="item">詳細</th>
+                            <th class="amount">数量</th>
+                            <th class="unit_price">単価</th>
+                            <th class="subtotal">金額</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:variable var="count" value="{!0}" />
+                        <apex:repeat value="{!terapSgSeikLines}" var="line" id="TerapSgSeikLines">
+                            <apex:variable var="count" value="{!count + 1}"/>
+                            <tr class="dataline">
+                                <td class="text-left"><apex:outputField value="{!line.Descr__c}" /></td>
+                                <td><apex:outputField value="{!line.Quantity__c}" /></td>
+                                <td><apex:outputField value="{!line.UnitPrice__c}" /></td>
+                                <td><apex:outputField value="{!line.Price__c}" /></td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row_4">
+                <div class="biko">
+                    <div class="biko_title">備考欄</div>
+                    <div class="biko_body">{!seikyusho.Biko__c}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="sheet">
+            <div class="row_title">
+                <h1 class="text-center">施行明細</h1>
+            </div>
+            <div class="mesai_row_3">
+                <div>施行明細件数：{!terapSgSeikSekoLineSize}件</div>
+                <table class="detail">
+                    <thead>
+                        <tr>
+                            <th class="mesai_toiawasebi">施行日</th>
+                            <th class="mesai_hoyosyubetu">法要種別</th>
+                            <th class="mesai_seshu">施主</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!terapSgSeikSekoLines}" var="sekoLine" id="terapSgSeikSekoLines">
+                            <tr class="dataline">
+                                <td class="text-left">
+                                    <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                        <apex:param value="{!sekoLine.SekoDate__c}"></apex:param>
+                                    </apex:outputtext>
+                                </td>
+                                <td class="text-left"><apex:outputField value="{!sekoLine.HoyoShubetsu__c}" /></td>
+                                <td class="text-left"><apex:outputField value="{!sekoLine.Seshu__c}" /></td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </apex:outputText>
+
+    <section class="sheet">
+        <div class="row_1">
+            <div class="col_1">
+                <ul>
+                    <li>
+                        <h2 class="customer_name">{!seikyusho.ToName__c} 御中</h2>
+                    </li>
+                    <li>〒{!seikyusho.ToAddrZipCode__c}</li>
+                    <li>{!seikyusho.ToAddrState__c}{!seikyusho.City__c}{!seikyusho.Street__c}</li>
+                </ul>
+            </div>
+            <div class="col_2">
+                <ul>
+                    <li>日付： 
+                        <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                            <apex:param value="{!seikyusho.IssueDate__c}"></apex:param>
+                        </apex:outputtext>
+                    </li>
+                    <li>
+                        &nbsp;
+                    </li>
+                </ul>
+                <ul class="company">
+                    <li>
+                        <h2>株式会社よりそう</h2>
+                    </li>
+                    <li>〒141-0031</li>
+                    <li>東京都品川区西五反田2-11-17</li>
+                    <li>HI五反田ビル 4F</li>
+                    <li>TEL: 03-5759-4172</li>
+                    <li>経営管理部</li>
+                </ul>
+                <apex:image styleClass="stamp" alt="stamp" title="stamp" url="{!$Resource.yoriso_stamp}"/>
+            </div>
+            <div class="clear-element"></div>
+        </div>
+        <div class="mesai_row_title">
+            <h1 class="text-center">お問い合わせ明細書</h1>
+        </div>
+        <div class="mesai_row_2">
+            <div class="mesai_col_1">
+                <div class="mesai_tesuryo">
+                    <ul>
+                        <li>
+                            <h2 class="mesai_tesuryo_rate">{!month}月の手数料率: 
+                                <apex:outputText value="{0,number,0}%">
+                                    <apex:param value="{!seikyusho.TesuryoRate__c}" />
+                                </apex:outputText>
+                            </h2>
+                        </li>
+                        <li>
+                            <h2 class="mesai_tesuryo_rate">{!nextMonth}月の手数料率: 
+                                <apex:outputText value="{0,number,0}%">
+                                    <apex:param value="{!seikyusho.TesuryoRateNextMonth__c}" />
+                                </apex:outputText>
+                            </h2>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="clear-element"></div>
+        </div>
+
+
+        <div class="mesai_row_3">
+            <div>お問合わせ件数：{!terapSgSeikCallLineSize}件</div>
+            <table class="detail">
+                <thead>
+                    <tr>
+                        <th class="mesai_no">No.</th>
+                        <th class="mesai_toiawasebi">問合わせ日</th>
+                        <th class="mesai_hoyosyubetu">法要種別</th>
+                        <th class="mesai_seshu">施主</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="count" value="{!0}" />
+                    <apex:repeat value="{!terapSgSeikCallLines}" var="toiawase" id="TerapSgSeikCallLines">
+                        <apex:variable var="count" value="{!count + 1}"/>
+                        <!-- <apex:outputText rendered="{!count == 5}">
+                        <tr class="dataline page-break">
+                            <td class="text-center">
+                                <apex:outputtext value="{!count}" rendered="{!NOT(ISNULL(toiawase.id))}" />
+                            </td>
+                            <td class="text-left">
+                                <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                    <apex:param value="{!toiawase.ToiawaseDate__c}"></apex:param>
+                                </apex:outputtext>
+                            </td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.HoyoShubetsu__c}" /></td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.Seshu__c}" /></td>
+                        </tr>
+                        </apex:outputText> -->
+                        <!-- <apex:outputText rendered="{!isShowSeikyusho}">
+                        <tr class="dataline">
+                            <td class="text-center">
+                                <apex:outputtext value="{!count}" rendered="{!NOT(ISNULL(toiawase.id))}" />
+                            </td>
+                            <td class="text-left">
+                                <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                    <apex:param value="{!toiawase.ToiawaseDate__c}"></apex:param>
+                                </apex:outputtext>
+                            </td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.HoyoShubetsu__c}" /></td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.Seshu__c}" /></td>
+                        </tr>
+                        </apex:outputText> -->
+                        <tr class="dataline">
+                            <td class="text-center">
+                                <apex:outputtext value="{!count}" rendered="{!NOT(ISNULL(toiawase.id))}" />
+                            </td>
+                            <td class="text-left">
+                                <apex:outputtext value="{0, date, yyyy年MM月dd日}">
+                                    <apex:param value="{!toiawase.ToiawaseDate__c}"></apex:param>
+                                </apex:outputtext>
+                            </td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.HoyoShubetsu__c}" /></td>
+                            <td class="text-left"><apex:outputField value="{!toiawase.Seshu__c}" /></td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mesai_row_4">
+            <div class="biko">
+                <div class="biko_title">備考欄</div>
+                <div class="biko_body">{!seikyusho.Biko__c}</div>
+            </div>
+        </div>
+    </section>
+
+</body>
+
+</html>
+</apex:page>

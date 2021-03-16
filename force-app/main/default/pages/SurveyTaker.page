@@ -1,0 +1,241 @@
+<apex:page standardcontroller="Survey__c" extensions="ViewSurveyController" cache="false" sidebar="false" showheader="false"
+    docType="html-5.0" standardStylesheets="false" action="{! init }">
+
+    <apex:includeScript value="{! $Resource.survey_jquery }" />
+    <!--
+    <apex:stylesheet value="{! URLFOR($Resource.survey_SLDS, 'assets/styles/salesforce-lightning-design-system-vf.min.css') }"/>
+    -->
+    <apex:stylesheet value="{! $Resource.survey_SLDS_vfmin }" />
+    <apex:stylesheet value="{! $Resource.survey_base }" />
+    <apex:stylesheet value="{! $Resource.survey_sf }" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+
+    <script>
+        $(document).ready(function () {
+            //Convert any elements with "convertToLDS" style to SLDS styles
+            //Used in certain places where it's not easy to use SLDS for those elements like "apex:selectCheckboxes"
+            convertCheckBoxToLDS();
+            changeUrl();
+        });
+
+        function changeUrl() {
+            if ("{! $Site.Prefix }") {
+                $("img").attr('src', function () {
+                    if ($(this).attr('src').startsWith("/servlet")) {
+                        return "{! $Site.Prefix }" + $(this).attr('src');
+                    } else {
+                        return $(this).attr('src');
+                    }
+                });
+            }
+        }
+
+        function convertCheckBoxToLDS() {
+            var Row = document.getElementsByClassName("convertToLDS");
+
+            for (var k = 0; k < Row.length; k++) {
+                var colTds = Row[k].getElementsByTagName("td");
+                for (var i = 0; i < colTds.length; i++) {
+                    var inrHtml = colTds[i].innerHTML;
+                    var chkId = inrHtml.substring(inrHtml.indexOf("id=") + 4, inrHtml.indexOf("\"", inrHtml.indexOf("id=") + 4));
+                    var chkBx = inrHtml.substring(inrHtml.indexOf("<input"), inrHtml.indexOf(">") + 1);
+                    var chkLable = colTds[i].getElementsByTagName("label")[0].textContent;
+                    var typeOfInput = colTds[i].getElementsByTagName("input")[0].getAttribute("type");
+                    var newChkBox = '<label class="slds-' + typeOfInput + '" for="' + chkId + '">' + chkBx +
+                        '<span class="slds-' + typeOfInput + '--faux"></span>' +
+                        '<span class="slds-form-element__label">' + chkLable + '</span>' +
+                        '</label>';
+                    colTds[i].innerHTML = newChkBox;
+                }
+            }
+        }
+    </script>
+    <style>
+        <apex:outputText value="{! HTMLENCODE(survey.Css__c) }" escape="false"/>body {}
+
+        .sb_fixed_height {
+            height: 150px;
+            overflow: auto;
+        }
+    </style>
+
+    <div id="survey_container" class="surveyforce">
+        <apex:form id="theForm">
+            <apex:outputPanel id="seeSurvey" rendered="{! IF(NOT(isConfirm) && NOT(isComplete) && survey.SurveyHeader__c != '', true, false) }">
+                <div class="slds-box slds-theme--shade">
+                    <div>
+                        <apex:outputText value="{! survey.SurveyHeader__c }" escape="false" />
+                    </div>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel id="seeSurvey2" rendered="{! IF(NOT(isConfirm) && NOT(isComplete) && survey.Description__c != '', true, false) }">
+                <div class="slds-box slds-theme--shade">
+                    <div>
+                        <apex:outputText value="{! survey.Description__c }" escape="false" />
+                    </div>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{! isConfirm }">
+                <div class="slds-box slds-theme--shade">
+                    <div class="slds-text-heading--medium">
+                        <apex:outputText value="以下の内容で回答送信してよろしいですか？よろしければ「送信」ボタンを押してください。" escape="false" /> </div>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{! isComplete }">
+                <div class="slds-box slds-theme--shade">
+                    <apex:outputText value="{! survey.ThankYouText__c }" escape="false" />
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{! isInvalidInput }">
+                <div class="message slds-notify slds-notify--alert slds-theme--error customMessage" role="alert">
+                    <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                        <tbody>
+                            <tr valign="top">
+                                <td class="messageCell">
+                                    <apex:outputText value="エラー：以下のエラーメッセージを参照して修正してください。" escape="true" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{! !isComplete }">
+                <div class="slds-form--stacked">
+                    <apex:repeat value="{! allQuestions }" var="qPreview" id="aQPreview">
+                        <div class="slds-box slds-theme--default">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label">
+                                    <apex:outputText rendered="{! qPreview.type != 'Section' && qPreview.type != null }" value="{! qPreview.orderNo }:" /> {! qPreview.question }
+                                    <apex:outputText rendered="{! qPreview.isRequired }" value="(必須)" />
+                                </label>
+                            </div>
+                            <!-- テキス ト -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'Free Text' }">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <apex:inputTextArea styleClass="slds-textarea" cols="" rows="{! qPreview.textRowNo }" value="{! qPreview.inputtedText }"
+                                            disabled="{! isConfirm }" />
+                                    </div>
+                                    <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                        <br/>
+                                        <strong>エラー：</strong>
+                                        {! qPreview.errMsg }
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:outputPanel>
+                            <!-- 数値 -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'Number' }">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <apex:input styleClass="slds-text" type="number" value="{! qPreview.inputtedNumber }" disabled="{! isConfirm }" />
+                                    </div>
+                                    <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                        <br/>
+                                        <strong>エラー：</strong>
+                                        {! qPreview.errMsg }
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:outputPanel>
+                            <!-- ラジオ -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'Single Select--Vertical' || qPreview.type == 'Single Select--Horizontal' }">
+                                <apex:selectRadio styleClass="convertToLDS" layout="pageDirection" value="{! qPreview.selectedOption }" disabled="{! isConfirm }">
+                                    <apex:selectOptions value="{! qPreview.options }" />
+                                </apex:selectRadio>
+                                <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                    <br/>
+                                    <strong>エラー：</strong>
+                                    {! qPreview.errMsg }
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            <!-- NPS -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'NPS' }">
+                                <apex:selectRadio styleClass="convertToLDS" value="{! qPreview.selectedOption }" disabled="{! isConfirm }">
+                                    <apex:selectOptions value="{! qPreview.options }" />
+                                </apex:selectRadio>
+                                <div class="NPS_left">{! qPreview.npsDisLike }</div>
+                                <div class="NPS_right">{! qPreview.npsLike }</div>
+                                <br/>
+                                <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                    <br/>
+                                    <strong>エラー：</strong>
+                                    {! qPreview.errMsg }
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            <!-- セレクトリスト -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'Picklist' }">
+                                <apex:selectList size="1" value="{! qPreview.selectedOption }" disabled="{! isConfirm }">
+                                    <apex:selectOptions value="{! qPreview.options }" />
+                                </apex:selectList>
+                                <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                    <br/>
+                                    <strong>エラー：</strong>
+                                    {! qPreview.errMsg }
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            <!-- 複数チェックボックス -->
+                            <apex:outputPanel rendered="{! qPreview.type == 'Multi-Select--Vertical' }">
+                                <apex:selectCheckboxes styleClass="convertToLDS" layout="pageDirection" value="{! qPreview.selectedOptions }" disabled="{! isConfirm }">
+                                    <apex:selectOptions value="{! qPreview.options }" />
+                                </apex:selectCheckboxes>
+                                <apex:outputPanel styleClass="errorMsg" rendered="{! qPreview.isInvalid }">
+                                    <br/>
+                                    <strong>エラー：</strong>
+                                    {! qPreview.errMsg }
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                        </div>
+                    </apex:repeat>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel id="seeSurvey3" rendered="{! If((NOT(isConfirm) && NOT(isComplete) && NOT(survey.HidePrivacyPolicy__c)), True, False )}">
+                <div class="slds-box slds-theme--shade sb_fixed_height">
+                    <div>
+                        <apex:outputText value="{! survey.PrivacyPolicy__c }" escape="false" />
+                    </div>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{! !isComplete }">
+                <div class="slds-box slds-theme--default" style="text-align: center;">
+                    <apex:outputPanel rendered="{! If((NOT(isConfirm) && NOT(survey.HidePrivacyPolicy__c)), True, False )}">
+                        <input type="checkbox" id="isAgreed" />個人情報の取扱いに同意する
+                        <br/>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{! If((isConfirm && NOT(survey.HidePrivacyPolicy__c)), True, False )}">
+                        <input type="checkbox" checked="checked" disabled="true" />個人情報の取扱いに同意する
+                        <br/>
+                    </apex:outputPanel>
+
+                    <apex:outputPanel rendered="{! If((NOT(isConfirm) && NOT(survey.HidePrivacyPolicy__c)), True, False )}">
+                        <apex:commandButton onclick="if(!document.getElementById('isAgreed').checked){alert('個人情報の取扱に同意してください。');return false};"
+                            styleClass="slds-button slds-button--brand" action="{! confirm }" value="回答確認" reRender="theForm,seeSurvey"
+                            rendered="{! !isConfirm }" onComplete="changeUrl();convertCheckBoxToLDS();window.scrollTo(0, 0);"
+                        />
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{! If((NOT(isConfirm) && survey.HidePrivacyPolicy__c), True, False )}">
+                        <apex:commandButton styleClass="slds-button slds-button--brand" action="{! confirm }" value="回答確認" reRender="theForm,seeSurvey"
+                            rendered="{! !isConfirm }" onComplete="changeUrl();convertCheckBoxToLDS();window.scrollTo(0, 0);"
+                        />
+                    </apex:outputPanel>
+                    <apex:commandButton styleClass="slds-button slds-button--brand" action="{! submitResults }" value="送信" reRender="theForm,seeSurvey"
+                        rendered="{! isConfirm }" onClick="this.disabled=true;" onComplete="changeUrl();convertCheckBoxToLDS();window.scrollTo(0, 0);" />
+                    <apex:commandButton styleClass="slds-button slds-button--brand" action="{! back }" value="戻る" reRender="theForm,seeSurvey"
+                        rendered="{! isConfirm }" onComplete="convertCheckBoxToLDS();changeUrl();" />
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel id="seeSurvey4" rendered="{! survey.SurveyFooter__c != '' }">
+                <div class="slds-box slds-theme--shade">
+                    <div>
+                        <apex:outputText value="{! survey.SurveyFooter__c }" escape="false" />
+                    </div>
+                </div>
+            </apex:outputPanel>
+        </apex:form>
+    </div>
+
+</apex:page>

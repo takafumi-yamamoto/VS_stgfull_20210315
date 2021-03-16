@@ -1,0 +1,869 @@
+<apex:page id="idPage" docType="html-5.0" controller="SogiSeikyuDataDetailCtl" cache="false" title="請求番号_{!seikyuNumber}" action="{!init}">
+	<apex:includeScript value="/support/console/44.0/integration.js" />
+	<apex:includeScript value="{!$Resource.inkedFileBase64Encoding}"/>
+	<script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+	<script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+    <style type="text/css">
+        span.dateFormat {display: none;}
+
+        html body.sfdcBody {
+          padding: 10px 10px 0 10px;
+          font-size: 90%;
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+          background: rgba(176, 196, 223, 1.0);
+        }
+
+        div {
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        th {
+          text-align: right;
+          padding-right: 4px;
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        td {
+          padding: 0px;
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+        thead.scrollHead1,tbody.scrollBody1{
+        	width: 100%;
+        }
+        tbody.scrollBody1{
+
+        }
+        table {
+            border-collapse: collapse;
+            /*font-size: 12px;*/
+            /*width: 100%;*/
+        }
+        th {
+
+        }
+        table.kensakukekka {
+            overflow: scroll;
+        }
+        table.kensakukekka tr.kensakukekkaTr {
+            border: 1px dotted #000000;
+        }
+        table.kensakukekka td.kensakukekkaTd{
+            border: 1px dotted #000000;
+            /*table-layout:fixed;*/
+        }
+
+        table.seikyu {
+            overflow:scroll;
+        }
+        table.seikyu tr {
+            border: 1px solid #000000;
+        }
+        table.seikyu th {
+            border: 1px solid #000000;
+        }
+        table.seikyu td {
+            border: 1px solid #000000;
+        }
+
+        table.seikyuDetail {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.seikyuDetail tr {
+
+        }
+        table.seikyuDetail th {
+            background: #364e96;
+            color:white;
+            border:solid 1px white;
+            text-align: center;
+            padding: 4px 0;
+        }
+        table.seikyuDetail td {
+            /*background: #eee;*/
+            color:black;
+            border:solid 1px white;
+            text-align: center;
+            padding: 4px 0;
+        }
+        table.seikyuDetail2 {
+            border-collapse: collapse;
+		}
+		table.seikyuDetail2 tr {
+
+        }
+        table.seikyuDetail2 th {
+            background: #364e96;
+            color:white;
+            border:solid 1px white;
+            text-align: center;
+            padding: 4px 0;
+        }
+        table.seikyuDetail2 td {
+            /*background: #eee;*/
+            color:black;
+            border:solid 1px white;
+            text-align: center;
+            padding: 4px 0;
+        }
+        .seikyuDetail2 tr:nth-child(odd) td {
+		  background-color: #EFEFEF;  
+		}
+		.seikyuDetail2 tr:nth-child(even) td {  
+		  background-color: #EAF6FD;  
+		}  
+
+        .wrapper {
+          resize: both;
+        }
+
+        .container {
+        }
+        .main {
+            width: 100%;
+        }
+
+        .section-panel {
+          padding: 10px;
+          background-color: #fff;
+          border-radius: 3px;
+        }
+
+        .summarpanel {
+          display: flex;
+        }
+
+        .cls_no{
+            width:5%;
+            border: 1px dotted #000000;
+        }
+        .cls_kokyakuid{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .cls_okyakusamamei{
+            width:15%;
+            border: 1px dotted #000000;
+        }
+        .cls_sekobi{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .cls_plannaiyo{
+            width:20%;
+            border: 1px dotted #000000;
+        }
+        .cls_sogaku{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .cls_plantesuryo{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .cls_sonotatesuryo{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .cls_sashihikigaku{
+            width:10%;
+            border: 1px dotted #000000;
+        }
+        .btn-square-disable {
+			display: inline-block;
+			padding: 0.5em 1em;
+			text-decoration: none;
+			background: #ccc;/*ボタン色*/
+			color:rgb(84, 84, 84);
+			border-radius: 3px;
+			-webkit-transform: translateY(4px);
+			transform: translateY(4px);/*下に動く*/
+		 	border-bottom: none;/*線を消す*/
+		 	pointer-events : none;
+		}
+		.btn-square-disable:hover {
+			display: inline-block;
+			padding: 0.5em 1em;
+			text-decoration: none;
+			background: #ccc;/*ボタン色*/
+			color:rgb(84, 84, 84);
+			border-radius: 3px;
+			-webkit-transform: translateY(4px);
+			transform: translateY(4px);/*下に動く*/
+		 	border-bottom: none;/*線を消す*/
+		 	pointer-events : none;
+		}
+        .btn-square {
+			display: inline-block;
+			padding: 0.5em 1em;
+			text-decoration: none;
+			background: #668ad8;/*ボタン色*/
+			color: #FFF;
+			border-bottom: solid 4px #627295;
+			border-radius: 3px;
+		}
+		.btn-square:hover {
+			display: inline-block;
+			padding: 0.5em 1em;
+			text-decoration: none;
+			background: #668ad8;/*ボタン色*/
+			color: #FFF;
+			border-bottom: solid 4px #627295;
+			border-radius: 3px;
+		}
+		.btn-square:active {
+			/*ボタンを押したとき*/
+			-webkit-transform: translateY(4px);
+			transform: translateY(4px);/*下に動く*/
+		 	border-bottom: none;/*線を消す*/
+		}
+    </style>
+    <script type="text/javascript">
+
+    	function chkKakuminzumi(seikyuStatus, kakuninSize){
+    		var kakuminzumiFlg = true;
+        	for(var i=0; i<kakuninSize; i++){
+                if(!document.getElementById('idPage:myFormId:idSeikyuMeisaiList:' + i + ':idChkKakuminzumi').checked){
+                  kakuminzumiFlg = false;
+                }
+            }
+
+            
+        	if(seikyuStatus == '未作成' || seikyuStatus == '差戻' || seikyuStatus == '再請求'){
+        		if(kakuminzumiFlg){
+					document.getElementById('idKakuminIraiBtn').className = 'btn-square';
+				}
+				else{
+					document.getElementById('idKakuminIraiBtn').className = 'btn-square-disable';
+				}
+			}
+			else if(seikyuStatus == '確認中'){
+				var openType = document.getElementById('idPage:myFormId:idHdnOpenType').value;
+				if(kakuminzumiFlg){
+					if(openType == 'add') { document.getElementById('idAddKakuminIraiBtn').className = 'btn-square'; }
+				}
+				else{
+					if(openType == 'add') { document.getElementById('idAddKakuminIraiBtn').className = 'btn-square-disable'; }
+				}
+			}
+    	}
+
+    	function doKakuminIrai(){
+            document.getElementById('idKakuminIraiBtn').className = 'btn-square-disable';
+    		doKakuminIraiJs();
+    	}
+
+		function doAddKakuminIrai(){
+            document.getElementById('idAddKakuminIraiBtn').className = 'btn-square-disable';
+    		doAddKakuminIraiJs();
+    	}
+
+    	function doSashimodoshi(){
+            document.getElementById('idSeikyuSashimodoshiBtn').className = 'btn-square-disable';
+    		doSashimodoshiJs();
+    	}
+
+    	function doSeikyuSoshin(){
+			document.getElementById('idSeikyuSoshinBtn').className = 'btn-square-disable';
+			var seikyuNumber = '{!seikyuHeader.Name}';
+			var fileName = 'seikyusyo_' + '{!seikyuHeader.KokyakuId__c}' + '.pdf';
+			
+			fetchFile( '{!ptWebEndPoint}' + '/api/internal/partnerseikyusho/' + seikyuNumber + '?f=' + fileName, function() {
+				var unicode = getUnicodeString( this.response );
+				var base64 = getBase64( unicode );
+				printBase64( base64 );
+				doSeikyuSoshinJs(fileName, base64);
+			} );
+    	}
+
+    	function doSaiseikyu(){
+            document.getElementById('idSaiseikyuBtn').className = 'btn-square-disable';
+    		doSaiseikyuJs();
+		}
+		
+		function doSaiso(){
+			document.getElementById('idSaisoBtn').className = 'btn-square-disable';
+			var seikyuNumber = '{!seikyuHeader.Name}';
+			var fileName = 'seikyusyo_' + '{!seikyuHeader.KokyakuId__c}' + '.pdf';
+			
+			fetchFile( '{!ptWebEndPoint}' + '/api/internal/partnerseikyusho/' + seikyuNumber + '?f=' + fileName, function() {
+                var unicode = getUnicodeString( this.response );
+                var base64 = getBase64( unicode );
+				printBase64( base64 );
+				doSaisoJs(fileName, base64);
+			} );
+		}
+
+    	var callback = function () {
+	      if (result.error) {
+	        alert("Error message is " + result.error);
+	      }
+	    };
+
+	    function callCloseTab() {
+	    	alert('処理が完了しました。');
+	    	sforce.console.getEnclosingTabId(closeSubtab);
+	    }
+
+	    var closeSubtab = function closeSubtab(result) {
+	      var tabId = result.id;
+	      sforce.console.closeTab(tabId, callback);
+	    };
+
+		$('a[href*=#]').click(function() {
+		var target = $(this.hash);
+		if (target) {
+			var targetOffset = target.offset().top;
+			return false;
+			}
+		});
+
+
+    </script>
+    <apex:form id="myFormId">
+		<apex:actionFunction name="doKakuminIraiJs" action="{!doKakuminIrai}" reRender="showmsg" oncomplete="callCloseTab()"/>
+		<apex:actionFunction name="doAddKakuminIraiJs" action="{!doAddKakuminIrai}" reRender="showmsg" oncomplete="callCloseTab()"/>
+    	<apex:actionFunction name="doSashimodoshiJs" action="{!doSashimodoshi}" reRender="showmsg" oncomplete="callCloseTab()"/>
+    	<apex:actionFunction name="doSeikyuSoshinJs" action="{!doSeikyuSoshin}" reRender="showmsg" oncomplete="callCloseTab()">
+			<apex:param name="pdfFileName" value="" assignTo="{!pdfFileName}"/>
+            <apex:param name="pdfFileData" value="" assignTo="{!pdfFileData}"/>
+		</apex:actionFunction>
+		<apex:actionFunction name="doSaiseikyuJs" action="{!doSaiseikyu}" reRender="showmsg" oncomplete="callCloseTab()"/>
+		<apex:actionFunction name="doSaisoJs" action="{!doSaiso}" reRender="showmsg" oncomplete="callCloseTab()">
+			<apex:param name="pdfFileName" value="" assignTo="{!pdfFileName}"/>
+			<apex:param name="pdfFileData" value="" assignTo="{!pdfFileData}"/>
+		</apex:actionFunction>
+		<apex:inputHidden id="idHdnOpenType" value="{!openType}"/>
+        <div class="wrapper">
+            <div class="container">
+                <div class="main" id="idMain">
+                    <div style="display: flex;height: 785px;">
+                        <div class="section-panel" style="width:1100px;">
+                            <div style="padding:0px;font-weight: bold;">【請求概要】</div>
+                            <div style="display: flex;padding:5px 0px 0px 0px">
+                                <apex:outputPanel id="idSeikyuHeaderPanel" layout="block" style="width: 100%">
+                                	<div style="display: flex;width: 100%">
+		                                <table style="width:100%">
+                            				<tr>
+                            					<td>
+		    		                                <table class="seikyuDetail">
+		    	                                        <tr>
+		    	                                        	<th style="width:40%">請求先名</th>
+		    	                                        	<th style="width:15%">請求ステータス</th>
+		    	                                        	<th style="width:15%">顧客ID</th>
+		    	                                        	<th style="width:15%">請求金額</th>
+		    	                                        	<th style="width:15%">入金締切日</th>
+		    	                                        </tr>
+		    	                                        <tr style="background-color: #EFEFEF">
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.SeikyusakiName__c}"/></td>
+		    	                                        	<td><apex:outputField value="{!seikyuHeader.SeikyuStatus__c}"/></td>
+		    	                                        	<td><apex:outputField value="{!seikyuHeader.KokyakuId__c}"/></td>
+		    	                                        	<td><apex:outputField value="{!seikyuHeader.SeikyuKingaku__c}"/></td>
+		    	                                        	<td><apex:outputField value="{!seikyuHeader.NyukinShimekiribi__c}"/></td>
+		    	                                        </tr>
+		    	                                    </table>
+		    	                                </td>
+		    	                            </tr>
+		    	                            <tr>
+		    	                            	<td>
+		    	                                    <table class="seikyuDetail">
+		                                                <tr>
+		                                                    <th style="width:20%">金融機関名(コード)</th>
+		    	                                        	<th style="width:20%">支店名(コード)</th>
+		    	                                        	<th style="width:20%">種別</th>
+		    	                                        	<th style="width:20%">口座番号</th>
+		    	                                        	<th style="width:20%">口座名義</th>
+		                                                </tr>
+		    	                                        <tr style="background-color: #EFEFEF">
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.KinyukikanMeiTosha__c}({!seikyuHeader.KinyukikanCodeTosha__c})"/></td>
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.ShitenMeiTosha__c}({!seikyuHeader.ShitenCodeTosha__c})"/></td>
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.KozaShubetsuTosha__c}"/></td>
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.KozaBangoTosha__c}"/></td>
+		    	                                        	<td><apex:outputLabel value="{!seikyuHeader.KozaMeigiKanaTosha__c}"/></td>
+		    	                                        </tr>
+		    		                                </table>
+		    		                            </td>
+		    		                        </tr>
+		    		                    </table>
+		                            </div>
+                                </apex:outputPanel>
+                            </div>
+                            <div style="width: 100%; display: flex; padding:10px 0px 0px 0px">
+                                <apex:outputPanel id="idTargetPanel" style="width: 100%">
+									<div style="padding:5px 0px 0px 0px; font-weight: bold;">【請求明細】</div>
+									<div>
+										<div style="width: 100%; display: flex; padding:5px 0px 0px 0px">
+											<table id="idTableKeiyaku" class="seikyuDetail2">
+												<tr>
+													<th style="text-align: center; font-weight:bold; width:35px;">No</th>
+													<th style="text-align: center; font-weight:bold; width:80px;">顧客ID</th>
+													<th style="text-align: center; font-weight:bold; width:117px;">お客様名</th>
+													<th style="text-align: center; font-weight:bold; width:75px;">施行日</th>
+													<th style="text-align: center; font-weight:bold; width:215px;">ﾌﾟﾗﾝ内容</th>
+													<th style="text-align: center; font-weight:bold; width:85px;">総額</th>
+													<th style="text-align: center; font-weight:bold; width:95px;">ﾌﾟﾗﾝ手数料</th>
+													<th style="text-align: center; font-weight:bold; width:107px;">ｵﾌﾟｼｮﾝ手数料</th>
+													<th style="text-align: center; font-weight:bold; width:107px;">その他手数料</th>
+													<th style="text-align: center; font-weight:bold; width:80px;">差引額</th>
+													<th style="text-align: center; font-weight:bold; width:50px;">確認</th>
+												</tr>
+											</table>
+										</div>
+										<div style="height:500px; overflow-y:scroll;">
+											<table id="idTableKeiyakuBody" class="seikyuDetail2">						
+												<apex:variable var="tarRowNumIndex" value="{!0}" />
+												<apex:repeat value="{!seikyuMeisaiList}" var="item" id="idTargetWrapList">
+													<tr>
+														<td style="text-align: center; width:35px;"><apex:outputField id="idNo" value="{!item.No__c}" /></td>
+														<td style="width:80px;"><apex:outputField id="idKokyakuId" value="{!item.KokyakuId__c}" /></td>
+														<td style="text-align: left; width:117px;">
+															<div style="padding-left: 10px;"><apex:outputField id="idOkyakusamaeMei" value="{!item.OkyakusamaMei__c}" /></div></td>
+														<td style="width:75px;"><apex:outputtext id="idSekobi" value="{0, date, yy/MM/dd}">
+																<apex:param value="{!item.Sekobi__c}"></apex:param>
+															</apex:outputtext>
+														</td>
+														<td style="text-align: left; width:215px;">
+															<div style="padding-left: 10px;"><apex:outputField id="idPlanNaiyo" value="{!item.PlanNaiyo__c}" /></div></td>
+														<td style="text-align: right; width:85px;">
+															<div style="padding-right: 5px;"><apex:outputField id="idSogaku" value="{!item.GokeiKingaku__c}" /></div></td>
+														<td style="text-align: right; width:95px;">
+															<div style="padding-right: 5px;"><apex:outputField id="idPlanTesuryo" value="{!item.PlanTesuryo__c}" /></div></td>
+														<td style="text-align: right; width:107px;">
+															<div style="padding-right: 5px;"><apex:outputField id="idSonotaTesuryo" value="{!item.OptionTesuryo__c}" /></div></td>
+														<td style="text-align: right; width:107px;">
+															<div style="padding-right: 5px;"><apex:outputField id="idTokuyakutenTesuryo" value="{!item.TokuyakutenTesuryo__c}" /></div></td>
+														<td style="text-align: right; width:80px;">
+															<div style="padding-right: 5px;"><apex:outputField id="idSashihikigaku" value="{!item.Sashihikigaku__c}" /></div></td>
+														<td style="text-align: center; width:50px;">
+															<apex:outputField id="idKakuninzumiChk" value="{!item.Verified__c}" rendered="{!IF(item.Verified__c, true, false)}"/>
+															<apex:outputLink id="idKakuninzumiLink" value="#{!tarRowNumIndex}" rendered="{!IF(item.Verified__c, false, true)}" >移動</apex:outputLink>
+														</td>
+													</tr>
+													<apex:variable var="tarRowNumIndex" value="{!tarRowNumIndex + 1}" />
+												</apex:repeat>
+											</table>
+										</div>
+									</div>
+	                                <div style="padding-top: 10px;">
+										<div style="display:flex; justify-content: space-between;">
+											<div>
+												<apex:outputPanel id="showmsg">
+													<apex:pageMessages />
+												</apex:outputPanel>
+											</div>
+											<div>
+												<apex:outputPanel id="idMisakuseiStatus" rendered="{!IF(OR(seikyuHeader.SeikyuStatus__c == '未作成',seikyuHeader.SeikyuStatus__c == '差戻'), true, false)}">
+													<div style="text-align: right; margin-right: 20px;">
+														<a href="#" type="button" class="btn-square-disable" id="idKakuminIraiBtn" onclick="doKakuminIrai();" >確認依頼</a>
+													</div>
+												</apex:outputPanel>
+												<apex:outputPanel id="idKakuninchuStatus" rendered="{!IF(seikyuHeader.SeikyuStatus__c == '確認中', true, false)}">
+													<apex:outputPanel id="idNewKakuninchuStatus" rendered="{!IF(openType == 'reference', true, false)}">
+														<div style="display: flex; margin-right: 20px; float: right;">
+															<div style="margin: auto;">差戻理由</div>
+															<div style="margin: auto;margin-left: 20px"><apex:inputField value="{!seikyuHeader.SashimodoshiRiyu__c}" /></div>
+															<div style="margin-left: 20px"><a href="#" type="button" class="btn-square" id="idSeikyuSashimodoshiBtn" onclick="doSashimodoshi();" >差戻</a></div>
+															<div style="margin-left: 60px"><a href="#" type="button" class="btn-square" id="idSeikyuSoshinBtn" onclick="doSeikyuSoshin();" >請求送信</a></div>
+														</div>
+													</apex:outputPanel>
+													<apex:outputPanel id="idAddKakuninchuStatus" rendered="{!IF(openType == 'add', true, false)}">
+														<div style="text-align: right; margin-right: 20px;">
+															<a href="#" type="button" class="btn-square-disable" id="idAddKakuminIraiBtn" onclick="doAddKakuminIrai();" >確認依頼</a>
+														</div>
+													</apex:outputPanel>
+												</apex:outputPanel>
+												<apex:outputPanel id="idSeikyuzumiStatus" rendered="{!IF(seikyuHeader.SeikyuStatus__c == '請求済', true, false)}">
+													<div style="display: flex; margin-right: 20px; float: right;">
+														<div style="margin-left: 20px"><a href="#" type="button" class="btn-square" id="idSaisoBtn" onclick="doSaiso();" >再送</a></div>
+														<div style="margin-left: 60px"><a href="#" type="button" class="btn-square" id="idSaiseikyuBtn" onclick="doSaiseikyu();" >要再請求</a></div>
+													</div>
+												</apex:outputPanel>
+											</div>
+										</div>
+	                                </div>
+	                            </apex:outputPanel>
+                            </div>
+                        </div>
+                        <div class="section-panel" style="margin-left: 10px; width: calc(100% - 1110px)">
+                            <div>
+                                <div style="padding:0px;font-weight: bold;">【請求明細詳細】</div>
+                            </div>
+                            <div style="margin-top: 5px;text-align: center">
+                            	<apex:outputPanel id="idDisplaySeikyuPanel" layout="block" style="width: 100%">
+                            		<div style="overflow-y: scroll;height: 740px">
+			                            <div>
+			                            	<apex:variable var="seikyuMeisaiRowNumIndex" value="{!0}" />
+			                            	<apex:repeat value="{!seikyuMeisaiList}" var="item" id="idSeikyuMeisaiList">
+			                            		<div style="display: flex;width: 100%" id="{!seikyuMeisaiRowNumIndex}">
+			                                		<div style="width:100%">
+			                                			<table style="width:100%">
+			                                				<tr>
+			                                					<td>
+						    		                                <table class="seikyuDetail">
+						    	                                        <tr>
+																			<th style="width:50px;">No</th>
+																			<th style="width:75px;">顧客ID</th>
+						    	                                        	<th style="width:170px;">お客様名</th>
+						    	                                        	<th style="width:75px;">施行日</th>
+						    	                                        	<th style="width:290px;">プラン内容</th>
+                                                                            <th style="width:50px">確認</th>
+						    	                                        </tr>
+						    	                                        <tr style="background-color: #EFEFEF">
+																			<td><apex:outputLabel value="{!seikyuMeisaiRowNumIndex + 1}"/></td>
+																			<td><apex:outputField value="{!item.KokyakuId__c}" /></td>
+						    	                                        	<td><apex:outputField value="{!item.OkyakusamaMei__c}"/></td>
+						    	                                        	<td><apex:outputtext value="{0, date, yy/MM/dd}">
+																					<apex:param value="{!item.Sekobi__c}"></apex:param>
+																				</apex:outputtext></td>
+						    	                                        	<td><apex:outputField value="{!item.PlanNaiyo__c}"/></td>
+                                                                            <td><apex:inputField id="idChkKakuminzumi" value="{!item.Verified__c}" onclick="chkKakuminzumi('{!seikyuHeader.SeikyuStatus__c}','{!seikyuMeisaiList.size}');"/></td>
+						    	                                        </tr>
+						    	                                    </table>
+						    	                                </td>
+						    	                            </tr>
+						    	                            <tr>
+						    	                            	<td>
+						    	                                    <table class="seikyuDetail">
+						                                                <tr>
+						                                                    <th style="width:20%">総額</th>
+						    	                                        	<th style="width:20%">プラン手数料</th>
+                                                                            <th style="width:20%">オプション手数料</th>
+						    	                                        	<th style="width:20%">その他手数料</th>
+						    	                                        	<th style="width:20%">差引額</th>
+						                                                </tr>
+						    	                                        <tr style="background-color: #EFEFEF">
+						    	                                        	<td><apex:outputField value="{!item.GokeiKingaku__c}"/></td>
+																			<td><apex:outputField value="{!item.PlanTesuryo__c}"/></td>
+																			<td><apex:outputField value="{!item.OptionTesuryo__c}"/></td>
+                                                                            <td><apex:outputField value="{!item.TokuyakutenTesuryo__c}"/></td>
+						    	                                        	<td><apex:outputField value="{!item.Sashihikigaku__c}"/></td>
+						    	                                        </tr>
+						    		                                </table>
+						    		                            </td>
+						    		                        </tr>
+						    		                    </table>
+			    		                            </div>
+			                                    </div>
+			                            		<div style="margin-bottom: 10px">
+					                            	<table class="seikyuDetail">
+	                                                    <tr>
+	                                                        <th style="width:25%;">内容</th>
+	                                                        <th style="width:15%;">単価</th>
+	                                                        <th style="width:15%;">手数料率</th>
+	                                                        <th style="width:15%;">数量</th>
+	                                                        <th style="width:15%;">金額</th>
+	                                                        <th style="width:15%;">手数料</th>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>返礼品</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.Henreihin__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.HenreihinFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.HenreihinFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.HenreihinFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>料理</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.Ryori__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.RyoriFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.RyoriFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.RyoriFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>ラストメイク</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.LastMake__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.LastMakeFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.LastMakeFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.LastMakeFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>メイク＆ドレス(古式湯灌)</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakeDress__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.MakeDressFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakeDressFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakeDressFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>湯かん</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.Yukan__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.YukanFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.YukanFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.YukanFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>枕花</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakuraBana__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.MakuraBanaFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakuraBanaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.MakuraBanaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>棺上花束</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KanjoHanataba__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.KanjoHanatabaFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KanjoHanatabaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KanjoHanatabaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>お別れ花</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.OwakareBana__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.OwakareBanaFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.OwakareBanaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.OwakareBanaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>供花</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.Kyoka__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.KyokaFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KyokaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KyokaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD">
+	                                                        <td>遺影写真</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.IeiShashin__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.IeiShashinFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.IeiShashinFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.IeiShashinFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF;">
+	                                                        <td>看板</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.ShomenKanban__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.ShomenKanbanFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.ShomenKanbanFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.ShomenKanbanFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>外装設備追加</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.GaisoSetsubiTsuika__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.GaisoSetsubiTsuikaFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.GaisoSetsubiTsuikaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.GaisoSetsubiTsuikaFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EFEFEF">
+	                                                        <td>骨壺ランクアップ</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KotsutsuboRankUp__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.KotsutsuboRankUpFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KotsutsuboRankUpFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.KotsutsuboRankUpFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+	                                                    <tr style="background-color: #EAF6FD;">
+	                                                        <td>棺</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.Hitsugi__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.HitsugiFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+	                                                        <td style="text-align: right;padding-right: 20px;">1</td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.HitsugiFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                        <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+	                                                        													<apex:param value="{!item.HitsugiFee__c}"/>
+	                                                        													</apex:outputText></td>
+	                                                    </tr>
+                                                        <tr style="background-color: #EFEFEF;">
+                                                            <td>エンバーミング</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.EmbalmingPrice__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.EmbalmingPriceFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+                                                            <td style="text-align: right;padding-right: 20px;">1</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.EmbalmingPriceFee__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.EmbalmingPriceFee__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                        </tr>
+                                                        <tr style="background-color: #EAF6FD;">
+                                                            <td>祭壇</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.SaidanPrice__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.SaidanPriceFeeRate__c * 100}"/>
+                                                                                                                </apex:outputText>%</td>
+                                                            <td style="text-align: right;padding-right: 20px;">1</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.SaidanPriceFee__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.SaidanPriceFee__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                        </tr>
+                                                        <tr style="background-color: #EFEFEF;">
+                                                            <td>事務手数料</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.JimuTesuryo__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;">-</td>
+                                                            <td style="text-align: right;padding-right: 20px;">-</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.JimuTesuryo__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                                <apex:param value="{!item.JimuTesuryo__c}"/>
+                                                                                                                </apex:outputText></td>
+                                                        </tr>
+														<tr style="background-color: #EAF6FD;">
+															<td>よりそう負担</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+                                                                                                               <apex:param value="{!item.Yorisofutankingaku__c}"/>
+                                                                                                               </apex:outputText></td>
+                                                            <td style="text-align: right;padding-right: 20px;">-</td>
+                                                            <td style="text-align: right;padding-right: 20px;">-</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+																												<apex:param value="{!item.Yorisofutankingaku__c}"/>
+																												</apex:outputText></td>
+															<td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+																												<apex:param value="{!item.Yorisofutankingaku__c}"/>
+																												</apex:outputText></td>
+                                                        </tr>
+                                                        <tr style="background-color: #EFEFEF;">
+                                                            <td>貴社負担</td>
+                                                            <td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+																												<apex:param value="{!item.kishafutankingaku__c}"/>
+																												</apex:outputText></td>
+															<td style="text-align: right;padding-right: 20px;">-</td>
+															<td style="text-align: right;padding-right: 20px;">-</td>
+															<td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+																												<apex:param value="{!item.kishafutankingaku__c}"/>
+																												</apex:outputText></td>
+															<td style="text-align: right;padding-right: 20px;"><apex:outputText value="{0, number, ###,###}">
+																												<apex:param value="{!item.kishafutankingaku__c}"/>
+																												</apex:outputText></td>
+                                                        </tr>
+					                                </table>
+					                            </div>
+					                            <apex:variable var="seikyuMeisaiRowNumIndex" value="{!seikyuMeisaiRowNumIndex + 1}" />
+			                            	</apex:repeat>
+			                           	</div>
+			                        </div>
+	                            </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

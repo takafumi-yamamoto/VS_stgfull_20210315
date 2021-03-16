@@ -1,0 +1,39 @@
+<apex:component controller="KnowledgeSearchCtl">
+    <apex:attribute name="faqList" type="Knowledge__kav[]" description="faqList" />
+
+    <div>
+        <div class="detail_title">
+            FAQ
+        </div>
+        <div>
+            <table class="dataList_table" width="100%">
+                <tr>
+                    <th width="width:calc(100% - 190px)">
+                        タイトル
+                    </th>
+                    <th width="100px">
+                        最終更新日
+                    </th>
+                    <th width="90px">
+                        最終更新者
+                    </th>
+                </tr>
+                <apex:repeat value="{!faqList}" var="faqDetail">
+                    <tr>
+                        <td>
+                            <a href="#" onClick="openFaqDetail('{!faqDetail.id}');return false"><apex:outputText value="{!faqDetail.Title}" /></a>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                <apex:param value="{!faqDetail.LastModifiedDate +9/24}"/>
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText value="{!faqDetail.LastModifiedBy.Name}"/>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </div>
+    </div>
+</apex:component>

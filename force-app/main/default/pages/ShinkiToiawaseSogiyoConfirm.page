@@ -1,0 +1,570 @@
+<apex:page id="idPage" controller="ShinkiToiawaseSogiyoConfirmCtl" action="{!init}" title="Switch Confirm" cache="false">
+  <apex:includeScript value="/support/console/44.0/integration.js" />
+  <style>
+    .wrapper {
+      resize:both;
+     }
+     .container {
+      display: flex;
+     }
+     .main {
+      /*width: 52%;*/
+
+      /*padding: 5px;*/
+     }
+     .main-header {
+
+     }
+     .section-panel {
+      /*display: flex;*/
+      padding:10px;
+      background-color: #fff;
+      border-radius: 3px;
+     }
+     .summarpanel {
+      display: flex;
+     }
+     .center-column {
+
+     }
+     .side {
+      /*width: 31%;*/
+      /*height: 773px;*/
+      overflow-y: auto;
+      padding: 0 0 0 10px;
+     }
+    html body.sfdcBody {
+      background: rgba(176, 196, 223, 1.0);
+      padding: 10px 150px 0 150px;
+      font-size: 90%;
+    }
+    th {
+      text-align : right;
+    }
+    td {
+      padding: 0 10px 0 0;
+    }
+    .btn {
+      width:100px;
+    }
+    .buttonstyle {
+      width :60px;
+    }
+    input[type="button"]:disabled {
+      color: gray;
+      background-color: #ccc;
+      border-color: #ccc;
+    }
+    table.templeteList {
+      border-collapse: collapse;
+      border: 0;
+      overflow: scroll;
+    }
+    table.templeteList th {
+      border: 1px solid #222;
+      border-style: dotted;
+    }
+    table.templeteList td {
+      border: 1px solid #222;
+      border-style: dotted;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+    thead.templeteList_scrollHead,tbody.templeteList_scrollBody{
+        display:block;
+    }
+    tbody.templeteList_scrollBody{
+        overflow:auto;
+        /* width: 1213px; */
+        height: 70px;
+    }
+  </style>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+
+    window.sfdcPage.appendToOnloadQueue(
+      function() {
+        var elementBtnSection = document.getElementById('idBtnSection');
+        var rectBtnSection = elementBtnSection.getBoundingClientRect();
+        //画面高さ取得
+        var hBtnSection = $(window).height() - rectBtnSection.top - 30;
+        $('#idBtnSection').css('height', hBtnSection + 'px');
+
+        var elementContactRirekiKakunin = document.getElementById('idContactRirekiKakunin');
+        var rectContactRirekiKakunin = elementContactRirekiKakunin.getBoundingClientRect();
+        //画面高さ取得
+        var hContactRirekiKakunin = $(window).height() - rectContactRirekiKakunin.top - 30;
+        $('#idContactRirekiKakunin').css('height', hContactRirekiKakunin + 'px');
+
+        var elementContactText = document.getElementById('idPage:idForm:idContactText');
+        var rectContactText = elementContactText.getBoundingClientRect();
+        //画面高さ取得
+        var hContactText = $(window).height() - rectContactText.top - 103;
+        $('#idPage:idForm:idContactText').css('height', hContactText + 'px');
+
+
+        
+
+        onloadDefaultValueJs();
+        // document.getElementById('idPage:idForm:idHenkoNashiBtn').tabIndex = 10;
+        // document.getElementById('idPage:idForm:idStageName').tabIndex = 20;
+        // document.getElementById('idPage:idForm:idSubPhase').tabIndex = 30;
+        // document.getElementById('idPage:idForm:idJogaiKubun').tabIndex = 40;
+        // document.getElementById('idPage:idForm:idShitchuYoin').tabIndex = 50;
+        // document.getElementById('idPage:idForm:idSonotaShitchuYoinHosoku').tabIndex = 60;
+        // document.getElementById('idPage:idForm:idNextAction').tabIndex = 70;
+        // document.getElementById('idPage:idForm:idJuyoRenrakuJiko').tabIndex = 80;
+        // document.getElementById('idPage:idForm:idFollowTelJokyo').tabIndex = 90;
+        // document.getElementById('idPage:idForm:idShiryoTochakugoFollowTel1').tabIndex = 100;
+        // document.getElementById('idPage:idForm:idShiryoTochakugoFollowTel2').tabIndex = 110;
+        // document.getElementById('idPage:idForm:idShiryoTochakugoFollowTel3').tabIndex = 120;
+        // document.getElementById('idPage:idForm:idShiryoTochakugoFollowTel4').tabIndex = 130;
+        // document.getElementById('idPage:idForm:selectList1').tabIndex = 140;
+        // document.getElementById('idPage:idForm:selectList2').tabIndex = 150;
+        // document.getElementById('idPage:idForm:idClaimFlg').tabIndex = 160;
+        // document.getElementById('idPage:idForm:idOppContBtn').tabIndex = 170;
+        // document.getElementById('idPage:idForm:idBack').tabIndex = 180;
+        // document.getElementById('idPage:idForm:idOppBtn').tabIndex = 190;
+
+        // document.getElementById('idPage:idForm:idHenkoNashiBtn').focus();
+      });
+
+    function checkPhase(val){
+      showLoadingDialog();
+
+      if(document.getElementById('idPage:idForm:idStageName').value == ''){
+        alert('フェーズを設定してください');
+        hideLoadingDialog();
+        return false;
+      }
+
+      if(val == 'false'){
+        if (!window.confirm('コンタクトは作成されません。よろしいですか？')) {
+          hideLoadingDialog();
+          return false;
+        }
+      }
+
+      refreshResults(val);
+    }
+
+    function changeDisabled(){
+      
+      //disabledCtl('disabled')
+      if(document.getElementById('idPage:idForm:idErrFlg').value == 'false'){
+        //document.getElementById('idBack').disabled = '';
+        if(document.getElementById('idPage:idForm:idAlertFlg').value == 'true'){
+          alert(document.getElementById('idPage:idForm:idMsg').value);
+        }
+        callCloseTab();
+      }
+      else{
+        alert(document.getElementById('idPage:idForm:idMsg').value);
+        hideLoadingDialog();
+        //disabledCtl('');
+      }
+    }
+
+    function back(){
+      if(document.getElementById('idPage:idForm:idSaveFlg').value == 'true' || window.confirm('入力した内容は保存されません。よろしいですか？')){
+        backJs();
+      }
+      else{
+        return false;
+      }
+    }
+
+    function disabledCtl(val){
+      setDisabled(val, document.getElementsByTagName('input'));
+      setDisabled(val, document.getElementsByTagName('textarea'));
+      setDisabled(val, document.getElementsByTagName('select'));
+    }
+
+    function setDisabled(val, lis){
+      for (var i = 0, l = lis.length; i < l; i++) {
+        var input = lis[i];
+        input.disabled = val;
+      }
+    }
+
+    var callback = function () {
+      if (result.error) {
+        alert("Error message is " + result.error);
+      }
+    };
+
+    function callCloseTab() {
+      sforce.console.getEnclosingTabId(closeSubtab);
+    }
+
+    var closeSubtab = function closeSubtab(result) {
+      var tabId = result.id;
+      sforce.console.closeTab(tabId, callback);
+    };
+
+    $(window).resize(function() {
+        var elementBtnSection = document.getElementById('idBtnSection');
+        var rectBtnSection = elementBtnSection.getBoundingClientRect();
+        //画面高さ取得
+        var hBtnSection = $(window).height() - rectBtnSection.top - 30;
+        $('#idBtnSection').css('height', hBtnSection + 'px');
+
+        var elementContactRirekiKakunin = document.getElementById('idContactRirekiKakunin');
+        var rectContactRirekiKakunin = elementContactRirekiKakunin.getBoundingClientRect();
+        //画面高さ取得
+        var hContactRirekiKakunin = $(window).height() - rectContactRirekiKakunin.top - 30;
+        $('#idContactRirekiKakunin').css('height', hContactRirekiKakunin + 'px');
+
+        var elementContactText = document.getElementById('idPage:idForm:idContactText');
+        var rectContactText = elementContactText.getBoundingClientRect();
+        //画面高さ取得
+        var hContactText = $(window).height() - rectContactText.top - 103;
+        $('#idPage:idForm:idContactText').css('height', hContactText + 'px');
+    });
+
+    function displayKubun(){
+      var phase = document.getElementById('idPage:idForm:idStageName').value;
+      if(phase == '除外'){
+        document.getElementById('idJogaiTr').style.display = '';
+        document.getElementById('idShicchuTr1').style.display = 'none';
+        document.getElementById('idShicchuTr2').style.display = 'none';
+
+        document.getElementById('idPage:idForm:idShiccyuKubun').value = '';
+        document.getElementById('idPage:idForm:idShitchuYoin').value = '';
+        document.getElementById('idPage:idForm:idSonotaShitchuYoinHosoku').value = '';
+      }
+      else if(phase == '失注'){
+        document.getElementById('idJogaiTr').style.display = 'none';
+        document.getElementById('idShicchuTr1').style.display = '';
+        document.getElementById('idShicchuTr2').style.display = '';
+
+        document.getElementById('idPage:idForm:idJogaiKubun').value = '';
+      }
+      else{
+        document.getElementById('idJogaiTr').style.display = 'none';
+        document.getElementById('idShicchuTr1').style.display = 'none';
+        document.getElementById('idShicchuTr2').style.display = 'none';
+
+        document.getElementById('idPage:idForm:idJogaiKubun').value = '';
+        document.getElementById('idPage:idForm:idShiccyuKubun').value = '';
+        document.getElementById('idPage:idForm:idShitchuYoin').value = '';
+        document.getElementById('idPage:idForm:idSonotaShitchuYoinHosoku').value = '';
+      }
+    }
+
+    function noChange(){
+      displayKubun();
+    }
+
+    function clipBoardCopy(){
+      var ta = document.createElement('textarea');
+      var date1 = new Date();
+	    var date2 = date1.getFullYear() + "年" + 
+                  (date1.getMonth() + 1)  + "月" + 
+                  date1.getDate() + "日" + 
+                  date1.getHours() + "時" + 
+                  date1.getMinutes() + "分 " +
+                  '{!userName}';
+      
+      var aux = document.createElement("input");
+      aux.setAttribute("value", date2);
+      document.body.appendChild(aux);
+      aux.select();
+      document.execCommand("copy");
+      document.body.removeChild(aux);
+    }
+
+  </script>
+  <c:loadingDialog title="Getting Contacts" />
+  <apex:form id="idForm">
+    <apex:actionFunction name="onloadDefaultValueJs" oncomplete="document.getElementById('idPage:idForm:idHenkoNashiBtn').focus();" />
+    <apex:inputhidden value="{!errFlg}" id="idErrFlg" />
+    <apex:inputhidden value="{!saveFlg}" id="idSaveFlg" />
+    <apex:inputhidden value="{!alertFlg}" id="idAlertFlg" />
+    <apex:inputhidden value="{!msg}" id="idMsg" />
+    <apex:actionFunction name="refreshResults" reRender="idForm" status="searchStatus" action="{!oppUpdate}" oncomplete="changeDisabled();displayKubun();">
+      <apex:param assignTo="{!isToDoCreate}" name="isToDoCreate" value="" />
+    </apex:actionFunction>
+    <apex:actionFunction name="backJs" reRender="idForm" action="{!back}" immediate="true" />
+    <div class="wrapper">
+      <div class="container">
+        <div class="main">
+          <div class="main-header">
+            <div class="section-panel" style="height: 155px;width: 840px;">
+              <div class="summarpanel">
+                <div class="center-column">
+                  <div>【フェーズ】</div>
+                  <div>
+                    <table cellpadding="5px" cellspacing="0">
+                      <tr>
+                        <th style="text-align : center;">変更前</th>
+                        <th>フェーズ</th>
+                        <td>
+                          <apex:outputText value="{!beforeStageName}" /> </td>
+                        <th>サブフェーズ</th>
+                        <td>
+                          <apex:outputText value="{!beforeSubPhase}" /> </td>
+                      </tr>
+                      <tr>
+                        <th style="text-align : center;">
+                          <apex:actionRegion >
+                            <apex:commandButton styleClass="buttonstyle" id="idHenkoNashiBtn" action="{!setPhase}" value="変更なし" oncomplete="noChange();" rerender="idStageName,idSubPhase" tabindex="10" /></apex:actionRegion>
+                        </th>
+                        <th>フェーズ</th>
+                        <td width="275px">
+                          <apex:inputfield value="{!opp.StageName}" id="idStageName" taborderhint="2" onchange="displayKubun();"/> </td>
+                        <th width="140px">サブフェーズ</th>
+                        <td>
+                          <apex:inputfield value="{!opp.SubPhase__c}" id="idSubPhase" taborderhint="3" /> </td>
+                      </tr>
+                      <tr id="idJogaiTr" style="display: none">
+                        <th></th>
+                        <th>除外区分</th>
+                        <td><apex:inputfield value="{!opp.JogaiKubun__c}" id="idJogaiKubun" taborderhint="4" />
+                           </td>
+                        <th></th>
+                        <td></td>
+                      </tr>
+                      <tr id="idShicchuTr1" style="display: none">
+                        <th></th>
+                        <th>失注区分</th>
+                        <td><apex:inputfield value="{!opp.ShitchuKubun__c}" id="idShiccyuKubun" taborderhint="5" />
+                           </td>
+                        <th></th>
+                        <td></td>
+                      </tr>
+                      <tr id="idShicchuTr2" style="display: none">
+                        <th></th>
+                        <th>失注要因</th>
+                        <td>
+                          <apex:inputfield value="{!opp.ShitchuYoin__c}" id="idShitchuYoin" taborderhint="6" /> </td>
+                        <th valign="top">その他失注要因補足</th>
+                        <td><apex:inputfield value="{!opp.SonotaShitchuYoinHosoku__c}" id="idSonotaShitchuYoinHosoku" taborderhint="7" />  </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-panel" style="margin-top: 10px">
+              <div class="summarpanel">
+                <div class="center-column">
+                  <div style="display: flex;">
+                    <div>
+                      <div>【次回対応】</div>
+                      <div>
+                        <apex:inputTextarea value="{!nextAction}" cols="40" rows="5" id="idNextAction" tabindex="80"/>
+                      </div>
+                    </div>
+                    <div style="padding-left:10px;">
+                      <div>
+                        <table class="templeteList" id="idNextLTTempleteWrapListTable">
+                          <thead class="templeteList_scrollHead">
+                            <tr>
+                              <th style="background: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:178px;"><font color="#FFFFFF">テンプレート</font></th>
+                            </tr>
+                          </thead>
+                          <tbody class="templeteList_scrollBody">
+                            <apex:variable var="rowNumNextLTTempleteWrapList" value="{!0}" />
+                            <apex:repeat value="{!nextLTTempleteWrapList}" var="nextLTTempleteWrap" id="idNextLTTempleteWrapList">
+                              <tr>
+                                <th style="width:173px; text-align: left; height: 20px; padding-left:5px;">
+                                  <a id="idNextLTTempleteLink" href="#" onclick="setNextLTTemplete('{!rowNumNextLTTempleteWrapList}');"><apex:outputField value="{!nextLTTempleteWrap.longTextTemplete.Title__c}" /></a>
+                                </th>
+                              </tr>
+                              <apex:inputHidden value="{!nextLTTempleteWrap.longTextTemplete.Body__c}" id="idNextLTTempleteBodyHdn" />
+                              <apex:variable var="rowNumNextLTTempleteWrapList" value="{!rowNumNextLTTempleteWrapList + 1}" />
+                            </apex:repeat>
+                            <script>
+                              function setNextLTTemplete(idx){
+                                document.getElementById('idPage:idForm:idNextAction').value = document.getElementById('idPage:idForm:idNextLTTempleteWrapList:' + idx + ':idNextLTTempleteBodyHdn').value;
+                              }
+                            </script>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div style="padding-left:10px;">
+                      <input type="button" class="btn" onclick="clipBoardCopy();" value="現在時刻コピー"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-panel" style="margin-top: 10px">
+              <div class="summarpanel">
+                <div class="center-column">
+                  <div style="display: flex;">
+                    <div>
+                      <div>【重要連絡事項】</div>
+                      <div>
+                        <apex:inputTextarea value="{!ota.JuyoRenrakuJiko__c}" cols="80" rows="8" id="idJuyoRenrakuJiko" tabindex="90"/>
+                      </div>
+                    </div>
+                    <div style="padding-left:10px;">
+                      <div>
+                        <table class="templeteList" id="idImportantLTTempleteWrapListTable">
+                          <thead class="templeteList_scrollHead">
+                            <tr>
+                              <th style="background: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:205px;"><font color="#FFFFFF">テンプレート</font></th>
+                            </tr>
+                          </thead>
+                          <tbody class="templeteList_scrollBody" style="width: 225px; height: 113px;">
+                            <apex:variable var="rowNumImportantLTTempleteWrapList" value="{!0}" />
+                            <apex:repeat value="{!importantLTTempleteWrapList}" var="importantLTTempleteWrap" id="idImportantLTTempleteWrapList">
+                              <tr>
+                                <th style="width:200px; text-align: left; height: 20px; padding-left:5px;">
+                                  <a id="idImportantLTTempleteLink" href="#" onclick="setImportantLTTemplete('{!rowNumImportantLTTempleteWrapList}');">
+                                    <apex:outputField value="{!importantLTTempleteWrap.longTextTemplete.Title__c}" />
+                                  </a>
+                                </th>
+                              </tr>
+                              <apex:inputHidden value="{!importantLTTempleteWrap.longTextTemplete.Body__c}" id="idImportantLTTempleteBodyHdn" />
+                              <apex:variable var="rowNumImportantLTTempleteWrapList" value="{!rowNumImportantLTTempleteWrapList + 1}" />
+                            </apex:repeat>
+                            <script>
+                              function setImportantLTTemplete(idx){
+                                document.getElementById('idPage:idForm:idJuyoRenrakuJiko').value += '\n\n' + document.getElementById('idPage:idForm:idImportantLTTempleteWrapList:' + idx + ':idImportantLTTempleteBodyHdn').value;
+                              }
+                            </script>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-panel" style="margin-top: 10px">
+              <div class="summarpanel">
+                <div class="center-column">
+                  <div>【コンタクト者】</div>
+                  <div>
+                    <table cellpadding="5px" cellspacing="0">
+                      <tr>
+                        <th width="150px">ファーストコンタクト</th>
+                        <td width="180px">
+                          <apex:inputField value="{!opp.FirstContact__c}" id="idFirstContact" /> </td>
+                        <th width="150px">決定時担当者</th>
+                        <td>
+                          <apex:outputPanel rendered="{!IF(OR(profileName == 'CS一般', profileName == 'CS一般(リモートワーク用)',profileName == '開発者'), '', 'none')}">
+                            <apex:inputField value="{!opp.SimpleYasugoRef__r.KetteijiTantoshaRef__c}" id="idKetteijiTantoshaEdit" />
+                          </apex:outputPanel>
+                          <apex:outputPanel rendered="{!IF(AND(profileName != 'CS一般', profileName != 'CS一般(リモートワーク用)', profileName != '開発者'), '', 'none')}">
+                            <apex:outputField value="{!opp.SimpleYasugoRef__r.KetteijiTantoshaRef__c}" id="idKetteijiTantosha" />
+                          </apex:outputPanel>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-panel" style="margin-top: 10px">
+              <div class="center-column">
+                <div>【3分コール】</div>
+                <div>
+                  <table cellpadding="5px" cellspacing="0">
+                    <tr>
+                      <th width="150px">3分コール実施結果</th>
+                      <td colspan="3">
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.X3CallJishiKekka__c}" id="idX3CallJishiKekka" /> </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <div class="center-column">
+                <div>【フォローTEL】</div>
+                <div>
+                  <table cellpadding="5px" cellspacing="0">
+                    <tr>
+                      <th width="150px">フォローTEL状況</th>
+                      <td colspan="3">
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.FollowTelJokyo__c}" id="idFollowTelJokyo" taborderhint="10"/> </td>
+                    </tr>
+                    <tr>
+                      <th width="150px">①資料到着後ﾌｫﾛｰTEL</th>
+                      <td>
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.ShiryoTochakugoFollowTel1__c}" id="idShiryoTochakugoFollowTel1" taborderhint="11"/> </td>
+                      <th width="150px">②資料到着後ﾌｫﾛｰTEL</th>
+                      <td>
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.ShiryoTochakugoFollowTel2__c}" id="idShiryoTochakugoFollowTel2" taborderhint="12"/> </td>
+                    </tr>
+                    <tr>
+                      <th width="150px">③資料到着後ﾌｫﾛｰTEL</th>
+                      <td>
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.ShiryoTochakugoFollowTel3__c}" id="idShiryoTochakugoFollowTel3" taborderhint="13"/> </td>
+                      <th width="150px">④資料到着後ﾌｫﾛｰTEL</th>
+                      <td>
+                        <apex:inputField value="{!opp.SimpleYasugoRef__r.ShiryoTochakugoFollowTel4__c}" id="idShiryoTochakugoFollowTel4" taborderhint="14"/> </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="section-panel" style="margin-top: 10px;" id="idBtnSection">
+              <div class="summarpanel">
+                <div class="center-column" style="width: 100%;">
+                  <div style="display:flex;justify-content:space-between">
+                    <div style="display: flex;">
+                      <input type="button" class="btn" style="width:80px;height: 28px;margin-left: 10px" onclick="back();" value="戻る" id="idBack" taborderhint="18"/>
+                      <input type="button" class="btn" style="background: #9acd32;color: white;font-weight: inherit;width:160px;height: 28px;margin-left: 10px" value="商談更新のみ" onclick="return checkPhase('false');" id="idOppContBtn" taborderhint="19"/>
+                    </div>
+                    <div>
+                      <input type="button" class="btn" style="background: #e8673e;color: white;font-weight: inherit;width:210px;height: 28px" value="コンタクト作成 & 商談更新" onclick="return checkPhase('true');" id="idOppBtn" taborderhint="20"/>
+                    </div>
+                    <!-- <apex:commandButton style="width:80px;height: 28px;margin-left: 10px" value="閉じる" onClick="testCloseTab();return false" /> -->
+                  </div>
+                  <div>
+                    <div style="margin: 5px 0 0 10px;">
+                      <apex:actionStatus id="searchStatus" startText="処理中..." />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="side">
+          <div class="section-panel">
+            <div class="summarpanel">
+              <div class="center-column">
+                <div>【コンタクト条件】 </div>
+                <div>
+                  <table>
+                    <tr>
+                      <th>絞り込み</th>
+                      <td>
+                        <apex:selectList value="{!valuePicked}" size="1" id="selectList1" tabindex="150">
+                          <apex:selectOptions value="{!customPickList}" />
+                          <apex:actionSupport event="onchange" reRender="selectList2" /> </apex:selectList>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>要件種別</th>
+                      <td>
+                        <apex:selectList value="{!valuePicked2}" size="1" id="selectList2" tabindex="160">
+                          <apex:selectOptions value="{!customPickList2}" /> </apex:selectList>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>クレーム</th>
+                      <td>
+                        <apex:inputCheckbox value="{!claimFlg}" id="idClaimFlg" tabindex="170" />
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-panel" style="margin-top: 10px;" id="idContactRirekiKakunin">
+            <div>【コンタクト履歴確認】</div>
+            <div>
+              <apex:inputTextArea value="{!contactText}" cols="60" rows="51" style="height: 598px;line-height: 20px;" id="idContactText" /> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,30 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0" standardController="Opportunity" extensions="SgTgAnSmsSendCtl" action="{!init}" >
+	<apex:form id="SogiTehaigoAnnaiSMS" html-autocomplete="off">
+		<apex:pageBlock title="葬儀手配後-追加料金・決済方法SMS案内">
+			<br />
+			<div>
+				<table style="width: 100%;">
+					<tr>
+						<td style="width: 20%;">携帯電話番号</td>
+						<td style="width: 70%;">
+							<apex:input type="tel" value="{!TelNo}" style="width: 100%;"></apex:input>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">送信メッセージ</td>
+						<td style="width: 70%;">
+							<apex:inputTextArea value="{!MessageText}" rows="15" style="width: 100%;" disabled="true" ></apex:inputTextArea>
+						</td>
+					</tr>
+				</table> 
+			</div>
+			<br />
+			<div>
+				<apex:commandButton value="送信" action="{!submit}" reRender="SogiTehaigoAnnaiSMS" status="loading" style="width: 100px;" />
+			</div>
+		</apex:pageBlock>
+		<apex:pageBlock title="SMS送信結果">
+			<div><apex:pageMessages id="idPageMessagesTop" /></div>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

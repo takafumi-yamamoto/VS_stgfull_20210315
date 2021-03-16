@@ -1,0 +1,53 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="Opportunity" extensions="SogiRevSmsSendCtl" >
+    <style>
+    .dataList_div_th {
+        border: 1px solid #222;
+        border-style: dotted;
+        text-align: center;
+        color: #fff;
+        background-color: #364e96;
+        font-weight: bold;
+    }
+    .dataList_div_td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-left: 4px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        font-family: "MS UI Gothic", "MS PGothic", "Hiragino Kaku Gothic Pro", Osaka, Arial, Helvetica, sans-serif;
+    }
+    </style>
+    <script type="text/javascript" charset="utf-8">
+
+        function chkSendSms(){
+            showLoadingDialog();
+            sendSmsJs();
+        }
+
+    </script>
+    <c:loadingDialog title="Getting Contacts" />
+    <apex:form id="idForm">
+        <apex:actionFunction name="sendSmsJs" action="{!sendSms}" reRender="idMsgPanel" oncomplete="hideLoadingDialog();" />
+    
+        <apex:pageBlock title="SMS送信内容">
+            <div>
+                <div>
+                    <div style="width:404px;" class="dataList_div_th">送信番号</div>
+                    <div style="width:400px;" class="dataList_div_td"><apex:outputText value="{!tel}" style="width: 100%;" /></div>
+                    <div style="width:404px; " class="dataList_div_th">本文</div>
+                    <div style="width:404px; padding:0px;" class="dataList_div_td"><apex:inputTextArea value="{!txt}" rows="12" style="width: 398px;" disabled="true" /></div>
+                </div>
+                <div style="display:flex; padding-top:10px;">
+                    <div>
+                        <input type="button" class="btn" id="idSendSmsBtn" value="送信" style="width:60px; font-weight: inherit;" onclick="chkSendSms();" />
+                    </div>
+                    <div style="padding-left:20px;">
+                        <apex:outputPanel id="idMsgPanel">
+                            <apex:outputText value="{!msg}" id="idMsg" style="color:{!If(status==200, 'green', 'red')}" />
+                        </apex:outputPanel>
+                    </div>
+                </div>
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

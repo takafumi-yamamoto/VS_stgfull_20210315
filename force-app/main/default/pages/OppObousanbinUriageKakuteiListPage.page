@@ -1,0 +1,197 @@
+<apex:page id="OppObousanbinUriageKakuteiListPage" title="お坊さん便売上未確定一覧画面" label="お坊さん便売上未確定一覧画面" controller="OppObousanBinUriageKakuteiListController" cache="false" sidebar="true" showheader="true" docType="html-5.0">
+<script type="text/javascript">
+    // ページを開いたときに初期フォーカスをしない
+    beenFocused = true;
+
+    function checkAll(cb) {
+
+        var inputElem = document.getElementsByTagName("input");
+
+        if (inputElem.length) {
+
+          for(var i=0; i<inputElem.length; i++) {
+
+            if (inputElem[i].id.indexOf('checkedone')!=-1) {
+              inputElem[i].checked = cb;
+            }
+          }
+        } else {
+          inputElem.checked = cb.checked;
+        }
+
+    }
+
+  </script>
+
+<apex:sectionHeader title="お坊さん便売上未確定商談検索画面" />
+<apex:form id="resultForm">
+
+    <apex:pageBlock title="検索条件">
+        <apex:pageblockSection id="conditionSection" title="検索" columns="1">
+            <apex:outputpanel id="searchcondition">
+                <table id="conditionTable">
+                    <tr>
+                        <td class="label"  style="vertical-align: middle;">売上日</td>
+                        <td><apex:input value="{!searchFromDate}" type="date"/></td>
+                        <td  style="vertical-align: middle;">～</td>
+                        <td><apex:input value="{!searchToDate}" type="date"/></td>
+                    </tr>
+                    <tr>
+                        <td class="label"  style="vertical-align: middle;">商談番号</td>
+                        <td><apex:inputText value="{!searchNegoId}"/></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </apex:outputpanel>
+        </apex:pageblockSection>
+        <apex:pageBlockButtons id="buttonSection" location="bottom" >
+            <apex:commandButton value="検索" action="{!search}" />
+            <!-- <apex:commandButton value="クリア" action="{!clear}" /> -->
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+
+<apex:pageBlock title="検索結果メッセージ" rendered="{!(uriageList.size == 0)}">該当するデータはありません</apex:pageBlock>
+
+<apex:outputPanel id="out">
+    <apex:pageMessages showDetail="false" />
+</apex:outputPanel>
+
+<apex:pageBlock title="お坊さん便売上未確定商談一覧  {!searchFromDate}～{!searchToDate}" id="IchiranBlock" rendered="{!(uriageList.size > 0)}">
+    <apex:panelGrid columns="1" >検索結果：{!rsltSize}件</apex:panelGrid>
+    <apex:panelGrid columns="2" >
+      <apex:commandLink onclick="checkAll(true);return false;" >すべて選択</apex:commandLink>
+      <apex:commandLink onclick="checkAll(false);return false;" >選択解除</apex:commandLink>
+    </apex:panelGrid>
+
+    <apex:panelGroup id="ResultGroup" rendered="{!NOT(ISNULL(uriageList))}">
+      <apex:pageBlockTable value="{!uriageList}" var="result" id="IchiranTable">
+            <apex:column headerValue="選択" >
+              <apex:inputCheckBox value="{!result.IsSelected}" id="checkedone"/> 
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">売上日</apex:facet>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!result.Record.Utiagebi__c}"></apex:param>
+                </apex:outputtext>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">所属寺院<br/>取引先番号</apex:facet>
+                <apex:outputText value="{!result.Record.ObosanbinRef__r.ObosanbinKeiyakuMadoguchi__r.Teikeisaki__r.ShozokuSangouSangoJiin__r.TorihikisakiBango__c}"/>
+            </apex:column>    
+            <apex:column >
+                <apex:facet name="header">寺院名</apex:facet>
+                <apex:outputText value="{!result.Record.ObosanbinRef__r.ObosanbinKeiyakuMadoguchi__r.Teikeisaki__r.ShozokuSangouSangoJiin__r.name}"/>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">手配区分</apex:facet>
+                <apex:outputText value="{!result.Record.ObosanbinRef__r.ObosanbinKeiyakuMadoguchi__r.ObousanBinTehaiKubun__c}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">商談番号</apex:facet>
+                <apex:outputlink target="_blank" value="/one/one.app?source=aloha#/sObject/{!result.Record.id}/view">
+                    <apex:outputText value="{!result.Record.ShodanBango__c}"/>
+                </apex:outputLink>
+            </apex:column>   
+            <apex:column >
+                <apex:facet name="header">レコードタイプ</apex:facet>
+                <apex:outputText value="{!result.Record.recordtype.name}"/>
+            </apex:column>   
+            <apex:column >
+                 <apex:facet name="header">確定日</apex:facet>
+                 <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                     <apex:param value="{!result.Record.KakuteibiSyodan__c}"></apex:param>
+                 </apex:outputtext>
+            </apex:column>     
+            <apex:column >
+                <apex:facet name="header">　商談フェーズ　</apex:facet>
+                <apex:outputText value="{!result.Record.StageName}"/>
+            </apex:column>                                    
+            <apex:column >
+                <apex:facet name="header">　商談サブフェーズ　</apex:facet>
+                <apex:outputText value="{!result.Record.SubPhase__c}"/>
+            </apex:column>
+            <apex:column style="text-align:center">
+                <apex:facet name="header">流入経路<br/>（他サービス経由）</apex:facet>
+                <apex:outputText value="{!result.Record.RyunyumotoService__c}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">お坊さん便-プラン</apex:facet>
+                <apex:outputText value="{!result.Record.ObosanbinRef__r.MemorialServicePlan__c}"/>
+            </apex:column>  
+            <apex:column >
+                <apex:facet name="header">法要日</apex:facet>
+                <apex:outputField value="{!result.Record.ObosanbinRef__r.KokubetsuDateTime_Inp__c}"/>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">依頼書・手配<br/>報告書送付日</apex:facet>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!result.Record.ObosanbinRef__r.IraiTehaiDate__c}"></apex:param>
+                </apex:outputtext>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">手数料計</apex:facet>
+                <apex:outputtext value="{0, number, \###,###}">
+                    <apex:param value="{!result.Record.UriageGakuPartnerExp__c}"></apex:param>   
+                </apex:outputtext>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">流入経路<br/>（新規）</apex:facet>
+                <apex:outputText value="{!result.Record.Iriguchi__c}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">お客様請求残高</apex:facet>
+                <apex:outputtext value="{0, number, \###,###}">
+                    <apex:param value="{!result.Record.SeikyuZandaka__c}"></apex:param>   
+                </apex:outputtext>
+            </apex:column>             
+            <apex:column >
+                <apex:facet name="header">請求予定額<br/>(パートーナー)</apex:facet>
+                <apex:outputtext value="{0, number, \###,###}">
+                    <apex:param value="{!result.Record.SeikyuYoteiGakuPartnerExp__c}"></apex:param>   
+                </apex:outputtext>
+            </apex:column>             
+            <apex:column >
+                <apex:facet name="header">入金締切日<br/>(パートーナー)</apex:facet>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!result.Record.NyukinSimekiriBiPartner__c}"></apex:param>
+                </apex:outputtext>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">チケット送付日</apex:facet>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!result.Record.ObosanbinRef__r.TicketSendingDate__c}"></apex:param>
+                </apex:outputtext>
+            </apex:column> 
+            <apex:column >
+                <apex:facet name="header">支払予定額<br/>(パートナー)</apex:facet>
+                <apex:outputtext value="{0, number, \###,###}">
+                    <apex:param value="{!result.Record.ShiharaiYoteiGakuPartnerExp__c}"></apex:param>   
+                </apex:outputtext>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">支払期日<br/>(パートナー)</apex:facet>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!(result.Record.ShiharaiKijitsuPartner__c)}"></apex:param>
+                </apex:outputtext>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">金額</apex:facet>
+                <apex:outputtext value="{0, number, \###,###}">
+                    <apex:param value="{!result.Record.Amount}"></apex:param>   
+                </apex:outputtext>
+            </apex:column>                        
+                                                                                                                       
+      </apex:pageBlockTable>
+    </apex:panelGroup>
+
+    <apex:panelGrid columns="2" >
+      <apex:commandButton action="{!previous}" value="前へ" disabled="{!NOT(HasPrevious)}" rerender="IchiranBlock"/>
+      <apex:commandButton action="{!next}" value="次へ" disabled="{!NOT(HasNext)}" rerender="IchiranBlock"/>
+    </apex:panelGrid>
+    <apex:pageBlockButtons >
+        <apex:commandButton action="{!doUriageKakutei}" value="売上確定処理" onclick="window.location.top.reload();"/>        
+    </apex:pageBlockButtons>
+  </apex:pageBlock>
+</apex:form>    
+</apex:page>

@@ -1,0 +1,106 @@
+<apex:page id="idPage" controller="TESTKenallcAddressKensakuPage">
+	<style>
+		.clshidArea {
+			position: absolute;
+			padding: 5px;
+			color: #000;
+			border-radius: 10px;
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 5px;
+			background: #FFFFFF;
+			border:1px solid #000;
+			display:none;
+		}
+	</style>
+	<script>
+		function handleSearchAddressTermChange() {
+			window.clearTimeout(this.delayTimeout);
+			const searchTerm = event.target.value;
+			this.delayTimeout = setTimeout(() => {
+				SearchAddress();
+			}, 300);
+		}
+
+		function SearchAddress(){
+			var prm01 = document.getElementById('idPage:idForm:idSearchAddress').value;
+			if(prm01.length > 1) {
+				TESTKenallcAddressKensakuPage.searchAddress(
+					prm01,
+					function(result, event) {
+						if (result == null || result == '') {
+							document.getElementById('idAddressSuggest').style.display = 'none';
+							return false;
+						}
+						else{
+							var targetElement = document.getElementById('idPage:idForm:idSearchAddress');
+							var clientRect = targetElement.getBoundingClientRect();
+							var x = window.pageXOffset + clientRect.left;
+							var y = window.pageYOffset + clientRect.top + 19;
+
+							var tmp01 = result.length;
+							var div_element = document.createElement("div")
+							var tmpstr = '<div>';
+							if(Number(tmp01) > 0) {
+								for (i=0; i<tmp01;i++) {
+									tmpstr += '<div onclick=\"changeAddress(\'' + result[i].post_code + '\',\'' + result[i].todofuken + '\',\'' + result[i].shikugun + '\',\'' + result[i].tyoumei +'\');return false;\" onmouseover=\"this.style.backgroundColor=\'#e3f3ff\'\" onMouseOut=\"this.style.backgroundColor=\'#FFFFFF\'\">';
+									tmpstr +=  result[i].name + ' ';
+									tmpstr += '</div>';
+								}
+							}
+							tmpstr += '</div>';
+							div_element.innerHTML = tmpstr;
+							var parent_obj = document.getElementById('idAddressSuggest');
+							while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+							parent_obj.appendChild(div_element);
+							document.getElementById('idAddressSuggest').style.display = 'block';
+							document.getElementById('idAddressSuggest').style.top = y + 'px';
+							document.getElementById('idAddressSuggest').style.left = x + 'px';
+
+							return false;
+						}
+					},
+					{
+						escape: true
+					}
+				);
+			} else {
+				document.getElementById('idAddressSuggest').style.display = 'none';
+			}
+		}
+
+		function changeAddress(PostalCode, State,City,Street) {
+			document.getElementById('idAddressSuggest').style.display = 'none';
+			document.getElementById('idPage:idForm:idPostalCode').value = PostalCode;
+			document.getElementById('idPage:idForm:idState').value = State;
+			document.getElementById('idPage:idForm:idCity').value = City;
+			document.getElementById('idPage:idForm:idStreet').value = Street;
+			document.getElementById('idPage:idForm:idSearchAddress').value = '';
+		}
+
+		function delsearchAddressSuggest(){
+			setTimeout(delsearchAddressSuggestMain, 500);
+		}
+
+		function delsearchAddressSuggestMain(){
+			document.getElementById('idAddressSuggest').style.display = 'none';
+			document.getElementById('idPage:idForm:idSearchAddress').value = '';
+		}
+
+	</script>
+
+	<apex:form id="idForm">
+		<h1 style="font-size: 16px;">Ken_all__cを利用したパターン</h1>
+		<BR />
+		<apex:outputpanel id="idkKensakuPanel" style="width: 100%;">
+			<div><apex:inputText id="idSearchAddress" onkeydown="handleSearchAddressTermChange();" onblur="delsearchAddressSuggest();" style="width: 330px;" /></div>
+			<div id="idAddressSuggest" class="clshidArea"></div>
+		</apex:outputpanel>
+		<BR />
+		<apex:outputpanel id="idSodanshaJohoPanel" style="width: 100%;">
+			<div ><p style="width: 100px;">郵便番号：</p><apex:inputText id="idPostalCode" style="width: 330px;" /></div>
+			<div ><p style="width: 100px;">都道府県：</p><apex:inputText id="idState" style="width: 330px;" /></div>
+			<div ><p style="width: 100px;">市区郡：</p><apex:inputText id="idCity" style="width: 330px;" /></div>
+			<div ><p style="width: 100px;">町名・番地：</p><apex:inputText id="idStreet" style="width: 330px;" /></div>
+		</apex:outputpanel>
+	</apex:form>
+</apex:page>

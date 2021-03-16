@@ -1,0 +1,1 @@
+public class OboKeirDenRenewBat{/*discarded*/}

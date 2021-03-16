@@ -1,0 +1,1385 @@
+<apex:page id="idPage" docType="html-5.0" standardController="Opportunity" extensions="SogiMitsumoriNyuryokuFormCtl" action="{!init}" cache="false" title="葬儀見積入力フォーム" >
+
+	<script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+	<script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+
+	<apex:includeScript value="/support/console/44.0/integration.js" />
+	<style>
+		html body.sfdcBody {
+			background: rgba(176, 196, 223, 1.0);
+			padding: 10px 150px 0 10px;
+			font-size: 90%;
+		}
+
+		span.dateFormat {display: none;}
+
+		.wrapper {
+			resize: both;
+		}
+
+		.container {
+			display: flex;
+		}
+
+		.main {
+		}
+		.section-panel {
+			display: flex;
+			padding: 10px;
+			background-color: #fff;
+			border-radius: 3px;
+		}
+		.item_label_1 {
+			width: 140px;
+			text-align: right;
+			padding-right: 10px;
+			margin-top: 1px;
+			margin-bottom: 1px;
+		}
+		.item_value_1 {
+			width: 120px;
+			margin-top: 1px;
+			margin-bottom: 1px;
+		}
+		.item_value_2 {
+			width: 350px;
+			margin-top: 1px;
+			margin-bottom: 1px;
+		}
+		.clshidArea {
+			position: absolute;
+			padding: 5px;
+			color: #000;
+			border-radius: 10px;
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 5px;
+			background: #FFFFFF;
+			border:1px solid #000;
+			display:none;
+		}
+		.item_suggest {
+			background-color: #ffffff;
+
+		}
+		.item_suggest:hover {
+			background-color: #e3f3ff;
+
+		}
+		.menu_title_label {
+			color: #364e96;
+			font-weight: bold;
+			display: table-cell;
+			vertical-align: middle;
+			height: 20px;
+		}
+		.spread_title {
+		  color: #000000;/*文字色*/
+		  padding: 5px 5px 5px 5px;/*上下の余白*/
+		  font-weight: bold;
+		}
+	</style>
+	<script>
+		
+		 function NoSubmit(e){
+			if(!e) var e = window.event;
+			if(e.keyCode==13){
+				if(e.srcElement.type!='submit' && e.srcElement.type!='textarea'){
+					if(e.srcElement.type!='image'){
+						return false;
+					}
+				}
+			}
+		}
+		
+		beenFocused = true;
+
+		sforce.connection.sessionId='{!GETSESSIONID()}';
+
+		window.sfdcPage.appendToOnloadQueue(
+			function() {
+				if(document.getElementById('idPage:idForm:idNullAccountFlg').value == 'true'){
+					alert('相談者を設定してから見積入力を行ってください');
+					callCloseTab();
+				}
+				if ('{!SaveButtonDisabled}' == 'true') {
+					document.getElementById('SaveButton').style.display = 'none';
+				}
+
+				chkYorisoUPgradeSaidan();
+
+				chkMoshuSodanshaOnaji();
+			}
+		);
+
+		function displayPlanShohin(){
+			var prm01 = document.getElementById('idPage:idForm:idPlanShohin').value;
+			if(prm01.length > 1) {
+				SogiMitsumoriNyuryokuFormCtl.rmtActGetPlanShohin(
+					prm01,
+					function(result, event) {
+						if (result == null || result == '') {
+							document.getElementById('idSogiPlanSuggest').style.display = 'none';
+							return false;
+						}
+						else{
+							var targetElement = document.getElementById('idPage:idForm:idPlanShohin');
+							var clientRect = targetElement.getBoundingClientRect();
+							var x = window.pageXOffset + clientRect.left;
+							var y = window.pageYOffset + clientRect.top + 19;
+
+							var tmp01 = result.length;
+							var div_element = document.createElement("div")
+							var tmpstr = '<div>';
+							if(Number(tmp01) > 0) {
+								for (i=0; i<tmp01;i++) {
+									tmpstr += '<div onclick=\"changePlanItem(\'' + result[i].Name + '\',\'' + result[i].ShohinBango__c + '\');return false;\" onmouseover=\"this.style.backgroundColor=\'#e3f3ff\'\" onMouseOut=\"this.style.backgroundColor=\'#FFFFFF\'\">';
+									tmpstr +=  result[i].Name + ' ';
+									tmpstr += '</div>';
+								}
+							}
+							tmpstr += '</div>';
+							div_element.innerHTML = tmpstr;
+							var parent_obj = document.getElementById('idSogiPlanSuggest');
+							while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+							parent_obj.appendChild(div_element);
+							document.getElementById('idSogiPlanSuggest').style.display = 'block';
+							document.getElementById('idSogiPlanSuggest').style.top = y + 'px';
+							document.getElementById('idSogiPlanSuggest').style.left = x + 'px';
+
+							return false;
+						}
+					},
+					{
+						escape: true
+					}
+				);
+			} else {
+				document.getElementById('idSogiPlanSuggest').style.display = 'none';
+			}
+		}
+
+		function changePlanItem(pPlanItemName, pPlanItemBango) {
+			document.getElementById('idSogiPlanSuggest').style.display = 'none';
+			changePlanItemJs(pPlanItemBango);
+		}
+
+		function displayOptionItemHinmoku(obj){
+
+			var targetElement = document.getElementById(obj.id);
+			var clientRect = targetElement.getBoundingClientRect();
+			var x = window.pageXOffset + clientRect.left;
+			var y = window.pageYOffset + clientRect.top + 19;
+
+			var div_element = document.createElement("div")
+			var tmpstr = '<div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'看板\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">看板</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'料理\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">料理</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'返礼品\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">返礼品</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'ラストメイク\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">ラストメイク</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'メイク＆ドレス(古式湯灌)\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">メイク＆ドレス(古式湯灌)</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'湯かん\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">湯かん</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'枕花\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">枕花</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'棺上花束\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">棺上花束</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'お別れ花\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">お別れ花</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'供花\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">供花</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'遺影写真\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">遺影写真</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'外装設備追加\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">外装設備追加</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'骨壺ランクアップ\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">骨壺ランクアップ</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'棺\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">棺</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'祭壇\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">祭壇</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'エンバーミング\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">エンバーミング</div>';
+			tmpstr += '<div onclick=\"setOptionItemHinmoku(\'その他オプション\',\'' + obj.id + '\');return false;\" class=\"item_suggest\">その他オプション</div>';
+			tmpstr += '</div>';
+			div_element.innerHTML = tmpstr;
+			var parent_obj = document.getElementById('idOptionItemHinmokuSuggest');
+			while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+			parent_obj.appendChild(div_element);
+			document.getElementById('idOptionItemHinmokuSuggest').style.display = 'block';
+			document.getElementById('idOptionItemHinmokuSuggest').style.top = y + 'px';
+			document.getElementById('idOptionItemHinmokuSuggest').style.left = x + 'px';
+		}
+
+		function setOptionItemHinmoku(pOptionItemName, objId) {
+			document.getElementById(objId).value = pOptionItemName;
+			document.getElementById('idOptionItemHinmokuSuggest').style.display = 'none';
+		}
+
+		function delShisetsuSuggest(){
+			setTimeout(delShisetsuSuggestMain, 500);
+		}
+
+		function delShisetsuSuggestMain(){
+			var elements = document.getElementsByClassName('clshidArea');
+			for(i=0;i<elements.length;i++){
+				elements[i].style.display = 'none';
+			}
+		}
+
+		function addStandardItem(val){
+
+			//  issues4273--Start--
+			document.querySelectorAll("div#idSogiOption input").forEach( e => e.disabled = true );
+			//  issues4273--End--
+
+			addStandardItemJs(val);
+		}
+
+		function delStandardItem(val){
+
+			//  issues4273--Start--
+			document.querySelectorAll("div#idSogiOption input").forEach( e => e.disabled = true );
+			//  issues4273--End--
+
+			delStandardItemJs(val);
+		}
+
+		function calcOptionItemPrice(){
+
+			//  issues4273--Start--
+			document.querySelectorAll("div#idSogiOption input").forEach( e => e.disabled = true );
+			//  issues4273--End--
+
+			calcOptionItemPriceJs();
+		}
+
+		//  issues4273--Start--
+		function SogibuttonDisabledKaijo(){
+			document.querySelectorAll("div#idSogiOption input").forEach( e => e.disabled = false );
+		}
+		//  issues4273--End--
+
+		function calcShodanKingakuChange(){
+			calcShodanKingakuJs();
+		}
+
+		function chkMoshuSodanshaOnaji(){
+
+			if(document.getElementById('idPage:idForm:idMoshuSodanshaOnajiChk').checked){
+				document.getElementById('idMoshuJohoDiv').style.display = 'none';
+			}
+			else{
+				document.getElementById('idMoshuJohoDiv').style.display = '';
+			}
+		}
+
+		function chkNebikiKingakuGokei(){
+
+			var mitsumorishoNebikiKingaku = document.getElementById('idPage:idForm:idMitsumorishoKisaiNebikiKingaku').value;
+			if(mitsumorishoNebikiKingaku == null || mitsumorishoNebikiKingaku == '') {
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').innerText = '―';
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').style.color = 'black';
+				return;
+			}
+
+			var sfNebikiKingaku = document.getElementById('idPage:idForm:idSfNebikiKingakuGokei').textContent;
+			
+			var iMitsumorishoNebikiKingaku = mitsumorishoNebikiKingaku.replace(/,/g, "").replace(" ", "");
+			var iSfNebikiKingaku = sfNebikiKingaku.replace(/,/g, "").replace(" ", "");
+
+			if(iSfNebikiKingaku == iMitsumorishoNebikiKingaku){
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').innerText = 'OK';
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').style.color = 'green';
+			}
+			else{
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').innerText = 'NG';
+				document.getElementById('idPage:idForm:idNebikiKingakuCheck').style.color = 'red';
+			}
+		}
+
+		function chkTotalKingakuGokei(){
+
+			var mitsumorishoKingaku = document.getElementById('idPage:idForm:idMitsumorishoKisaiMitsumoriKingaku').value;
+			if(mitsumorishoKingaku == null || mitsumorishoKingaku == '') {
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').innerText = '―';
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').style.color = 'black';
+				return;
+			}
+
+			var sfKingaku = document.getElementById('idPage:idForm:idSfMitsumoriKingaku').textContent;
+			
+			var iMitsumorishoKingaku = mitsumorishoKingaku.replace(/,/g, "").replace(" ", "");
+			var iSfKingaku = sfKingaku.replace(/,/g, "").replace(" ", "");
+
+			if(iSfKingaku == iMitsumorishoKingaku){
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').innerText = 'OK';
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').style.color = 'green';
+			}
+			else{
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').innerText = 'NG';
+				document.getElementById('idPage:idForm:idTotalKingakuCheck').style.color = 'red';
+			}
+		}
+
+		function trySave(){
+			//  issues4217--Start--
+			if(document.getElementById('idPage:idForm:idPhaseValue').value == '決定'){
+				if(document.getElementById('idPage:idForm:idSurveyDiscountAgreeStatus').value == ''){
+					alert("アンケート割同意状況が「なし」では、フェーズを決定にして保存できません。 \n アンケート割同意状況を「なし」以外の値に更新して、保存ボタンを押下してください。");
+					exit;
+				}
+				if(document.getElementById('idPage:idForm:idKiboShiharaiHouhou').value == ''){
+					alert("支払方法を設定してください。");
+					exit;
+				}
+				if(document.getElementById('idPage:idForm:idKiboShiharaiHouhou').value == '未確定'){
+					if(document.getElementById('idPage:idForm:idShiharaiHohoMikakuteiRiyu').value == ''){
+						alert("支払方法未確定理由が未入力のため、フェーズを決定にして保存できません。 \n フェーズを「その他」にして保存してください。 \n また、保存後、商談画面でを支払方法未確定理由を入力をしてください。");
+						exit;
+					}
+				}
+			}
+			//  issues4217--End--
+			showLoadingDialog();
+
+			doSaveJs();
+		}
+
+		function doFinish(){
+			
+			hideLoadingDialog();
+
+			//  issues4228--Start--
+			if(document.getElementById('idPage:idForm:idAlertFlg').value == 'true'){
+				alert(document.getElementById('idPage:idForm:idMsg').value);
+			}
+			//  issues4228--End--
+
+			if(document.getElementById('idPage:idForm:idShoriKekkaFlg').value == 'true'){
+				callCloseTab();
+			}
+		}
+
+		var callback = function () {
+			if (result.error) {
+				alert("Error message is " + result.error);
+			}
+		};
+
+		function callCloseTab() {
+			try{
+				sforce.console.getEnclosingTabId(closeSubtab);
+			}
+			catch(error){
+				console.error(error);
+			}
+		}
+
+		var closeSubtab = function closeSubtab(result) {
+			var tabId = result.id;
+			sforce.console.closeTab(tabId, callback);
+		};
+
+		function sodanshaPostalCodeCheck() {
+		  var val = document.getElementById('idPage:idForm:idSodanshaPostalCode').value;
+		  if (postalCodeCheck(val)) {
+			SogiMitsumoriNyuryokuFormCtl.getJSONByPostCD(
+			  val,
+			  function(result, event) {
+				if (result.message == '') {
+				  document.getElementById('idPage:idForm:idSodanshaState').value = result.address1;
+				  document.getElementById('idPage:idForm:idSodanshaCity').value = result.address2;
+				  document.getElementById('idPage:idForm:idSodanshaStreet').value = result.address3;
+				} else {
+				  alert(result.message);
+				}
+			  }, {
+				escape: true
+			  }
+			);
+		  }
+		}
+
+		function taishoshaPostalCodeCheck() {
+		  var val = document.getElementById('idPage:idForm:idTaishoshaPostalCode').value;
+		  if (postalCodeCheck(val)) {
+			SogiMitsumoriNyuryokuFormCtl.getJSONByPostCD(
+			  val,
+			  function(result, event) {
+				if (result.message == '') {
+				  document.getElementById('idPage:idForm:idTaishoshaState').value = result.address1;
+				  document.getElementById('idPage:idForm:idTaishoshaCity').value = result.address2;
+				  document.getElementById('idPage:idForm:idTaishoshaStreet').value = result.address3;
+				} else {
+				  alert(result.message);
+				}
+			  }, {
+				escape: true
+			  }
+			);
+		  } 
+		}
+
+		function moshuPostalCodeCheck() {
+		  var val = document.getElementById('idPage:idForm:idMoshuPostalCode').value;
+		  if (postalCodeCheck(val)) {
+			SogiMitsumoriNyuryokuFormCtl.getJSONByPostCD(
+			  val,
+			  function(result, event) {
+				if (result.message == '') {
+				  document.getElementById('idPage:idForm:idMoshuState').value = result.address1;
+				  document.getElementById('idPage:idForm:idMoshuCity').value = result.address2;
+				  document.getElementById('idPage:idForm:idMoshuStreet').value = result.address3;
+				} else {
+				  alert(result.message);
+				}
+			  }, {
+				escape: true
+			  }
+			);
+		  } 
+		}
+
+		function postalCodeCheck(val) {
+		  if (val == '' || !val.match(/^\d{3}-?\d{4}$/)) {
+			alert('半角数字 XXX-XXXX か XXXXXXX の形式で入力してください');
+			return false;
+		  }
+		  return true;
+		}
+		
+		function chkSeireki(val){
+			if (!val.match(/^\d{4}\/\d{1,2}\/\d{1,2}$/)) {
+				alert('無効な日付です');
+				return false;
+			}
+
+			return true;
+		}
+
+		//  issues4228--Start--
+		function TaishoAddressCopy() {
+			document.getElementById('idPage:idForm:idTaishoshaPostalCode').value = document.getElementById('idPage:idForm:idSodanshaPostalCode').value;
+			document.getElementById('idPage:idForm:idTaishoshaState').value = document.getElementById('idPage:idForm:idSodanshaState').value;
+			document.getElementById('idPage:idForm:idTaishoshaCity').value = document.getElementById('idPage:idForm:idSodanshaCity').value;
+			document.getElementById('idPage:idForm:idTaishoshaStreet').value = document.getElementById('idPage:idForm:idSodanshaStreet').value;
+		}
+
+		function MoshuAddressCopy() {
+			document.getElementById('idPage:idForm:idMoshuPostalCode').value = document.getElementById('idPage:idForm:idSodanshaPostalCode').value;
+			document.getElementById('idPage:idForm:idMoshuState').value = document.getElementById('idPage:idForm:idSodanshaState').value;
+			document.getElementById('idPage:idForm:idMoshuCity').value = document.getElementById('idPage:idForm:idSodanshaCity').value;
+			document.getElementById('idPage:idForm:idMoshuStreet').value = document.getElementById('idPage:idForm:idSodanshaStreet').value;
+		}
+
+		function chkInteger(val) {
+			if (val != ''){
+				if (!val.match(/^[-]?([1-9]\d*|0)$/)) {
+					alert('半角数字と半角の「-」のみ入力可能です');
+					return false;
+				}
+				return true;
+			}
+			return true;
+		}
+		//  issues4228--End--
+
+		//  issues4156--Start--
+		function changeGMOItem() {
+			changeGMOItemJs();
+		}
+		
+		function changButsuguNashiKibo() {
+			changePlanItemJs(document.getElementById('idPage:idForm:idplanShohinBango').value);
+		}
+
+		function addYorisoItem(val){
+			
+			document.querySelectorAll("div#idYorisoOption input").forEach( e => e.disabled = true );
+			document.querySelectorAll("div#idYorisoOption select").forEach( e => e.disabled = true );
+			addYorisoItemJs(val);
+		}
+
+		function delYorisoItem(val){
+			document.querySelectorAll("div#idYorisoOption input").forEach( e => e.disabled = true );
+			document.querySelectorAll("div#idYorisoOption select").forEach( e => e.disabled = true );
+			delYorisoItemJs(val);
+		}
+
+		function yorisobuttoDisabledKaijo(){
+			document.querySelectorAll("div#idYorisoOption input").forEach( e => e.disabled = false );
+			document.querySelectorAll("div#idYorisoOption select").forEach( e => e.disabled = false );
+		}
+
+		function setRyokinhyoYorisoOption(val,optionName){
+			document.querySelectorAll("div#idYorisoOption input").forEach( e => e.disabled = true );
+			document.querySelectorAll("div#idYorisoOption select").forEach( e => e.disabled = true );
+			setRyokinhyoYorisoOptionJs(val);
+		}
+
+		function calcYorisoPrice(){
+			document.querySelectorAll("div#idYorisoOption input").forEach( e => e.disabled = true );
+			document.querySelectorAll("div#idYorisoOption select").forEach( e => e.disabled = true );
+			calcYorisoPriceJs();
+		}
+
+		function calcSeikyuKingaku(){
+			calcSeikyuKingakuJs();
+		}
+
+		function chkYorisoUPgradeSaidan(){
+			if (document.getElementById('idPage:idForm:idYorisoUPgradeSaidanFlg').value != 'false') {
+				alert('設定された葬儀プランでは利用できないよりそうオプションの「祭壇アップグレード」が設定されています \n よりそうオプションの「祭壇アップグレード」を更新をしてください。');
+			}
+		}
+		//  issues4156--End--
+
+		function handleSearchAddressTermChange(idAddressSuggestTextBox ) {
+			window.clearTimeout(this.delayTimeout);
+			const searchTerm = event.target.value;
+			this.delayTimeout = setTimeout(() => {
+				SearchAddress(idAddressSuggestTextBox);
+			}, 500);
+		}
+
+		function SearchAddress(idAddressSuggestTextBox){
+
+			var idSearchAddress = '';
+			if(idAddressSuggestTextBox == 'idSodanshaSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idSodanshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idTaishoshaSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idTaishoshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idMoshuSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idMoshuSearchAddress';
+			}
+			var prm01 = document.getElementById(idSearchAddress).value;
+			if(prm01.length > 1) {
+				SogiMitsumoriNyuryokuFormCtl.searchAddress(
+					prm01,
+					function(result, event) {
+						if (result == null || result == '') {
+							document.getElementById(idAddressSuggestTextBox).style.display = 'none';
+							return false;
+						}
+						else{
+							var targetElement = document.getElementById(idSearchAddress);
+							var clientRect = targetElement.getBoundingClientRect();
+							var x = window.pageXOffset + clientRect.left;
+							var y = window.pageYOffset + clientRect.top + 19;
+
+							var tmp01 = result.length;
+							var div_element = document.createElement("div")
+							var tmpstr = '<div>';
+							if(Number(tmp01) > 0) {
+								for (i=0; i<tmp01;i++) {
+									tmpstr += '<div onclick=\"changeAddress(\'' + idAddressSuggestTextBox + '\',\'' + result[i].post_code + '\',\'' + result[i].todofuken + '\',\'' + result[i].shikugun + '\',\'' + result[i].tyoumei +'\');return false;\" onmouseover=\"this.style.backgroundColor=\'#e3f3ff\'\" onMouseOut=\"this.style.backgroundColor=\'#FFFFFF\'\">';
+									tmpstr +=  result[i].name + ' ';
+									tmpstr += '</div>';
+								}
+							}
+							tmpstr += '</div>';
+							div_element.innerHTML = tmpstr;
+							var parent_obj = document.getElementById(idAddressSuggestTextBox);
+							while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+							parent_obj.appendChild(div_element);
+							document.getElementById(idAddressSuggestTextBox).style.display = 'block';
+							document.getElementById(idAddressSuggestTextBox).style.top = y + 'px';
+							document.getElementById(idAddressSuggestTextBox).style.left = x + 'px';
+
+							return false;
+						}
+					},
+					{
+						escape: true
+					}
+				);
+			} else {
+				document.getElementById(idAddressSuggestTextBox).style.display = 'none';
+			}
+		}
+
+		function changeAddress(idAddressSuggestTextBox,PostalCode, State,City,Street) {
+			var idPostalCode = '';
+			var idState = '';
+			var idCity = '';
+			var idStreet = '';
+			var idSearchAddress = '';
+			if(idAddressSuggestTextBox == 'idSodanshaSearchAddressSuggest'){
+				idPostalCode = 'idPage:idForm:idSodanshaPostalCode';
+				idState = 'idPage:idForm:idSodanshaState';
+				idCity = 'idPage:idForm:idSodanshaCity';
+				idStreet = 'idPage:idForm:idSodanshaStreet';
+				idSearchAddress = 'idPage:idForm:idSodanshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idTaishoshaSearchAddressSuggest'){
+				idPostalCode = 'idPage:idForm:idTaishoshaPostalCode';
+				idState = 'idPage:idForm:idTaishoshaState';
+				idCity = 'idPage:idForm:idTaishoshaCity';
+				idStreet = 'idPage:idForm:idTaishoshaStreet';
+				idSearchAddress = 'idPage:idForm:idTaishoshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idMoshuSearchAddressSuggest'){
+				idPostalCode = 'idPage:idForm:idMoshuPostalCode';
+				idState = 'idPage:idForm:idMoshuState';
+				idCity = 'idPage:idForm:idMoshuCity';
+				idStreet = 'idPage:idForm:idMoshuStreet';
+				idSearchAddress = 'idPage:idForm:idMoshuSearchAddress';
+			}
+
+			document.getElementById(idAddressSuggestTextBox).style.display = 'none';
+			document.getElementById(idPostalCode).value = PostalCode;
+			document.getElementById(idState).value = State;
+			document.getElementById(idCity).value = City;
+			document.getElementById(idStreet).value = Street;
+			document.getElementById(idSearchAddress).value = '';
+		}
+
+		function delsearchAddressSuggest(idAddressSuggestTextBox){
+			this.delayTimeout = setTimeout(() => {
+				delsearchAddressSuggestMain(idAddressSuggestTextBox);
+			}, 500);
+		}
+
+		function delsearchAddressSuggestMain(idAddressSuggestTextBox){
+			var elements = document.getElementsByClassName('clshidArea');
+			for(i=0;i<elements.length;i++){
+				elements[i].style.display = 'none';
+			}
+			var idSearchAddress = '';
+			if(idAddressSuggestTextBox == 'idSodanshaSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idSodanshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idTaishoshaSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idTaishoshaSearchAddress';
+			}else if(idAddressSuggestTextBox == 'idMoshuSearchAddressSuggest'){
+				idSearchAddress = 'idPage:idForm:idMoshuSearchAddress';
+			}
+			document.getElementById(idSearchAddress).value = '';
+		}
+
+	</script>
+	<c:loadingDialog title="Getting Contacts" />
+	<apex:form id="idForm" html-autocomplete="off" onkeydown="return NoSubmit(event);">
+
+		<!-- issues4156 Start -->
+		<apex:actionFunction name="addStandardItemJs" action="{!addStandardItem}" reRender="idOptionItemPanel,idSfMitsumoriKingaku,idsfSagaku" oncomplete="SogibuttonDisabledKaijo();" >
+			<apex:param assignTo="{!ojbAddIndex}" name="ojbAddIndex" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="delStandardItemJs" action="{!delStandardItem}" reRender="idOptionItemPanel,idSfMitsumoriKingaku,idsfSagaku" oncomplete="SogibuttonDisabledKaijo();">
+			<apex:param assignTo="{!ojbDelIndex}" name="ojbDelIndex" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="calcOptionItemPriceJs" action="{!calcOptionItemPrice}" reRender="idOptionItemPanel" oncomplete="calcShodanKingakuChange();SogibuttonDisabledKaijo();" />
+
+		<apex:actionFunction name="calcShodanKingakuJs" action="{!calcShodanKingaku}" reRender="idSfMitsumoriKingaku,idsfSagaku" oncomplete="" />
+
+		<apex:actionFunction name="changePlanItemJs" action="{!changePlanItem}" reRender="idSogiPlanOptionPanel,idNebikiPanel,idSfMitsumoriKingaku,idplanShohinBango,idYorisoUPgradeSaidanFlg,idsfSagaku" oncomplete="chkYorisoUPgradeSaidan();">
+			<apex:param assignTo="{!planItemBango}" name="planItemBango" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="changeGMOItemJs" action="{!addGMOTesuryo}" reRender="idGMOItemPanel,idSfMitsumoriKingaku,idsfSagaku" />
+
+		<apex:actionFunction name="addYorisoItemJs" action="{!addYorisoItem}" reRender="idYorisoItemPanel,idSfMitsumoriKingaku,idsfSagaku" oncomplete="yorisobuttoDisabledKaijo();" >
+			<apex:param assignTo="{!ojbAddIndex}" name="ojbAddIndex" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="delYorisoItemJs" action="{!delYorisoItem}" reRender="idYorisoItemPanel,idSfMitsumoriKingaku,idsfSagaku" oncomplete="yorisobuttoDisabledKaijo();" >
+			<apex:param assignTo="{!ojbDelIndex}" name="ojbDelIndex" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="setRyokinhyoYorisoOptionJs" action="{!setRyokinhyoYorisoOption}" reRender="idYorisoItemPanel,idSfMitsumoriKingaku,idYorisoUPgradeSaidanFlg,idsfSagaku" oncomplete="chkYorisoUPgradeSaidan();yorisobuttoDisabledKaijo();" >
+			<apex:param assignTo="{!ojbIndex}" name="ojbIndex" value="" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="calcYorisoPriceJs" action="{!calcYorisoItemPrice}" reRender="idYorisoItemPanel" oncomplete="calcShodanKingakuChange();yorisobuttoDisabledKaijo();" />
+
+		<apex:actionFunction name="calcSeikyuKingakuJs" action="{!calcSeikyuKingaku}" reRender="idsfSeikyuKingaku,idsfSagaku" />
+		<!-- issues4156 End -->
+
+		<apex:actionFunction name="doSaveJs" action="{!doSave}" reRender="idForm" oncomplete="doFinish();" />
+
+		<apex:inputHidden id="idNullAccountFlg" value="{!nullAccountFlg}"/>
+		<apex:inputHidden id="idShoriKekkaFlg" value="{!shoriKekkaFlg}"/>
+		<apex:inputhidden value="{!alertFlg}" id="idAlertFlg" />
+		<apex:inputhidden value="{!msg}" id="idMsg" />
+		<!-- issues4156 Start -->
+		<apex:inputhidden value="{!planItemWrap.planShohinBango}" id="idplanShohinBango" />
+		<apex:inputhidden value="{!planItemWrap.YorisoUPgradeSaidanFlg}" id="idYorisoUPgradeSaidanFlg" />
+		<!-- issues4156 End -->
+		<div class="wrapper">
+			<div class="container">
+				<div class="main">
+					<div><apex:pageMessages id="idPageMessagesTop"/></div>
+					<div style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;">
+						<div>
+							<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;">
+								<apex:outputpanel id="idKihonJohoPanel" style="width: 100%;">
+									<div style="display: flex;">
+										<div class="menu_title_label">【基本情報】</div>
+										<apex:outputText value="手数料計算が終了したため、見積入力フォームでは保存処理ができません。" style="color:red" rendered="{!IF(SaveButtonDisabled,true,false)}"/>
+									</div>
+									<div style="display: flex;margin-top: 10px;">
+									<!-- issues4217 Start -->
+										<table>
+											<tr>
+												<th style="font-weight: normal;"><div class="item_label_1">ID</div></th><td><div class="item_value_1"><apex:outputField value="{!opportunityWrap.opportunity.ShodanBangoF__c}" /></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">対応葬儀社</div></th><td><div><apex:outputField value="{!opportunityWrap.opportunity.SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.Name}" /></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">葬儀社側担当者名</div></th><td><div><apex:inputField value="{!opportunityWrap.simpleYasugo.SogishagawaTantoshamei__c}" /></div></td>
+											</tr>
+											<tr>
+												<th style="font-weight: normal;"><div class="item_label_1">葬儀社追加営業NG</div></th><td><div class="item_value_1"><apex:outputField value="{!opportunityWrap.simpleYasugo.SogishaTsuikaEigyoNg__c}" /></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">請求書発送サイクル</div></th><td><div><apex:outputField value="{!opportunityWrap.Keiyaku.SeikyushoHassoCycle__c}" /></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">入金締切条件</div></th><td><div><apex:outputField value="{!opportunityWrap.Keiyaku.NyukinSimekiriJouken__c}" /></div></td>
+											</tr>
+											<tr>
+												<th style="font-weight: normal;"><div class="item_label_1"></div></th><td><div class="item_value_1"></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">手数料プラン</div></th><td><div><apex:outputField value="{!opportunityWrap.TesuryoTekiyo.TesuryoPlanRef__r.name}" /></div></td>
+											</tr>
+											<tr>
+												<th style="font-weight: normal;"><div class="item_label_1"></div></th><td><div class="item_value_1"></div></td>
+												<th style="font-weight: normal;"><div class="item_label_1">請求可能手数料</div></th><td><div><apex:outputText value="{!opportunityWrap.seikyukanotesueyo}" /></div></td>
+											</tr>
+											<tr>
+											</tr>
+										</table>
+										<div class="item_label_1">見積・請求書注意点</div><div style="height: 100px;width: 25%;overflow:auto;" ><apex:outputField value="{!opportunityWrap.Keiyaku.MitsumoriSeikyuChui__c}" /></div>
+									</div>
+									<!-- issues4217 End -->
+								</apex:outputpanel>
+							</div>
+							<!-- issues4228 Start -->
+							<div><br /></div>
+							<div style="height: 520px;overflow: auto;width: 101%;" >
+							<!-- issues4228 End -->
+							<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex; justify-content: space-between;margin-top: 10px;">
+								<apex:outputpanel id="idJuryobiJohoPanel" style="width: 100%;">
+									<div style="display: flex;">
+										<div class="menu_title_label">【受領日情報】</div><div style="padding-left:10px;"><apex:outputLabel value="追加営業NGのため、追加オプションがある場合は引継ぎをしてください" style="color:red; display:{!IF(opportunityWrap.simpleYasugo.SogishaTsuikaEigyoNg__c,'','none')};"/></div>
+									</div>
+									<div style="display: flex;margin-top: 10px;">
+										<!-- issues4228 Start -->
+										<div class="item_label_1">見積書</div><div class="item_value_1" style="width: 140px;" ><apex:input type="date" value="{!opportunityWrap.MitsumorijuryoDay}" style="width:130px; height: 16px;" /></div>
+										<div class="item_label_1">僧侶手配書</div><div class="item_value_1"  style="width: 140px;" ><apex:input type="date" value="{!opportunityWrap.SoryoTehaiIraishoJuryobi}" style="width:130px; height: 16px;" /></div>
+										<div class="item_label_1">請求書</div><div class="item_value_1" style="width: 140px;" ><apex:input type="date" value="{!opportunityWrap.SeikyushojuryoDay}" style="width:130px; height: 16px;" /></div>
+										<!-- issues4228 End -->
+									</div>
+								</apex:outputpanel>
+							</div>
+							<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex; justify-content: space-between;margin-top: 10px;">
+								<apex:outputpanel id="idPhasePanel" style="width: 100%;">
+									<div style="display: flex;">
+										<div class="menu_title_label">【フェーズ】</div>
+									</div>
+									<div style="display: flex;margin-top: 10px;">
+										<div class="item_label_1">フェーズ</div><div class="item_value_1" style="width: 100px;">
+											<!-- issues4217 Start -->
+											<apex:selectList value="{!pahseWrap.phaseValue}" size="1" id="idPhaseValue">
+											<!-- issues4217 End -->
+												<apex:selectOptions value="{!pahseWrap.phaseOptions}" />
+												<apex:actionSupport event="onchange" reRender="idSubPhaseValue"/>
+											</apex:selectList></div>
+										<div class="item_label_1" style="width:120px;">サブフェーズ</div><div class="item_value_1" style="width: 200px;">
+											<apex:selectList value="{!pahseWrap.subPhaseValue}" size="1" id="idSubPhaseValue">
+												<apex:selectOptions value="{!pahseWrap.subPhaseOptions}" />
+											</apex:selectList></div>
+										<div class="item_label_1" style="width:160px;">アンケート割同意状況</div>
+										<div ><apex:inputField id="idSurveyDiscountAgreeStatus" value="{!opportunityWrap.opportunity.SurveyDiscountAgreeStatus__c}"/></div>
+									</div>
+								</apex:outputpanel>
+							</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idSodanshaJohoPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【相談者情報】</div>
+										</div>
+										<div style="display: flex;margin-top: 10px;">
+											<div class="item_label_1">姓(カナ)</div><div class="item_value_1"><apex:inputField value="{!sodanshaWrap.sodansha.LastNameFurigana__pc}" style="width: 95px;"/></div>
+											<div class="item_label_1">名(カナ)</div><div class="item_value_1"><apex:inputField value="{!sodanshaWrap.sodansha.FirstNameFurigana__pc}" style="width: 95px;" /></div>
+											<div class="item_label_1">生年月日(和暦)</div><div class="item_value_1" style="width:210px;">
+												<apex:actionFunction name="setSodanshaSeinengappiJs" action="{!sodanshaWrap.setSeinengappiSeirekiNenTsukiHi}" rerender="idSodanshaSeinengappiSeireki" />
+												<apex:selectList value="{!sodanshaWrap.nengoValue}" size="1" id="idSodanshaNengoValue" onchange="setSodanshaSeinengappiJs();" style="margin: 0 5px 0 0;height: 18px;">
+													<apex:selectOptions value="{!nengoPickList}" /> </apex:selectList>
+												<apex:input value="{!sodanshaWrap.warekiNen}" id="idSodanshaWarekiNen" onchange="setSodanshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;年&nbsp;
+												<apex:input value="{!sodanshaWrap.warekiTsuki}" id="idSodanshaWarekiTsuki" onchange="setSodanshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;月&nbsp;
+												<apex:input value="{!sodanshaWrap.warekiHi}" id="idSodanshaWarekiHi" onchange="setSodanshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;日&nbsp;
+											</div>
+											<div style="padding-top: 2px;">(西暦)</div>
+											<!-- issues4228 Start -->
+											<div style="padding-top: 4px;padding-left: 2px;width: 140px;">
+												<apex:actionFunction name="setSodanshaSeinengappiWarekiJs" action="{!sodanshaWrap.setSeinengappiWarekiNenTsukiHi}" rerender="idSodanshaNengoValue,idSodanshaWarekiNen,idSodanshaWarekiTsuki,idSodanshaWarekiHi" />
+												<apex:inputField id="idSodanshaSeinengappiSeireki" value="{!sodanshaWrap.sodansha.PersonBirthdate}" onchange="if(chkSeireki(this.value)){setSodanshaSeinengappiWarekiJs();}" style="width:127px; height: 16px;" />
+											</div>
+											<!-- issues4228 End -->
+											<div class="item_label_1">性別</div><div class="item_value_1"><apex:inputField value="{!sodanshaWrap.sodansha.Gender__pc}" /></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">姓(漢字)</div><div class="item_value_1"><apex:inputText value="{!sodanshaWrap.sodanshaLastName}" style="width: 95px;" /></div>
+											<div class="item_label_1">名(漢字)</div><div class="item_value_1"><apex:inputText value="{!sodanshaWrap.sodanshaFirstName}" style="width: 95px;" /></div>
+											<div class="item_label_1">没年月日(和暦)</div><div class="item_value_1" style="width:210px;">
+												<apex:actionFunction name="setSodanshaBotsunengappiJs" action="{!sodanshaWrap.setBotsunengappiSeirekiNenTsukiHi}" rerender="idSodanshaBotsunengappiSeireki" />
+												<apex:selectList value="{!sodanshaWrap.botsunenNengoValue}" size="1" id="idSodanshabotsunenNengoValue" onchange="setSodanshaBotsunengappiJs();" style="margin: 0 5px 0 0;height: 18px;">
+													<apex:selectOptions value="{!nengoPickList}" /> </apex:selectList>
+												<apex:input value="{!sodanshaWrap.botsunenWarekiNen}" id="idSodanshaBotsunenWarekiNen" onchange="setSodanshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;年&nbsp;
+												<apex:input value="{!sodanshaWrap.botsunenWarekiTsuki}" id="idSodanshaBotsunenWarekiTsuki" onchange="setSodanshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;月&nbsp;
+												<apex:input value="{!sodanshaWrap.botsunenWarekiHi}" id="idSodanshaBotsunenWarekiHi" onchange="setSodanshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;日&nbsp;
+											</div>
+											<div style="padding-top: 2px;">(西暦)</div>
+											<!-- issues4228 Start -->
+											<div style="padding-top: 4px;padding-left: 2px;width: 140px;">
+												<apex:actionFunction name="setSodanshaBotsunengappiWarekiJs" action="{!sodanshaWrap.setBotsunengappiWarekiNenTsukiHi}" rerender="idSodanshabotsunenNengoValue,idSodanshaBotsunenWarekiNen,idSodanshaBotsunenWarekiTsuki,idSodanshaBotsunenWarekiHi" />
+												<apex:input type="date" id="idSodanshaBotsunengappiSeireki" value="{!sodanshaWrap.sodanshaDeathDate}" onchange="{setSodanshaBotsunengappiWarekiJs();}" style="width:130px; height: 16px;" />
+											</div>
+											<!-- issues4228 End -->
+											<div class="item_label_1">続柄</div><div><apex:inputField value="{!opportunityWrap.simpleYasugo.ZokugaraTaishoshaKaramitaSodansha__c}" /></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">住所検索</div><div class="item_value_1" style="width: 110px;"><apex:inputText id="idSodanshaSearchAddress" onkeydown="handleSearchAddressTermChange('idSodanshaSearchAddressSuggest');" onblur="delsearchAddressSuggest('idSodanshaSearchAddressSuggest');" style="width: 330px;" /></div>
+											<div id="idSodanshaSearchAddressSuggest" class="clshidArea"></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">郵便番号</div><div class="item_value_1" style="width: 110px;"><apex:inputField id="idSodanshaPostalCode" value="{!sodanshaWrap.sodansha.BillingPostalCode}" style="width: 95px;" type="tel" /></div>
+											<div><apex:commandButton onclick="sodanshaPostalCodeCheck();" id="idSodanshaPostalCodeSerchBtn" value="検索" rerender="dummy" style="width:35px;height: 19px;padding: 1px;" />
+											</div>
+											<div class="item_label_1" style="width:73px;">都道府県</div><div class="item_value_1"><apex:inputField id="idSodanshaState" value="{!sodanshaWrap.sodansha.BillingState}" style="width: 95px;" /></div>
+											<div class="item_label_1" style="width:877px; padding-left: 10px">※対象者(故人)からみた相談者</div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">市区郡</div><div class="item_value_2"><apex:inputField id="idSodanshaCity" value="{!sodanshaWrap.sodansha.BillingCity}" style="width: 324px;" /></div>
+											<div class="item_label_1">町名・番地</div><div class="item_value_2"><apex:inputText id="idSodanshaStreet" value="{!sodanshaWrap.sodansha.BillingStreet}" style="width: 330px;" /></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">電話1</div><div class="item_value_1"><apex:inputField value="{!sodanshaWrap.sodansha.Phone}" style="width: 95px;" type="tel" /></div>
+											<div class="item_label_1">携帯1</div><div class="item_value_1"><apex:inputField value="{!sodanshaWrap.sodansha.MobilePhone__c}" style="width: 95px;" type="tel" /></div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idTaishoshaJohoPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【対象者情報】</div>
+										</div>
+										<div id="idTaishoshaJohoDiv">
+											<div style="display: flex;">
+												<div class="item_label_1">姓(カナ)</div><div class="item_value_1"><apex:inputField value="{!taishoshaWrap.taishosha.LastNameFurigana__pc}" style="width: 95px;" /></div>
+												<div class="item_label_1">名(カナ)</div><div class="item_value_1"><apex:inputField value="{!taishoshaWrap.taishosha.FirstNameFurigana__pc}" style="width: 95px;" /></div>
+												<div class="item_label_1">生年月日(和暦)</div><div class="item_value_1" style="width:210px;">
+													<apex:actionFunction name="setTaishoshaSeinengappiJs" action="{!taishoshaWrap.setSeinengappiSeirekiNenTsukiHi}" rerender="idTaishoshaSeinengappiSeireki" />
+													<apex:selectList value="{!taishoshaWrap.nengoValue}" size="1" id="idTaishoshaNengoValue" onchange="setTaishoshaSeinengappiJs();" style="margin: 0 5px 0 0;height: 18px;">
+														<apex:selectOptions value="{!nengoPickList}" /> </apex:selectList>
+													<apex:input value="{!taishoshaWrap.warekiNen}" id="idTaishoshaWarekiNen" onchange="setTaishoshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;年&nbsp;
+													<apex:input value="{!taishoshaWrap.warekiTsuki}" id="idTaishoshaWarekiTsuki" onchange="setTaishoshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;月&nbsp;
+													<apex:input value="{!taishoshaWrap.warekiHi}" id="idTaishoshaWarekiHi" onchange="setTaishoshaSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;日&nbsp;
+												</div>
+												<div style="padding-top: 2px;">(西暦)</div>
+												<!-- issues4228 Start -->
+												<div style="padding-top: 4px;padding-left: 2px;width: 140px;">
+													<apex:actionFunction name="setTaishoshaSeinengappiWarekiJs" action="{!taishoshaWrap.setSeinengappiWarekiNenTsukiHi}" rerender="idTaishoshaNengoValue,idTaishoshaWarekiNen,idTaishoshaWarekiTsuki,idTaishoshaWarekiHi" />
+													<apex:inputField id="idTaishoshaSeinengappiSeireki" value="{!taishoshaWrap.taishosha.PersonBirthdate}" onchange="if(chkSeireki(this.value)){setTaishoshaSeinengappiWarekiJs();}" style="width:127px; height: 16px;" />
+												</div>
+												<!-- issues4228 End -->
+												<div class="item_label_1">性別</div><div class="item_value_1"><apex:inputField value="{!taishoshaWrap.taishosha.Gender__pc}" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">姓(漢字)</div><div class="item_value_1"><apex:inputText value="{!taishoshaWrap.taishoshaLastName}" style="width: 95px;" /></div>
+												<div class="item_label_1">名(漢字)</div><div class="item_value_1"><apex:inputText value="{!taishoshaWrap.taishoshaFirstName}" style="width: 95px;" /></div>
+												<div class="item_label_1">没年月日(和暦)</div><div class="item_value_1" style="width:210px;">
+													<apex:actionFunction name="setTaishoshaBotsunengappiJs" action="{!taishoshaWrap.setBotsunengappiSeirekiNenTsukiHi}" rerender="idTaishoshaBotsunengappiSeireki" />
+													<apex:selectList value="{!taishoshaWrap.botsunenNengoValue}" size="1" id="idTaishoshabotsunenNengoValue" onchange="setTaishoshaBotsunengappiJs();" style="margin: 0 5px 0 0;height: 18px;">
+														<apex:selectOptions value="{!nengoPickList}" /> </apex:selectList>
+													<apex:input value="{!taishoshaWrap.botsunenWarekiNen}" id="idTaishoshaBotsunenWarekiNen" onchange="setTaishoshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;年&nbsp;
+													<apex:input value="{!taishoshaWrap.botsunenWarekiTsuki}" id="idTaishoshaBotsunenWarekiTsuki" onchange="setTaishoshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;月&nbsp;
+													<apex:input value="{!taishoshaWrap.botsunenWarekiHi}" id="idTaishoshaBotsunenWarekiHi" onchange="setTaishoshaBotsunengappiJs();" style="width:20px" type="tel"/>&nbsp;日&nbsp;
+												</div>
+												<div style="padding-top: 2px;">(西暦)</div>
+												<!-- issues4228 Start -->
+												<div style="padding-top: 4px;padding-left: 2px;width: 140px;">
+													<apex:actionFunction name="setTaishoshaBotsunengappiWarekiJs" action="{!taishoshaWrap.setBotsunengappiWarekiNenTsukiHi}" rerender="idTaishoshabotsunenNengoValue,idTaishoshaBotsunenWarekiNen,idTaishoshaBotsunenWarekiTsuki,idTaishoshaBotsunenWarekiHi" />
+													<apex:input type="date" id="idTaishoshaBotsunengappiSeireki" value="{!taishoshaWrap.taishoshaDeathDate}" onchange="{setTaishoshaBotsunengappiWarekiJs();}" style="width:130px; height: 16px;" />
+												</div>
+												<!-- issues4228 End -->
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">住所検索</div><div class="item_value_1" style="width: 110px;"><apex:inputText id="idTaishoshaSearchAddress" onkeydown="handleSearchAddressTermChange('idTaishoshaSearchAddressSuggest');" onblur="delsearchAddressSuggest('idTaishoshaSearchAddressSuggest');" style="width: 330px;" /></div>
+												<div id="idTaishoshaSearchAddressSuggest" class="clshidArea"></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">郵便番号</div><div class="item_value_1" style="width: 110px;"><apex:inputField id="idTaishoshaPostalCode" value="{!taishoshaWrap.taishosha.BillingPostalCode}" style="width: 95px;" type="tel" /></div>
+												<div><apex:commandButton onclick="taishoshaPostalCodeCheck();" id="idTaishoshaPostalCodeSerchBtn" value="検索" rerender="dummy" style="width:35px;height: 19px;padding: 1px;" /></div>
+												<!-- issues4228 Start -->
+												<div style="width:100px;"></div><div><apex:commandButton onclick="TaishoAddressCopy();" id="idTaishoAddressCopyBtn" value="相談者住所コピー" rerender="dummy" style="width:120px;height: 19px;padding: 1px;" /></div>
+												<!-- issues4228 End -->
+											</div>
+											<div style="display: flex;">
+												<!-- issues4228 Start -->
+												<div class="item_label_1">都道府県</div><div class="item_value_1"><apex:inputField id="idTaishoshaState" value="{!taishoshaWrap.taishosha.BillingState}" style="width: 95px;" /></div>
+												<!-- issues4228 End -->
+												<div class="item_label_1">市区郡</div><div class="item_value_2"><apex:inputField id="idTaishoshaCity" value="{!taishoshaWrap.taishosha.BillingCity}" style="width: 324px;" /></div>
+												<div class="item_label_1">町名・番地</div><div class="item_value_2"><apex:inputText id="idTaishoshaStreet" value="{!taishoshaWrap.taishosha.BillingStreet}" style="width: 330px;" /></div>
+											</div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idMoshuJohoPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【喪主情報】</div>
+										</div>
+										<div style="display: flex;margin-top: 10px;">
+											<div class="item_label_1">相談者と同じ</div><div class="item_value_1"><apex:inputcheckbox value="{!moshuWrap.sodanshaOnajiFlg}" onclick="chkMoshuSodanshaOnaji();" id="idMoshuSodanshaOnajiChk" /></div>
+										</div>
+										<div id="idMoshuJohoDiv">
+											<div style="display: flex;">
+												<div class="item_label_1">姓(カナ)</div><div class="item_value_1"><apex:inputField value="{!moshuWrap.moshu.LastNameFurigana__pc}" style="width: 95px;" /></div>
+												<div class="item_label_1">名(カナ)</div><div class="item_value_1"><apex:inputField value="{!moshuWrap.moshu.FirstNameFurigana__pc}" style="width: 95px;" /></div>
+												<div class="item_label_1">生年月日(和暦)</div><div class="item_value_1" style="width:210px;">
+													<apex:actionFunction name="setMoshuSeinengappiJs" action="{!moshuWrap.setSeinengappiSeirekiNenTsukiHi}" rerender="idMoshuSeinengappiSeireki" />
+													<apex:selectList value="{!moshuWrap.nengoValue}" size="1" id="idMoshuNengoValue" onchange="setMoshuSeinengappiJs();" style="margin: 0 5px 0 0;height: 18px;">
+														<apex:selectOptions value="{!nengoPickList}" /> </apex:selectList>
+													<apex:input value="{!moshuWrap.warekiNen}" id="idMoshuWarekiNen" onchange="setMoshuSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;年&nbsp;
+													<apex:input value="{!moshuWrap.warekiTsuki}" id="idMoshuWarekiTsuki" onchange="setMoshuSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;月&nbsp;
+													<apex:input value="{!moshuWrap.warekiHi}" id="idMoshuWarekiHi" onchange="setMoshuSeinengappiJs();" style="width:20px" type="tel"/>&nbsp;日&nbsp;
+												</div>
+												<div style="padding-top: 2px;">(西暦)</div>
+												<!-- issues4228 Start -->
+												<div style="padding-top: 4px;padding-left: 2px;width: 140px;">
+													<apex:actionFunction name="setMoshuSeinengappiWarekiJs" action="{!moshuWrap.setSeinengappiWarekiNenTsukiHi}" rerender="idMoshuNengoValue,idMoshuWarekiNen,idMoshuWarekiTsuki,idMoshuWarekiHi" />
+													<apex:inputField id="idMoshuSeinengappiSeireki" value="{!moshuWrap.moshu.PersonBirthdate}" onchange="if(chkSeireki(this.value)){setMoshuSeinengappiWarekiJs();}" style="width:127px; height: 16px;" />
+												</div>
+												<!-- issues4228 End -->
+												<div class="item_label_1">性別</div><div class="item_value_1"><apex:inputField value="{!moshuWrap.moshu.Gender__pc}" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">姓(漢字)</div><div class="item_value_1"><apex:inputText value="{!moshuWrap.moshuLastName}" style="width: 95px;" /></div>
+												<div class="item_label_1">名(漢字)</div><div class="item_value_1"><apex:inputText value="{!moshuWrap.moshuFirstName}" style="width: 95px;" /></div>
+												<div class="item_label_1" style="width: 680px;">続柄</div><div><apex:inputField value="{!opportunityWrap.simpleYasugo.ZokugaraMoshuNitottenoTaishosha__c}" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">住所検索</div><div class="item_value_1" style="width: 110px;"><apex:inputText id="idMoshuSearchAddress" onkeydown="handleSearchAddressTermChange('idMoshuSearchAddressSuggest');" onblur="delsearchAddressSuggest('idMoshuSearchAddressSuggest');" style="width: 330px;" /></div>
+												<div id="idMoshuSearchAddressSuggest" class="clshidArea"></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">郵便番号</div><div class="item_value_1" style="width: 110px;"><apex:inputField id="idMoshuPostalCode" value="{!moshuWrap.moshu.BillingPostalCode}" style="width: 95px;" type="tel" /></div>
+												<div><apex:commandButton onclick="moshuPostalCodeCheck();" id="idMoshuPostalCodeSerchBtn" value="検索" rerender="dummy" style="width:35px;height: 19px;padding: 1px;" /></div>
+												<!-- issues4228 Start -->
+												<div style="width:100px;"></div><div><apex:commandButton onclick="MoshuAddressCopy();" id="idMoshuAddressCopyBtn" value="相談者住所コピー" rerender="dummy" style="width:120px;height: 19px;padding: 1px;" /></div>
+												<div class="item_label_1" style="width:806px; padding-left: 10px">※喪主からみた対象者</div>
+												<!-- issues4228 End -->
+											</div>
+											<div style="display: flex;">
+												<!-- issues4228 Start -->
+												<div class="item_label_1">都道府県</div><div class="item_value_1"><apex:inputField id="idMoshuState" value="{!moshuWrap.moshu.BillingState}" style="width: 95px;" /></div>
+												<!-- issues4228 End -->
+												<div class="item_label_1">市区郡</div><div class="item_value_2"><apex:inputField id="idMoshuCity" value="{!moshuWrap.moshu.BillingCity}" style="width: 324px;" /></div>
+												<div class="item_label_1">町名・番地</div><div class="item_value_2"><apex:inputText id="idMoshuStreet" value="{!moshuWrap.moshu.BillingStreet}" style="width: 330px;" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1">電話1</div><div class="item_value_1"><apex:inputField value="{!moshuWrap.moshu.Phone}" style="width: 95px;" type="tel" /></div>
+												<div class="item_label_1">携帯1</div><div class="item_value_1"><apex:inputField value="{!moshuWrap.moshu.MobilePhone__c}" style="width: 95px;" type="tel" /></div>
+											</div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idSekoJohoPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【施行情報】</div>
+										</div>
+										<div style="display: flex;margin-top: 10px;">
+											<div class="item_label_1">通夜日時</div>
+											<div style="display: flex;">
+												<!-- issues4228 Start -->
+												<div class="item_value_1" style="width: 200px;"><apex:input type="datetime-local" id="idTsuyaYMD2" value="{!opportunityWrap.tsuyaYMD}" style="width:180px; height: 16px;" /></div>
+												<!-- issues4228 End -->
+											</div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">告別式日時</div>
+											<div style="display: flex;">
+												<!-- issues4228 Start -->
+												<div class="item_value_1" style="width: 200px;"><apex:input type="datetime-local" id="idKokubetsushikiYMD" value="{!opportunityWrap.kokubetsushikiYMD}" style="width:180px; height: 17px;" /></div>
+												<!-- issues4228 End -->
+											</div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">火葬日時</div>
+											<div style="display: flex;">
+												<!-- issues4228 Start -->
+												<div class="item_value_1" style="width: 200px;"><apex:input type="datetime-local" id="idKasoYMD" value="{!opportunityWrap.kasoYMD}" style="width:180px; height: 16px;" /></div>
+												<!-- issues4228 End -->
+											</div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">式場</div><div class="item_value_2"><apex:inputField value="{!opportunityWrap.simpleYasugo.SaijoRef__c}" style="width: 314px;" /></div>
+											<div class="item_label_1">その他式場</div><div class="item_value_2"><apex:inputField value="{!opportunityWrap.simpleYasugo.SonotaSaijoShisetsu__c}" style="width: 330px;" /></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">火葬場</div><div class="item_value_2"><apex:inputField value="{!opportunityWrap.simpleYasugo.KasobaShisetsu__c}" style="width: 314px;" /></div>
+											<div class="item_label_1">その他火葬場</div><div class="item_value_2"><apex:inputField value="{!opportunityWrap.simpleYasugo.SonotaKasobaShisetsu__c}" style="width: 330px;" /></div>
+										</div>
+										<div style="display: flex;">
+											<div class="item_label_1">僧侶手配</div><div class="item_value_1"><apex:inputField value="{!opportunityWrap.simpleYasugo.MonkArrangements__c}" /></div>
+											<div class="item_label_1">戒名授与</div><div class="item_value_1"><apex:inputField value="{!opportunityWrap.simpleYasugo.Kaimyojuyo__c}" /></div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idSogiPlanOptionPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【葬儀プラン ＆ オプション】</div>
+										</div>
+										<div style="display:flex; margin-top: 10px;">
+											<div class="item_label_1">葬儀プラン</div>
+											<div style="display: flex;">
+												<div><apex:inputText id="idPlanShohin" value="{!planItemWrap.planShohinName}" onkeydown="displayPlanShohin();" onblur="delShisetsuSuggest();" style="width: 314px;" /></div>
+												<div style="width: 307px; text-align: right;padding-right: 10px;">葬儀プラン金額</div>
+												<div style="width: 60px;text-align: right;">
+													<apex:outputtext value="{0, number, ###,###}" id="idPlanItemKingaku">
+														<apex:param value="{!planItemWrap.planShohinKingaku}"></apex:param>
+													</apex:outputtext>
+												</div>
+											</div>
+											<div id="idSogiPlanSuggest" class="clshidArea"></div>
+										</div>
+										<!-- issues4156 Start -->
+										<div style="display:flex; margin-top: 10px;">
+											<apex:outputPanel id="idButsuguNashiKibo" >
+												<div><hr /></div>
+												<div style="display: flex;">
+													<div class="item_label_1">仏具有無</div><apex:inputField value="{!opportunityWrap.simpleYasugo.ButsuguNashiKibo__c}" onchange="changButsuguNashiKibo();" />
+													<div style="width: 618px;"></div>
+												</div>
+											</apex:outputPanel>
+										</div>
+										<div style="display:flex; margin-top: 10px;">
+											<apex:outputPanel id="idGMOItemPanel" >
+												<div><hr /></div>
+												<div style="display: flex;">
+													<div class="item_label_1">GMO後払い手数料</div>
+													<div style="width: 322px;"><apex:outputText value="{!GMOWrap.itemName}" /></div>
+													<div style="width: 307px; text-align: right;padding-right: 10px;">GMO後払い手数料金額</div>
+													<div style="width: 60px; text-align: right;">
+														<apex:outputText value="{0, number, ###,###}">
+															<apex:param value="{!GMOWrap.GMOItemAllTotalPrice}"></apex:param>
+														</apex:outputText>
+													</div>
+												</div>
+											</apex:outputPanel>
+										</div>
+										<div style="padding-top: 10px;">
+											<div style="display: flex;">
+												<apex:outputPanel id="idYorisoItemPanel">
+													<div><hr /></div>
+													<div style="display: flex;">
+														<div class="item_label_1">よりそうオプション</div>
+														<div>
+															<apex:repeat value="{!yorisoItemWrap.yorisoOptionItemWraps}" var="YorisoItem" id="idYorisoItemRepeat">
+																<div style="display: flex;" id="idYorisoOption">
+																	<div style="display:flex;width:100px;">
+																		<div style="margin:0 5px 0 10px">
+																			<input type="button" id="idAddYorisoItem_{!YorisoItem.indexOptionItem}" value="+" style="width:40px" onclick="addYorisoItem('{!YorisoItem.indexOptionItem}');" />
+																		</div>
+																		<div style="margin:0 5px 0 10px;display: {!IF(yorisoItemWrap.yorisoOptionItemWraps.size > 1, '', 'none')}">
+																			<input type="button" id="idDelYorisoItem_{!YorisoItem.indexOptionItem}" value="-" style="width:40px" onclick="delYorisoItem('{!YorisoItem.indexOptionItem}');" />
+																		</div>
+																	</div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">品目</div>
+																	<div style="width:162px;" >
+																		<apex:selectList id="idYorisoItemHinmoku" value="{!YorisoItem.optionItemName}" onchange="setRyokinhyoYorisoOption('{!YorisoItem.indexOptionItem}','{!YorisoItem.optionItemName}');" style="width:154px;" size="1" >
+																			<apex:selectOptions value="{!yorisoOption}"/>
+																		</apex:selectList>
+																	</div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">単価</div>
+																	<div  style="width: 78px;">
+																		<apex:outputtext value="{0, number, ###,###}" style="width:70px;" >
+																			<apex:param value="{!YorisoItem.unitPriceCustom}"></apex:param>
+																		</apex:outputtext>
+																	</div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">個数</div>
+																	<div><apex:inputText id="idYorisoItemKosu" onkeyup="value = value.replace(/[^\-\d]+/i,'');" value="{!YorisoItem.quantityCustom}" onblur="if(chkInteger(this.value)){calcYorisoPrice();}else{value = ''}" style="width:50px;" /></div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">小計</div>
+																	<div style="width: 60px;text-align: right;"><apex:outputtext value="{0, number, ###,###}">
+																			<apex:param value="{!YorisoItem.totalPriceCustom}"></apex:param>
+																		</apex:outputtext>
+																	</div>
+																</div>
+															</apex:repeat>
+														</div>
+													</div>
+													<div><hr /></div>
+													<div>
+														<div style="display: flex;">
+															<div style="width: 778px; text-align: right;padding-right: 10px;">よりそうオプション金額合計</div>
+															<div style="width: 60px;text-align: right;">
+																<apex:outputtext value="{0, number, ###,###}">
+																	<apex:param value="{!yorisoItemWrap.YorisooptionItemAllTotalPrice}"></apex:param>
+																</apex:outputtext>
+															</div>
+														</div>
+													</div>
+												</apex:outputPanel>
+											</div>
+										</div>
+										<!-- issues4156 End -->
+										<div style="padding-top: 10px;">
+											<div style="display: flex;">
+												<apex:outputPanel id="idOptionItemPanel" >
+													<div><hr /></div>
+													<div style="display: flex;">
+														<div class="item_label_1">葬儀社オプション</div>
+														<div>
+															<apex:repeat value="{!sogiItemWrap.optionItemWraps}" var="optionItemWrap" id="idOptionItemRepeat">
+																<!-- issues4273 Start-->
+																<div style="display: flex;" id="idSogiOption">
+																<!-- issues4273 End-->
+																	<div style="display:flex;width:100px;">
+																		<div style="margin:0 5px 0 10px">
+																			<input type="button" id="idAddOptionItem_{!optionItemWrap.indexOptionItem}" value="+" style="width:40px" onclick="addStandardItem('{!optionItemWrap.indexOptionItem}');" />
+																		</div>
+																		<div style="margin:0 5px 0 10px;display: {!IF(sogiItemWrap.optionItemWraps.size > 1, '', 'none')}">
+																			<input type="button" id="idDelOptionItem_{!optionItemWrap.indexOptionItem}" value="-" style="width:40px" onclick="delStandardItem('{!optionItemWrap.indexOptionItem}');" />
+																		</div>
+																	</div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">品目</div>
+																	<div><apex:inputText id="idOptionItemHinmoku" value="{!optionItemWrap.optionItemName}" onfocus="displayOptionItemHinmoku(this);" onblur="delShisetsuSuggest();" style="width:154px;" /></div>
+																	<div id="idOptionItemHinmokuSuggest" class="clshidArea"></div>
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">単価</div>
+																	<!-- issues4228 Start -->
+																	<div><apex:inputText id="idOptionItemTanka" onkeyup="value = value.replace(/[^\-\d]+/i,'');" value="{!optionItemWrap.unitPriceCustom}" onblur="if(chkInteger(this.value)){calcOptionItemPrice();}else{value = ''}" style="width:70px;" /></div>
+																	<!-- issues4228 End -->
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">個数</div>
+																	<!-- issues4228 Start -->
+																	<div><apex:inputText id="idOptionItemKosu" onkeyup="value = value.replace(/[^\-\d]+/i,'');" value="{!optionItemWrap.quantityCustom}" onblur="if(chkInteger(this.value)){calcOptionItemPrice();}else{value = ''}" style="width:50px;" /></div>
+																	<!-- issues4228 End -->
+																	<div style="width: 50px;text-align: right;padding-right: 10px;">小計</div>
+																	<div style="width: 60px;text-align: right;"><apex:outputtext value="{0, number, ###,###}">
+																			<apex:param value="{!optionItemWrap.totalPriceCustom}"></apex:param>
+																		</apex:outputtext>
+																	</div>
+																</div>
+															</apex:repeat>
+														</div>
+													</div>
+													<div><hr /></div>
+													<div>
+														<div style="display: flex;">
+															<div style="width: 778px; text-align: right;padding-right: 10px;">葬儀社オプション金額合計</div>
+															<div style="width: 60px;text-align: right;">
+																<apex:outputtext value="{0, number, ###,###}">
+																	<apex:param value="{!sogiItemWrap.optionItemAllTotalPrice}"></apex:param>
+																</apex:outputtext>
+															</div>
+														</div>
+													</div>
+												</apex:outputPanel>
+											</div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div style="display:flex;">
+									<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;width:65%;">
+										<apex:outputpanel id="idTorokushohinToWaribikiPanel" style="width: 100%;">
+											<div style="display: flex;">
+												<div class="menu_title_label">【割引 ＆ クーポン】</div>
+											</div>
+											<div style="display:flex; margin-top: 10px;">
+												<div>
+													<div>
+														<apex:outputPanel id="idNebikiPanel" >
+															<div>
+																<apex:repeat value="{!nebikiWrap.nebikiItemWraps}" var="nebikiItemWrap" id="idNebikiItemRepeat">
+																	<div style="display: flex;">
+																		<div class="item_label_1"><apex:outputText value="{!nebikiItemWrap.itemDataKubun}" /></div>
+																		<div style="width: 520px;"><apex:outputText value="{!nebikiItemWrap.itemName}" /></div>
+																		<div style="width: 80px; text-align: right;"><apex:outputText value="{0, number, ###,###}">
+																				<apex:param value="{!nebikiItemWrap.itemPrice}"></apex:param>
+																			</apex:outputText>
+																		</div>
+																	</div>
+																</apex:repeat>
+															</div>
+															<div><hr /></div>
+															<div style="display: flex;">
+																<div style="width: 660px; text-align: right;padding-right: 10px;">SF値引金額合計</div>
+																<div style="width: 80px; text-align: right;"><apex:outputText value="{0, number, ###,###}" id="idSfNebikiKingakuGokei">
+																		<apex:param value="{!nebikiWrap.nebikiItemAllTotalPrice}"></apex:param>
+																	</apex:outputText>
+																</div>
+															</div>
+														</apex:outputPanel>
+													</div>
+													<div>
+														<div style="display: flex;">
+															<div style="width: 660px; text-align: right;padding-right: 10px;">見積書記載値引金額合計</div>
+															<div><apex:input type="tel" id="idMitsumorishoKisaiNebikiKingaku" value="{!mitsumorishoKisaiNebikiKingaku}" style="width: 80px;text-align: right;" onblur="chkNebikiKingakuGokei();" /></div>
+														</div>
+													</div>
+													<div>
+														<div style="display: flex;">
+															<div style="width: 660px; text-align: right;padding-right: 10px;">金額チェック</div>
+															<div style="width: 80px; text-align: right;"><apex:outputLabel id="idNebikiKingakuCheck" value="―" style="font-weight: bold;"/></div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</apex:outputpanel>
+									</div>
+									<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px; margin-left: 10px;width:35%;">
+										<apex:outputpanel id="idWaribikiStatusPanel" style="width: 100%;">
+											<div style="display: flex;">
+												<div class="menu_title_label">【割引ステータス】</div>
+											</div>
+											<div style="display:flex; margin-top: 10px;">
+												<div>
+													<apex:repeat value="{!waribikiList}" var="wribiki" id="idWaribikiStatusList">
+														<div style="display: flex;">
+															<div style="width:150px; text-align: right;">{!wribiki.name}</div>
+															<div>{!wribiki.descr}</div>
+															<div>{!wribiki.refNo}</div>
+														</div>
+													</apex:repeat>
+												</div>
+											</div>
+										</apex:outputpanel>
+									</div>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idSogakuCheckPanel" style="width: 100%;">
+										<div style="display: flex;">
+											<div class="menu_title_label">【総額チェック】</div>
+										</div>
+										<div style="display: flex; margin-top: 10px;">
+											<div style="width: 170px; text-align: right;">SF見積金額合計</div>
+											<div style="width: 100px; text-align: right;">
+												<apex:outputText id="idSfMitsumoriKingaku" value="{0, number, ###,###}">
+													<apex:param value="{!sfMitsumoriKingaku}"></apex:param>
+												</apex:outputText>
+											</div>
+										</div>
+										<div style="display: flex;">
+											<div style="width: 170px; text-align: right;">見積書記載見積金額合計</div>
+											<div style="width: 100px; text-align: right;"><apex:input type="tel" id="idMitsumorishoKisaiMitsumoriKingaku" value="{!mitsumorishoKisaiMitsumoriKingaku}" style="width: 80px;text-align: right;" onblur="chkTotalKingakuGokei();" /></div>
+										</div>
+										<div style="display: flex;">
+											<div style="width: 170px; text-align: right;">金額チェック</div>
+											<div style="width: 100px; text-align: right;"><apex:outputLabel id="idTotalKingakuCheck" value="―" style="font-weight: bold;"/></div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idShiharaiKanrenPanel" style="width: 100%;">
+										<div>
+											<div style="display: flex;">
+												<div class="menu_title_label">【支払関連】</div>
+											</div>
+										</div>
+										<div style="margin-top: 10px;">
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">支払方法</div>
+												<!-- issues4156 Start -->
+												<div style="width: 188px;"><apex:inputField value="{!opportunityWrap.opportunity.KiboShiharaiHouhou__c}" id="idKiboShiharaiHouhou" onchange="changeGMOItem();" /></div>
+												<!-- issues4156 End -->
+												<div class="item_label_1">支払対応備考</div>
+												<div><apex:inputText value="{!opportunityWrap.simpleYasugo.ShiharaiTaioBiko__c}" style="width: 377px;" /></div>
+												<!-- issues4217 Start -->
+												<apex:inputHidden id="idShiharaiHohoMikakuteiRiyu" value="{!opportunityWrap.opportunity.ShiharaiHohoMikakuteiRiyu__c}"/>
+												<!-- issues4217 End -->
+											</div>
+										</div>
+										<div style="display: flex; padding-top: 5px;">
+											<div class="item_label_1" style="width: 120px;">クレカ (GMO)</div>
+											<div><apex:inputcheckbox value="{!shiharaiWrap.kurekaGmo.isRiyo}" disabled="true"/></div>
+											<div class="item_label_1" style="width: 70px;">請求金額</div>
+											<div style="width: 88px;"><apex:outputField value="{!shiharaiWrap.kurekaGmo.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" /></div>
+											<div class="item_label_1">決済日</div>
+											<div style="width: 88px;"><apex:outputField value="{!shiharaiWrap.kurekaGmo.okyakusamaSeikyuMeisai.Kessaibi__c}" /></div>
+											<div class="item_label_1" style="width: 150px;">請求ステータス</div>
+											<div><apex:inputField value="{!shiharaiWrap.kurekaGmo.okyakusamaSeikyuMeisai.ServiceSyubetsu__c}" style="display: none;" /></div>
+											<div><apex:inputField value="{!shiharaiWrap.kurekaGmo.okyakusamaSeikyuMeisai.SeikyuHouhou__c}"  style="display: none;" /></div>
+											<div style="width: 145px;"><apex:outputField value="{!shiharaiWrap.kurekaGmo.okyakusamaSeikyuMeisai.SeikyuStatus__c}" /></div>
+											<div><font style="color: red;">※クレカGMOの登録は商談から行ってください</font></div>
+										</div>
+										<div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">クレカ (オリコ)</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.kurekaOrikoWrap.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.kurekaOrikoWrap.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1">決済日</div>
+												<div><apex:inputField value="{!shiharaiWrap.kurekaOrikoWrap.okyakusamaSeikyuMeisai.Kessaibi__c}" /></div>
+												<div class="item_label_1" style="width: 150px;">請求ステータス</div>
+												<div><apex:inputField value="{!shiharaiWrap.kurekaOrikoWrap.okyakusamaSeikyuMeisai.ServiceSyubetsu__c}" style="display: none;" /></div>
+												<div><apex:inputField value="{!shiharaiWrap.kurekaOrikoWrap.okyakusamaSeikyuMeisai.SeikyuHouhou__c}"  style="display: none;" /></div>
+												<div><apex:inputField value="{!shiharaiWrap.kurekaOrikoWrap.okyakusamaSeikyuMeisai.SeikyuStatus__c}" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">ローン (オリコ)</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.loanOrikoWrap.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.loanOrikoWrap.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1">決済日</div>
+												<div><apex:inputField value="{!shiharaiWrap.loanOrikoWrap.okyakusamaSeikyuMeisai.Kessaibi__c}" /></div>
+												<div class="item_label_1" style="width: 150px;">請求ステータス</div>
+												<div><apex:inputField value="{!shiharaiWrap.loanOrikoWrap.okyakusamaSeikyuMeisai.ServiceSyubetsu__c}" style="display: none;" /></div>
+												<div><apex:inputField value="{!shiharaiWrap.loanOrikoWrap.okyakusamaSeikyuMeisai.SeikyuHouhou__c}"  style="display: none;" /></div>
+												<div><apex:inputField value="{!shiharaiWrap.loanOrikoWrap.okyakusamaSeikyuMeisai.SeikyuStatus__c}" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">パートナー回収</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.furikomiOrikoWrap.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.furikomiOrikoWrap.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">葬祭扶助</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.sosaiFujoWrap.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.sosaiFujoWrap.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">後払い（GMO）</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.atobaraiGmo.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.atobaraiGmo.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+											</div>
+											<div style="display: flex;">
+												<div class="item_label_1" style="width: 120px;">お葬式予約</div>
+												<div><apex:inputcheckbox value="{!shiharaiWrap.ososhikiyoyaku.isRiyo}" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1" style="width: 70px;">請求金額</div>
+												<div><apex:inputField value="{!shiharaiWrap.ososhikiyoyaku.okyakusamaSeikyuMeisai.SeikyuKingaku__c}" style="width: 80px;" onchange="calcSeikyuKingaku();" /></div>
+												<div class="item_label_1">相殺先商談</div>
+												<div><apex:inputField value="{!shiharaiWrap.ososhikiyoyaku.okyakusamaSeikyuMeisai.SousaiSakiShodanRef__c}" style="width: 377px;" onchange="calcSeikyuKingaku();" /></div>
+											</div>
+										</div>
+										<div><hr /></div>
+										<div style="display: flex; margin-top: 10px;">
+											<div style="width: 170px; text-align: right;">SF請求金額合計</div>
+											<div style="width: 100px; text-align: right;">
+												<apex:outputText id="idsfSeikyuKingaku" value="{0, number, ###,###}">
+													<apex:param value="{!sfSeikyuKingaku}"></apex:param>
+												</apex:outputText>
+											</div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<apex:outputpanel id="idSagakuPanel" style="width: 100%;">
+										<div>
+											<div style="display: flex;">
+												<div class="menu_title_label">【請求残高】</div>
+											</div>
+										</div>
+										<div style="display: flex; margin-top: 10px;">
+											<div style="width: 170px; text-align: right;">SF請求残高</div>
+											<div style="width: 100px; text-align: right;">
+												<apex:outputText id="idsfSagaku" value="{0, number, ###,###}">
+													<apex:param value="{!sfSabunKingaku}"></apex:param>
+												</apex:outputText>
+											</div>
+										</div>
+									</apex:outputpanel>
+								</div>
+								<div class="section-panel" style="padding:10px 10px 10px 10px;display:flex;justify-content: space-between;margin-top: 10px;">
+									<div style="display: flex;margin: auto;">
+										<div style="padding-right: 20px"><!--input type="button" class="spread_title" style="width:100px;" onclick="trySave();" value="保存" /-->
+										<input type="button" class="btn spread_title" id="SaveButton" style="width:100px;" onclick="trySave();" value="保存" /></div>
+										<div style="padding-right: 20px"><input type="button" class="btn spread_title" style="width:100px;" onclick="callCloseTab();" value="閉じる" /></div>
+									</div>
+								</div>
+							<!-- issues4217 Start -->
+							</div>
+							<!-- issues4217 End -->
+						</div>
+					</div>
+					<div><apex:pageMessages id="idPageMessagesBottom"/></div>
+				</div>
+			</div>
+		</div>
+	</apex:form>
+</apex:page>

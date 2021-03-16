@@ -1,0 +1,85 @@
+<apex:page id="idPage">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxIYCRdQaHersS3Ew0Qp3TwcHmn6C8yP0"></script>
+
+    <script type="text/javascript">
+        function SetAddress(){
+            var address = document.getElementById('idPage:myFormId:idKensakuMoji').value;
+            if(!address == false){
+                document.getElementById('idPage:myFormId:idSodanshaPostalCode').value = '';
+                document.getElementById('idPage:myFormId:idSodanshaState').value = '';
+                document.getElementById('idPage:myFormId:idSodanshaCity').value = '';
+                document.getElementById('idPage:myFormId:idSodanshaStreet').value = '';
+                document.getElementById('idPage:myFormId:idJohoAll').value = '';
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({'address': address}, function(results, status){
+                    if(status == google.maps.GeocoderStatus.OK) {
+                        var address_components = results[0].address_components;
+                        var address_components_ALL = '';
+                        for(var j=0; j < results.length; j++){
+                            var address_components2 = results[j].address_components;
+                            var address_components_postal_code = '';
+                            var address_components_administrative = '';
+                            var address_components_locality = '';
+                            var address_components_political = '';
+                            for(var k=0; k<address_components2.length; k++){
+                                var types2 = address_components2[k].types;
+                                if(types2[0] == 'postal_code'){
+                                    address_components_postal_code= address_components2[k].long_name;
+                                }
+                                if(types2[0] == 'administrative_area_level_1'){
+                                    address_components_administrative = address_components2[k].long_name;
+                                }
+                                if(types2[0] == 'locality'){
+                                    address_components_locality = address_components2[k].long_name;
+                                }
+                                if(types2[0] == 'political'){
+                                    address_components_political = address_components2[k].long_name;
+                                }
+                            }
+                            address_components_ALL = address_components_ALL + address_components_postal_code + '_' + address_components_administrative + '_' + address_components_locality + '_' + address_components_political + '\r\n';
+                        }
+                        document.getElementById('idPage:myFormId:idJohoAll').value = address_components_ALL;
+                        for(var i=0; i<address_components.length; i++){
+                            var types = address_components[i].types;
+                            if(types[0] == 'postal_code'){
+                                document.getElementById('idPage:myFormId:idSodanshaPostalCode').value = address_components[i].long_name;
+                            }
+                            if(types[0] == 'administrative_area_level_1'){
+                                document.getElementById('idPage:myFormId:idSodanshaState').value = address_components[i].long_name;
+                            }
+                            if(types[0] == 'locality'){
+                                document.getElementById('idPage:myFormId:idSodanshaCity').value = address_components[i].long_name;
+                            }
+                            if(types[0] == 'political'){
+                                document.getElementById('idPage:myFormId:idSodanshaStreet').value = address_components[i].long_name;
+                            }
+                        }
+                    }else{
+                        alert('検索結果がありません');
+                        hideLoadingDialog();
+                    }
+                });
+            }
+        }
+    </script>
+    <apex:form id="myFormId">
+        <h1 style="font-size: 16px;">https://maps.googleapis.com/maps/apiを利用したパターン</h1>
+        <BR />
+        <apex:outputpanel id="idkKensakuPanel" style="width: 100%;">
+            <div ><p style="width: 100px;">検索文字：</p><apex:inputText id="idKensakuMoji" style="width: 330px;" /></div>
+            <BR />
+            <div ><input type="button" onclick="SetAddress();" id="idSodanshaPostalCodeSerchBtn" value="検索" /></div>
+        </apex:outputpanel>
+        <BR />
+        <apex:outputpanel id="idSodanshaJohoPanel" style="width: 100%;">
+            <div ><p style="width: 100px;">郵便番号：</p><apex:inputText id="idSodanshaPostalCode" style="width: 330px;" /></div>
+            <div ><p style="width: 100px;">都道府県：</p><apex:inputText id="idSodanshaState" style="width: 330px;" /></div>
+            <div ><p style="width: 100px;">市区郡：</p><apex:inputText id="idSodanshaCity" style="width: 330px;" /></div>
+            <div ><p style="width: 100px;">町名・番地：</p><apex:inputText id="idSodanshaStreet" style="width: 330px;" /></div>
+        </apex:outputpanel>
+        <BR />
+        <apex:outputpanel id="idJohoAllPanel" style="width: 100%;">
+            <div ><p style="width: 100px;">すべて</p></div><div ><apex:inputTextarea id="idJohoAll" style="width: 330px;height: 148px;" /></div>
+        </apex:outputpanel>
+    </apex:form>
+</apex:page>

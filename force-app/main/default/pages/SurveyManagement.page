@@ -1,0 +1,10 @@
+<apex:page standardController="Survey__c" extensions="SurveyManagerController" docType="html-5.0" cache="false" sidebar="false" showheader="false" standardStylesheets="false" action="{! init }">
+    <apex:stylesheet value="{! $Resource.survey_sf }" />
+    <script>
+    </script>
+    <div class="surveyforce">
+        <!-- Survey Title -->
+                <apex:outputtext value="aaaaaaaaaaa" id="aaa"/>
+                <apex:outputtext value="{! exText }" id="bbb"/>
+    </div>
+</apex:page>

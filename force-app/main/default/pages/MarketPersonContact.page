@@ -1,0 +1,16 @@
+<apex:page standardController="Account" showHeader="false" sidebar="false">
+
+<!-- Message to show if there is no contact -->
+<apex:pageMessage severity="info" rendered="{!account.PersonContactID__c == null}" summary="This lead has no contact" />
+
+<!-- Lead to Contact Bridge -->
+<apex:outputPanel rendered="{!account.PersonContactID__c != null}">
+
+ <script type='text/javascript'>
+var contactUrl = '{!URLFOR($Page.mkto_si__Contact)}?id={!account.PersonContactID__c}&core.apexpages.devmode.url=0' ;
+window.location.replace(contactUrl);
+</script>
+
+</apex:outputPanel>
+
+</apex:page>

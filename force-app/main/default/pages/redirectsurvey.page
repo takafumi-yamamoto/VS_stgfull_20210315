@@ -1,0 +1,32 @@
+<apex:page showHeader="false" sidebar="false">
+<site:googleAnalyticsTracking />
+<script type="text/javascript">
+    window.onload = function() {
+        var convSids = new Map([
+            ["a261s0000004dHoAAI", "a611s0000008Pl1AAE"],
+            ["a261s0000004dHqAAI", "a611s0000008Pl6AAE"],
+            ["a261s0000004dHpAAI", "a611s0000008Pl8AAE"],
+            ["a261s0000004dHrAAI", "a611s0000008Pl4AAE"],
+            ["a261s0000004nUqAAI", "a611s0000008Pl7AAE"],
+            ["a261s0000004nUoAAI", "a611s0000008Pl5AAE"],
+            ["a261s0000004nUtAAI", "a611s0000008Pl9AAE"],
+            ["a261s0000004nUpAAI", "a611s0000008Pl2AAE"],
+            ["a262v000009IWcYAAW", "a5w2y000000GsIBAA0"],
+            ["a262v000009IWcXAAW", "a5w2y000000GsI8AAK"],
+            ["a262v000009IWcZAAW", "a5w2y000000GsI5AAK"],
+            ["a262v000009IWcaAAG", "a5w2y000000GsI6AAK"],
+            ["a262v0000096N8oAAE", "a5w2y000000GsIKAA0"],
+            ["a262v0000096N8mAAE", "a5w2y000000GsIJAA0"],
+            ["a262v0000096N8pAAE", "a5w2y000000GsIHAA0"],
+            ["a262v0000096N8nAAE", "a5w2y000000GsIFAA0"]
+        ]);
+        var newSid = convSids.get("{! $CurrentPage.parameters.id }");
+
+        window.location.href = "/surveytaker/RedirectSurveyTaker?sid="
+                            + newSid
+                            + "&caid=" + "{! $CurrentPage.parameters.caId }"
+                            + "&utm_source=" + "{! $CurrentPage.parameters.utm_source }"
+                            + "&utm_medium=" + "{! $CurrentPage.parameters.utm_medium }";
+    }
+</script>
+</apex:page>

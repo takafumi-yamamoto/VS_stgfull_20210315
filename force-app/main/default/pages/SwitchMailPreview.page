@@ -1,0 +1,52 @@
+<apex:page id="idPage" docType="html-5.0" controller="SwitchMailPreviewCtl" action="{!init}" cache="false" title="Switch MailPreview" showHeader="false" sidebar="false">
+    <style>
+    .dataList_div_th {
+        border: 1px solid #222;
+        border-style: dotted;
+        text-align: center;
+        color: #fff;
+        background-color: #364e96;
+        font-weight: bold;
+    }
+    .dataList_div_td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-left: 4px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        font-family: "MS UI Gothic", "MS PGothic", "Hiragino Kaku Gothic Pro", Osaka, Arial, Helvetica, sans-serif;
+    }
+    </style>
+    <apex:form >
+        <div>
+            <div style="width:100%; font-family: 'Salesforce Sans',Arial,sans-serif;">
+                <div style="display: flex;">
+                    <div style="width:304px;" class="dataList_div_th">
+                        宛先
+                    </div>
+                    <div style="width:404px;" class="dataList_div_th">
+                        タイトル
+                    </div>
+                </div>
+                <div style="display: flex;">
+                    <div style="width:300px;" class="dataList_div_td">
+                        <apex:outputText value="{!mailaddress}"/>
+                    </div>
+                    <div style="width:400px;" class="dataList_div_td">
+                        <apex:outputText value="{!title}"/>
+                    </div>
+                </div>
+                <div style="display: flex;">
+                    <div style="width:710px;" class="dataList_div_th">
+                        本文
+                    </div>
+                </div>
+                <div style="display: flex;">
+                    <div style="width:710px; padding: 0px;" class="dataList_div_td">
+                        <apex:inputTextarea value="{!honbun}" cols="110" rows="48" style="padding:6px;width: 673px;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

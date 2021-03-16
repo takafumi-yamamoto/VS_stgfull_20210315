@@ -1,0 +1,15 @@
+<apex:page title="システムエラー" cache="true" sidebar="false" showheader="false" docType="html-5.0" standardStylesheets="false">
+    <apex:stylesheet value="{! $Resource.survey_SLDS_vfmin }" />
+    <apex:stylesheet value="{! $Resource.survey_base }" />
+    <apex:stylesheet value="{! $Resource.survey_sf }" />
+
+    <div class="surveyforce">
+        <div class="slds-box slds-theme--shade">
+            <div class="slds-text-heading--large">
+                <apex:outputText value="システムエラーが発生しました。"/>
+                <br/>
+                <apex:outputText value="お手数ですが、時間を置いて再アクセスをお願いいたします。"/>
+            </div>
+        </div>
+    </div>
+</apex:page>

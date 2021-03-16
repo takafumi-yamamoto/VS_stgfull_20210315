@@ -1,0 +1,678 @@
+<apex:page id="idPage" controller="SogiShiryoIkkatuInsatuSearchCtl" title="一括印刷" action="{!init}" >
+    <apex:includeScript value="/support/console/44.0/integration.js" />
+
+    <script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+    <style>
+        span.dateFormat {display: none;}
+
+        html body.sfdcBody {
+            background: rgba(176, 196, 223, 1.0);
+            padding: 10px 10px 0 10px;
+            font-size: 80%;
+            font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        .wrapper {
+            resize: both;
+        }
+
+        .main {
+            width: 100%;
+        }
+
+        div {
+            font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        .section-panel {
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 3px;
+            width: 1870px;
+        }
+
+        table.header_table {
+            border: 0;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        table.header_table td {
+            border: 1px solid #222;
+            border-style: dotted;
+            padding: 0px;
+            text-align: center;
+            color: #fff;
+            background-color: #364e96;
+        }
+
+        table.header_table tbody.scrollBody{
+            font-size: 85%;
+            width: 1845px;
+            display:block;
+        }
+
+        table.dataList_table {
+            border: 0;
+            border-collapse: collapse;
+            overflow-y: hidden;
+            table-layout: fixed;
+        }
+
+        table.dataList_table tbody.scrollBody{
+            font-size: 85%;
+            width: 1865px;
+            height:400px;
+            overflow-y:scroll;
+            display:block;
+        }
+
+        table.dataList_table td {
+            border: 1px solid #222;
+            border-style: dotted;
+            padding: 0px;
+            word-break: break-word;
+        }
+        .JotaiHenko_btn {
+            display: inline-block;
+            padding: 0.1em 0 0 0;
+            text-decoration: none;
+            color: white;
+            border: 1px solid rgb(221, 219, 218);
+            background: rgba(27, 82, 151, 1.0);
+            border-radius: 3px;
+            transition: .4s;
+            text-align: center;
+            height:25px;
+            width: 140px;
+        }
+
+        
+    </style>
+    <script type="text/javascript">
+
+        beenFocused = true;
+        
+
+        function allResCheck(val, len){
+            for(var i=0; i<len; i++){
+                document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked = val.checked;
+            }
+        }
+
+        function doSearch(){
+            var input = document.getElementById('idPage:myFormId:idSearchFreeWord');
+            var count = input.value.length;
+            if(count == 1){
+                alert('フリーワード検索を行う場合には、２文字以上を入力して、検索してください');
+                return;
+            }
+
+            var str = new String(input.value);
+            const regex = /[*?&|!{}()^~:\\"'\[\]+-]/g;
+            let result = str.match(regex);
+            if(result != null){
+                alert('フリーワード検索を行う場合には、[、?、&、|、!、{、}、(、)、^、~、*、:、\、"、|、\'、+、-、]の文字を入力せずに、検索してください');
+                return;
+            }
+
+            showLoadingDialog();
+
+            doSearchJs();
+        }
+
+        function doClear(){
+            doClearJs();
+        }
+
+        function resWrapList(pegeVal){
+            
+            showLoadingDialog();
+
+            pageChangeJs(pegeVal);
+        }
+
+        function grSortChange(item, val){
+            
+            showLoadingDialog();
+
+            var aLabel = document.getElementById(val).innerText;
+            var sortItem = item;
+            var sortKey;
+            if(aLabel == '▲'){
+                document.getElementById(val).innerText = '▼';
+                sortKey = 'desc';
+            }
+            else{
+                document.getElementById(val).innerText = '▲';
+                sortKey = 'asc';
+            }
+            actSortJs(sortItem, sortKey);
+        }
+
+        function chkTarWrapList(targetSize){
+
+            if(targetSize <= 0) return;
+
+            var chkFlg = false;
+            for(var i=0; i<targetSize; i++){
+                if(document.getElementById('idTarRowNum' + i).checked){
+                    chkFlg = true;
+                    break;
+                }
+            }
+
+            if(!chkFlg) document.getElementById('idTarRowNum0').checked = true;
+        }
+
+        function JotaiHenkoJs(val){
+
+            var aLabel = document.getElementById(val).innerText;
+            if(aLabel == '【状態変更】▲'){
+                document.getElementById(val).innerText = '【状態変更】▼';
+                document.getElementById('idSoufujoukyoSelect').style.display = 'inline-flex';
+                document.getElementById('iddoJotaiHenko').style.display = 'inline-flex';
+            }
+            else{
+                document.getElementById(val).innerText = '【状態変更】▲';
+                document.getElementById('idSoufujoukyoSelect').style.display = 'none';
+                document.getElementById('iddoJotaiHenko').style.display = 'none';
+            }
+        }
+
+        function doSoufuZumi(targetSize,days){
+            var isChkCount = 0;
+            var isChkResultCount = 0;
+            var targetSizeNumber = Number(targetSize);
+            if (window.confirm('選択されたデータについて、送付状態を「送付済」に変更する処理を開始しても、よろしいですか？')) {
+                for(var i=0; i<targetSizeNumber; i++){
+                    if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked){
+                        isChkResultCount = isChkResultCount + 1;
+                        if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idSofuJokyo').innerText == '印刷済' &&
+                        document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idSofuShubetsu').innerText == '郵便'){
+                          isChkCount = isChkCount + 1;
+                        }
+                    }
+                }
+                if(isChkResultCount == 0){
+                    alert('データが選択されていません。送付状態が「印刷済」で、送付種別が「郵便」のデータが選択し、「送付済」ボタンをクリックしてください');
+                    return;
+                }
+                if(isChkCount < isChkResultCount){
+                    alert('送付状態が「印刷済」以外、または、送付種別が「郵便」以外のデータが選択されているため、送付状態を「送付済」に変更する処理はできません');
+                    return;
+                }
+                showLoadingDialog();
+                if(days == 'today'){
+                    doSoufuZumiJs();
+                }else{
+                    doNextSoufuZumiJs();
+                }
+                
+            }
+        }
+
+        function doJotaiHenko(str,targetSize){
+            var isChkResultCount = 0;
+            var targetSizeNumber = Number(targetSize);
+            if (window.confirm('選択されたデータについて、送付状態を「' + str + '」に変更する処理を開始しても、よろしいですか？')) {
+                for(var i=0; i<targetSizeNumber; i++){
+                    if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked){
+                        isChkResultCount = isChkResultCount + 1;
+                    }
+                }
+                if(isChkResultCount == 0){
+                    alert('データが選択されていません。データが選択し、送付状態を「' + str + '」にして、「状態変更」ボタンをクリックしてください');
+                    return;
+                }
+                showLoadingDialog();
+                doJotaiHenkoJs();
+            }
+
+        }
+
+        function doInsatsu(targetSize){
+            var isChkCount = 0;
+            var isChkResultCount = 0;
+            var targetSizeNumber = Number(targetSize);
+            var intervalListIndex = 0;
+            var intervalList = [];
+            if (window.confirm('選択されたデータについて、印刷処理を開始しても、よろしいですか？')) {
+                for(var i=0; i<targetSizeNumber; i++){
+                    if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked){
+                        isChkResultCount = isChkResultCount + 1;
+                        if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idSofuJokyo').innerText == '印刷待ち' &&
+                        document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idHiddenSearchSofuShiryoURLUmu').value == 'true' &&
+                        document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idSofuShubetsu').innerText == '郵便'){
+                            isChkCount = isChkCount + 1;
+                            intervalList.push(i);
+                        }
+                    }
+                }
+                if(isChkResultCount == 0){
+                    alert('データが選択されていません。送付状態が「印刷待ち」で、送付種別が「郵便」のデータが選択し、「印刷」ボタンをクリックしてください');
+                    return;
+                }
+                if(isChkCount < isChkResultCount){
+                    alert('送付状態が「印刷待ち」以外、または、送付種別が「郵便」以外のデータが選択されているため、印刷処理はできません');
+                    return;
+                }
+                var intetvalId = setInterval(function(){
+                    if(intervalListIndex == intervalList.length){
+                        clearInterval(intetvalId);
+                        showLoadingDialog();
+                        doInsatsuJs();
+                    }
+                    document.getElementById('idPage:myFormId:idResWrapList:' + intervalList[intervalListIndex] + ':idSofuShiryoURL').click();
+                    intervalListIndex ++;
+                },1000);
+            }
+        }
+
+        function shorishuryo(){
+            hideLoadingDialog();
+            alert('処理が終了しました。');
+        }
+        function clickOproUrl (index){
+            document.getElementById('idPage:myFormId:idResWrapList:' + index + ':idSofuShiryoURL').click();
+        }
+        function checksouhujyoukyou(){
+           var pdfelements = document.getElementsByClassName( "pdfcondition" );
+           pdfelements = Array.from( pdfelements ) ;
+           if(document.getElementById("idPage:myFormId:idSearchSofuJokyo").value == '印刷待ち'){
+               pdfelements.forEach(elem => elem.style.visibility = '' );
+           }else{
+               pdfelements.forEach(elem => elem.style.visibility = 'hidden' );
+           }
+           return false;
+        }
+    window.onload = function() {
+        checksouhujyoukyou();
+    };
+    </script>
+    <c:loadingDialog title="Getting Contacts" />
+    <apex:form id="myFormId" target="_blank">
+        <apex:actionFunction name="doSearchJs" action="{!searchData}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="hideLoadingDialog(); checksouhujyoukyou();" >
+            <apex:param name="pSortItem" value="" />
+            <apex:param name="pSortKey" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="doClearJs" action="{!searchClear}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="checksouhujyoukyou();" />
+        <apex:pageMessages id="msgId" />
+        <apex:actionFunction name="pageChangeJs" action="{!searchData}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="hideLoadingDialog();checksouhujyoukyou();">
+            <apex:param assignTo="{!pGrPageVal}" name="pGrPageVal" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="actSortJs" action="{!searchData}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="hideLoadingDialog();checksouhujyoukyou();" >
+            <apex:param name="pSortItem" value="" />
+            <apex:param name="pSortKey" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="doSoufuZumiJs" action="{!doSoufuZumiapex}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="shorishuryo();checksouhujyoukyou();" />
+        <apex:actionFunction name="doNextSoufuZumiJs" action="{!doYokujitsuSofuZumiapex}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="shorishuryo();checksouhujyoukyou();" />
+        <apex:actionFunction name="doJotaiHenkoJs" action="{!doJotaiHenkoapex}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="shorishuryo();checksouhujyoukyou();" />
+        <apex:actionFunction name="doInsatsuJs" action="{!doInsatsuapex}" reRender="searchPanelId,idResultPanel,idTargetPanel,IdKoshin" oncomplete="shorishuryo();checksouhujyoukyou();" />
+        <div class="wrapper">
+            <div class="main" id="idMain">
+                <div class="section-panel">
+                    <apex:outputPanel id="searchPanelId" layout="block">
+                        <div style="padding:0px;font-weight: bold;">【検索条件】</div>
+                        <div style="display: flex;padding:5px 0px 0px 0px">
+                            <table id="conditionTable" >
+                                <tr>
+                                    <th style="vertical-align: top; width:60px; padding-right: 5px; text-align: right;">印刷日</th>
+                                    <td style="vertical-align: top; ">
+                                        <apex:inputField id="idUriagebiFrom" value="{!searchJokenWrapper.SogiShiryoSofuJoken.SearchKaishibiFrom__c}" />
+                                        &nbsp;～&nbsp;<apex:inputField id="idUriagebiTo" value="{!searchJokenWrapper.SogiShiryoSofuJoken.SearchKaishibiTo__c}" />
+                                    </td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">郵送種別</th>
+                                    <td style="vertical-align: top; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.YusoShubetsu__c}" /></td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">送付物内容</th>
+                                    <td style="vertical-align: top; ">
+                                        <apex:selectList value="{!searchJokenWrapper.InsatsubutsuIchiranSelect}" multiselect="true" size="4">
+                                            <apex:selectOptions value="{!searchJokenWrapper.InsatsubutsuIchiranOpt}"/>
+                                        </apex:selectList>
+                                    </td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">緊急度</th>
+                                    <td style="vertical-align: top; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.SearchKinkyudo__c}" /></td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">引き継ぎ事項有無</th>
+                                    <td style="vertical-align: top; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.SearchHikitsugiJikoUmu__c}" /></td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">パンフレット要否</th>
+                                    <td style="vertical-align: top; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.PamphletYohi__c}" /></td>
+                                    <th style="width:20px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">フリーワード検索</th>
+                                    <td style="vertical-align: top; "><apex:inputText value="{!searchJokenWrapper.SearchFreeWordNyuryoku}" id="idSearchFreeWord" maxlength="50" /></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display: flex;padding:5px 0px 0px 0px">
+                            <table id="conditionTable2" >
+                                <tr>
+                                    <th style="vertical-align: middle; width: 60px; padding-right: 5px; text-align: right;">送付状況</th>
+                                        <td style="vertical-align: middle; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.SofuJokyo__c}" id="idSearchSofuJokyo" onchange="checksouhujyoukyou();"/></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;">送付種別</th>
+                                    <td style="vertical-align: middle; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.SofuShubetsu__c}" /></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;">葬儀資料送付名</th>
+                                    <td style="vertical-align: middle; "><apex:inputText value="{!searchJokenWrapper.SearchNameNyuryoku}" maxlength="100" /></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;">商談番号</th>
+                                    <td style="vertical-align: middle; "><apex:inputText value="{!searchJokenWrapper.SearchShodanBangoNyuryoku}" maxlength="50" /></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;">商談のフェーズ</th>
+                                    <td style="vertical-align: top; "><apex:inputField value="{!searchJokenWrapper.SearchOpp.StageName}" required="false " /></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;">希望エリア</th>
+                                    <td style="vertical-align: middle; "><apex:inputField value="{!searchJokenWrapper.SogiShiryoSofuJoken.SearchKiboAreaKensaku__c}" /></td>
+                                </tr>
+                                 <tr>
+                                    <th style="vertical-align: middle; width: 60px; padding-right: 5px; text-align: right;" ><span class="pdfcondition">PDF</span></th>
+                                    <td style="vertical-align: middle; " >
+                                        <apex:selectList value="{!searchJokenWrapper.SerchPdfKey}" size="1" styleClass="pdfcondition">
+                                            <apex:selectOptions value="{!searchJokenWrapper.SearchPdfSakusei}"/>
+                                        </apex:selectList>
+                                    </td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;"></th>
+                                    <td style="vertical-align: middle; "></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;"></th>
+                                    <td style="vertical-align: middle; "></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;"></th>
+                                    <td style="vertical-align: middle; "></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: top; width: 100px; padding-right: 5px; text-align: right;"></th>
+                                    <td style="vertical-align: top; "></td>
+                                    <th style="width:50px; " /><td />
+                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px; text-align: right;"></th>
+                                    <td style="vertical-align: middle; "></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="display: flex;padding:5px 0px 0px 0px">
+                        <br />
+                        </div>
+                        <div style="display: flex;padding:5px 0px 0px 0px">
+                            <table id="conditionTable3" style="margin-left: 35%;" >
+                                <tr>
+                                    <td style="vertical-align: middle; "><input type="button" class="btn" onclick="doSearch();" value="検索" style="width: 100px; margin-right: 50px;"/></td>
+                                    <td style="vertical-align: middle; "><input type="button" class="btn" onclick="doClear();" value="条件クリア" style="width: 100px;"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </apex:outputPanel>
+                </div>
+                <div class="section-panel" style="display: flex ;margin-top: 10px;">
+                    <apex:outputPanel id="idResultPanel" layout="block" style="width: 100%">
+                        <div style="padding:0px;font-weight: bold;">【検索結果】</div>
+                        <div style="display: flex;">
+                            <div style="padding-top: 3px; padding-left: 11px; padding-right: 5px;">
+                                <input type="checkbox" onclick="allResCheck(this, '{!resWrapAllListSize}');"/>
+                            </div>
+                            <div style="padding-top: 3px; padding-right: 15px;">
+                                全て
+                            </div>
+                            <div style="padding-top: 6px; width: 25px; text-align: end;"><apex:outputText value="{!grPageFrom}" /></div>
+                            <div style="padding-top: 3px;margin-left: 5px;">～</div>
+                            <div style="padding-top: 6px;margin-left: 5px; width: 25px; text-align: end;"><apex:outputText value="{!grPageTo}" /></div>
+                            <div style="padding-top: 6px;margin-left: 5px;">/</div>
+                            <div style="padding-top: 6px;margin-left: 5px; width: 25px; text-align: end;"><apex:outputText value="{!grAllSize}" /></div>
+                            <div style="padding-top: 3px;margin-left: 5px;">件</div>
+                            <div style="padding-top: 1px;margin-left: 15px;"><apex:selectList id="idGrPageList" value="{!grPageVal}" size="1" multiselect="false" onChange="resWrapList(this.value);return false;" style="width: 40px; height: 22px;">
+                                    <apex:selectOptions value="{!grPageOpt}"/>
+                                </apex:selectList>
+                            </div>
+                            <div style="padding-top: 6px;margin-left: 5px;">/</div>
+                            <div style="padding-top: 6px;margin-left: 5px; width: 15px; text-align: end;"><apex:outputText value="{!grPageMax}" /></div>
+                            <div style="padding-top: 3px;margin-left: 5px;">ページ</div>
+                            <div style="margin-left: 15px;">
+                                <apex:commandButton onClick="resWrapList(1);return false;" value=" << " id="idFirstBtn" disabled="{!grFirstFlg}" />
+                            </div>
+                            <div style="margin-left: 5px;">
+                                <apex:commandButton onClick="resWrapList({!grPageVal - 1});return false;" value=" < " id="idBackBtn" disabled="{!grBackFlg}" />
+                            </div>
+                            <div style="padding-top: 2px;margin-left: 5px;">前</div>
+                            <div style="padding-top: 2px;margin-left: 10px;">次</div>
+                            <div style="margin-left: 5px;">
+                                <apex:commandButton onClick="resWrapList({!grPageVal + 1});return false;" value=" > " id="idNextBtn" disabled="{!grNextFlg}" />
+                            </div>
+                            <div style="margin-left: 5px;">
+                                <apex:commandButton onClick="resWrapList({!grPageMax});return false;" value=" >> " id="idLastBtn" disabled="{!grLastFlg}" />
+                            </div>
+                        </div>
+                        <div>
+                            <table class="header_table">
+                                <tbody class="scrollBody">
+                                    <tr>
+                                        <td style="width:40px; text-align: center; font-weight:bold">
+                                            <div>選択</div>
+                                        </td>
+                                        <td style="width:75px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>緊急度</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('Kinkyudo__c', 'idKinkyudoBtn');" id="idKinkyudoBtn" style="color:{!IF(pSortItem='Kinkyudo__c', 'red', 'white')}" >{!IF(AND(pSortItem='Kinkyudo__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:80px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>郵送種別</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('YusoShubetsu__c', 'idYusoShubetsuBtn');" id="idYusoShubetsuBtn" style="color:{!IF(pSortItem='YusoShubetsu__c', 'red', 'white')}" >{!IF(AND(pSortItem='YusoShubetsu__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width: 100px;text-align: center;font-weight:bold;">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付対象者名</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('Atena__c', 'idAtenaBtn');" id="idAtenaBtn" style="color:{!IF(pSortItem='Atena__c', 'red', 'white')}" >{!IF(AND(pSortItem='Atena__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:120px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付住所</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('SearchAddress__c', 'idAddressBtn');" id="idAddressBtn" style="color:{!IF(pSortItem='SearchAddress__c', 'red', 'white')}" >{!IF(AND(pSortItem='SearchAddress__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:70px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>提案書</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('MitumorishoUmu__c', 'idMitumorishoUmusBtn');" id="idMitumorishoUmusBtn" style="color:{!IF(pSortItem='MitumorishoUmu__c', 'red', 'white')}" >{!IF(AND(pSortItem='MitumorishoUmu__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:140px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>引き継ぎ事項</div>
+                                            </div>
+                                        </td>
+                                        <td style="width:80px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>ﾊﾟﾝﾌﾚｯﾄ</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('PamphletYohi__c', 'idPamphletYohiBtn');" id="idPamphletYohiBtn" style="color:{!IF(pSortItem='PamphletYohi__c', 'red', 'white')}" >{!IF(AND(pSortItem='PamphletYohi__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:140px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付物内容</div>
+                                            </div>
+                                        </td>
+                                        <td style="width:70px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>印刷者</div>
+                                            </div>
+                                        </td>
+                                        <td style="width:120px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>商談名</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('OpportunityRef__r.name', 'idOpponameBtn');" id="idOpponameBtn" style="color:{!IF(pSortItem='OpportunityRef__r.name', 'red', 'white')}" >{!IF(AND(pSortItem='OpportunityRef__r.name',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:90px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>商談番号</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('OpportunityRef__r.ShodanBango__c', 'idOppoBangoBtn');" id="idOppoBangoBtn" style="color:{!IF(pSortItem='OpportunityRef__r.ShodanBango__c', 'red', 'white')}" >{!IF(AND(pSortItem='OpportunityRef__r.ShodanBango__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:110px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>葬儀資料送付名</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('Name', 'idNameBtn');" id="idNameBtn" style="color:{!IF(pSortItem='Name', 'red', 'white')}" >{!IF(AND(pSortItem='Name',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:60px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>ｱｸｼｮﾝ</div>
+                                            </div>
+                                        </td>
+                                        <td style="width:70px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付日</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('SearchSofubi__c', 'idSearchSofubiBtn');" id="idSearchSofubiBtn" style="color:{!IF(pSortItem='SearchSofubi__c', 'red', 'white')}" >{!IF(AND(pSortItem='SearchSofubi__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:70px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>印刷日</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('SearchInsatsubi__c', 'idSearchInsatsubiBtn');" id="idSearchInsatsubiBtn" style="color:{!IF(pSortItem='SearchInsatsubi__c', 'red', 'white')}" >{!IF(AND(pSortItem='SearchInsatsubi__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:80px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付状況</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('SofuJokyo__c', 'idSofuJokyoBtn');" id="idSofuJokyoBtn" style="color:{!IF(pSortItem='SofuJokyo__c', 'red', 'white')}" >{!IF(AND(pSortItem='SofuJokyo__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:80px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>送付種別</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('SofuShubetsu__c', 'idSofuShubetsuBtn');" id="idSofuShubetsuBtn" style="color:{!IF(pSortItem='SofuShubetsu__c', 'red', 'white')}" >{!IF(AND(pSortItem='SofuShubetsu__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:70px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>フェーズ</div>
+                                                <div style="margin-left: 5px">
+                                                    <a href="#" onClick="grSortChange('OpportunityRef__r.StageName', 'idOppoStageNameBtn');" id="idOppoStageNameBtn" style="color:{!IF(pSortItem='OpportunityRef__r.StageName', 'red', 'white')}" >{!IF(AND(pSortItem='OpportunityRef__r.StageName',pSortKey='asc'), '▲', '▼')}</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="width:160px; text-align: center; font-weight:bold">
+                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                <div>希望エリア</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="dataList_table">
+                                <tbody class="scrollBody">
+                                    <apex:variable var="resRowNumIndex" value="{!0}" />
+                                    <apex:repeat value="{!resWrapList}" var="item" id="idResWrapList">
+                                        <tr>
+                                            <td style="width:40px; text-align: center;"><apex:inputCheckBox value="{!item.isSelected}" id="idChkResult" /><apex:inputHidden value="{!item.SogiShiryoSofu.SearchSofuShiryoURLUmu__c}" id="idHiddenSearchSofuShiryoURLUmu" /><apex:inputHidden value="{!item.SogiShiryoSofu.SogiShiryoSakuseiKekkaRef__c}" id="idHiddenSearchSogiShiryoSakuseiKekkaRef__c" /></td>
+                                            <td style="width:75px; text-align: center;">{!item.SogiShiryoSofu.Kinkyudo__c}</td>
+                                            <td style="width:80px; text-align: center;">{!item.SogiShiryoSofu.YusoShubetsu__c}</td>
+                                            <td style="width:100px; ">{!item.SogiShiryoSofu.Atena__c}</td>
+                                            <td style="width:120px; ">{!item.SogiShiryoSofu.SearchAddress__c}</td>
+                                            <td style="width:70px; text-align: center;">{!item.SogiShiryoSofu.MitumorishoUmu__c}</td>
+                                            <td style="width:140px; max-width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                <a href="/{!item.SogiShiryoSofu.Id}" id="lookup{!item.SogiShiryoSofu.Id}" onblur="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.Id}').hide();" onfocus="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.Id}', '/{!item.SogiShiryoSofu.Id}/m?retURL=/{!item.SogiShiryoSofu.Id}&isAjaxRequest=1').show();" onmouseout="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.Id}').hide();" onmouseover="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.Id}', '/{!item.SogiShiryoSofu.Id}/m?retURL=/{!item.SogiShiryoSofu.Id}&isAjaxRequest=1').show();">
+                                                    {!item.SogiShiryoSofu.HikitsugiJiko__c}
+                                                </a>
+                                            </td>
+                                            <td style="width:80px; text-align: center;">{!item.SogiShiryoSofu.PamphletYohi__c}</td>
+                                            <td style="width:140px;">{!item.SogiShiryoSofu.InsatsubutsuIchiran__c}</td>
+                                            <td style="width:70px;">{!item.SogiShiryoSofu.Insatsusha__c}</td>
+                                            <td style="width:120px; max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ">
+                                                <a href="/{!item.SogiShiryoSofu.OpportunityRef__r.Id}" id="lookup{!item.SogiShiryoSofu.OpportunityRef__r.Id}" onblur="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.OpportunityRef__r.Id}').hide();" onfocus="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.OpportunityRef__r.Id}', '/{!item.SogiShiryoSofu.OpportunityRef__r.Id}/m?retURL=/{!item.SogiShiryoSofu.OpportunityRef__r.Id}&isAjaxRequest=1').show();" onmouseout="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.OpportunityRef__r.Id}').hide();" onmouseover="LookupHoverDetail.getHover('lookup{!item.SogiShiryoSofu.OpportunityRef__r.Id}', '/{!item.SogiShiryoSofu.OpportunityRef__r.Id}/m?retURL=/{!item.SogiShiryoSofu.OpportunityRef__r.Id}&isAjaxRequest=1').show();">
+                                                    {!item.SogiShiryoSofu.OpportunityRef__r.name}
+                                                </a>
+                                            </td>
+                                            <td style="width:90px; text-align: center; max-width:90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ">
+                                                <apex:outputLink value="/{!item.SogiShiryoSofu.OpportunityRef__c}" >
+                                                    {!item.SogiShiryoSofu.OpportunityRef__r.ShodanBango__c}
+                                                </apex:outputLink>
+                                            </td>
+                                            <td style="width:110px; text-align: center; max-width:110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ">
+                                                <apex:outputLink value="/{!item.SogiShiryoSofu.Id}" >
+                                                    {!item.SogiShiryoSofu.Name}
+                                                </apex:outputLink>
+                                            </td>
+                                            <td style="width:60px; text-align: center;">
+                                                <apex:outputLink value="{!item.SogiShiryoSofu.SofuShiryoURL__c}" style="display:{!IF(item.SogiShiryoSofu.SearchSofuShiryoURLUmu__c==false,'none', '')}" id="idSofuShiryoURL" >
+                                                    参照
+                                                </apex:outputLink>
+                                            </td>
+                                            <td style="width:70px; text-align: center;"><apex:outputField value="{!item.SogiShiryoSofu.SearchSofubi__c}" id="idSofubi" /></td>
+                                            <td style="width:70px; text-align: center;"><apex:outputField value="{!item.SogiShiryoSofu.SearchInsatsubi__c}" id="idInsatsubi" /></td>
+                                            <td style="width:80px; text-align: center;"><apex:outputField value="{!item.SogiShiryoSofu.SofuJokyo__c}" id="idSofuJokyo" /></td>
+                                            <td style="width:80px; text-align: center;"><apex:outputField value="{!item.SogiShiryoSofu.SofuShubetsu__c}" id="idSofuShubetsu" /></td>
+                                            <td style="width:70px; text-align: center;">{!item.SogiShiryoSofu.OpportunityRef__r.StageName}</td>
+                                            <td style="width:160px;"><apex:outputField value="{!item.SogiShiryoSofu.SearchKiboArea__c}" id="idKiboArea" /></td>
+                                        </tr>
+                                        <apex:variable var="resRowNumIndex" value="{!resRowNumIndex + 1}" />
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                        <br />
+                    </apex:outputPanel>
+                </div>
+                <div class="section-panel">
+                    <apex:outputPanel id="IdKoshin" layout="block" style="width: 100%">
+                        <div style="display: flex;">
+                            <div style="padding-top: 3px; padding-left: 11px; padding-right: 5px;">
+                                <input type="button" class="btn"  onclick="doSoufuZumi('{!resWrapList.size}','today');" style="width: 100px;" value="当日送付済" />
+                                <input type="button" class="btn"  onclick="doSoufuZumi('{!resWrapList.size}','tomorrow');" style="width: 100px;" value="翌日送付済" />
+                            </div>
+                            <div class="JotaiHenko_btn" style="padding-top: 3px; padding-left: 11px; padding-right: 5px; margin-left: 10%;">
+                                <a href="#" onClick="JotaiHenkoJs('idJotaiHenkoBtn');" id="idJotaiHenkoBtn" style="color: white;">【状態変更】▲</a>
+                            </div>
+                            <div style="width: 250px;">
+                                <div style="padding-top: 6px; text-align: end; margin-left: 10%; display: none;" id="idSoufujoukyoSelect">
+                                    <apex:selectList value="{!SoufujoukyoSelect}" style="" multiselect="false" size="1">
+                                        <apex:selectOptions value="{!SoufujoukyoOpt}"/>
+                                    </apex:selectList>
+                                </div>
+                                <div style="padding-top: 3px;margin-left: 5px; display: none;" id="iddoJotaiHenko">
+                                    <input type="button" class="btn"  onclick="doJotaiHenko('{!SoufujoukyoSelect}','{!resWrapList.size}');" style="width: 100px;" value="状態変更" />
+                                </div>
+                            </div>
+                            <div style="padding-top: 3px; margin-left: 10%;">
+                                <input type="button" class="btn"  onclick="doInsatsu('{!resWrapList.size}');" style="width: 100px;" value="印刷" />
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

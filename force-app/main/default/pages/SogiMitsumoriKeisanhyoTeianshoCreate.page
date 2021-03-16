@@ -1,0 +1,426 @@
+<apex:page id="idPage" docType="html-5.0" standardController="SogiShiryoSofu__c" extensions="SogiMitsumoriKeisanhyoTeianshoCreateCtl" action="{!init}" cache="false" title="葬儀提案書作成">
+
+    <script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+  
+    <apex:includeScript value="/support/console/44.0/integration.js" />
+    <style>
+  
+      :root {
+        --main-height: 0px;
+        --submenu-height: 0px;
+      }
+      
+      .wrapper {
+        resize: both;
+      }
+  
+      .container {
+        display: flex;
+      }
+  
+      .main {
+        /*width: 80%;*/
+      }
+  
+      .main-header {}
+  
+      .section-panel {
+        display: flex;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 3px;
+      }
+  
+      .summarpanel {
+        display: flex;
+      }
+  
+      .center-column {}
+  
+      .main-contents {
+        width: 100%;
+        margin-top: 10px;
+        height: var(--main-height);
+        overflow-y:scroll;
+      }
+  
+      html body.sfdcBody {
+        background: rgba(176, 196, 223, 1.0);
+        padding: 10px 10px 0 10px;
+        font-size: 80%;
+        font-family: 'Salesforce Sans',Arial,sans-serif;
+      }
+  
+      div {
+        font-family: 'Salesforce Sans',Arial,sans-serif;
+      }
+  
+      th {
+        text-align: right;
+        font-family: 'Salesforce Sans',Arial,sans-serif;
+      }
+  
+      td {
+        padding: 0 10px 0 0;
+        font-family: 'Salesforce Sans',Arial,sans-serif;
+      }
+
+      .row {
+        margin-top: 5px;
+      }
+
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+  
+      table.ex_table {
+        border-collapse: collapse;
+        border: 0;
+      }
+  
+      table.ex_table th {
+        border: 1px solid #222;
+        border-style: dotted;
+      }
+      table.ex_table td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-right: 4px;
+        white-space: nowrap;
+      }
+
+      table.kensakukekka {
+        border-collapse: collapse;
+        border: 0;
+        overflow: scroll;
+      }
+      table.kensakukekka th {
+        border: 1px solid #222;
+        border-style: dotted;
+      }
+      table.kensakukekka td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-right: 4px;
+        white-space: nowrap;
+      }
+      table.sofujoList {
+        border-collapse: collapse;
+        border: 0;
+        overflow: scroll;
+      }
+      table.sofujoList th {
+        border: 1px solid #222;
+        border-style: dotted;
+      }
+      table.sofujoList td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-right: 4px;
+        white-space: nowrap;
+      }
+      thead.sofujoList_scrollHead,tbody.sofujoList_scrollBody{
+          display:block;
+      }
+      tbody.sofujoList_scrollBody{
+          overflow:auto;
+          width: 100%;
+          height: 139px;
+      }
+      .saijoTeianList_name{
+          width: 300px;
+      }
+      .titlePanelPink {
+      color: hotpink;
+      }
+  
+      .titlePanelGreen {
+          color: darkgreen;
+      }
+  
+      .bgGreen {
+        background-color: #beedbe;
+          padding: 10px;
+          border: #DDDBDA solid 1px;
+          border-radius: .25rem;
+      }
+  
+      .bgPink {
+        background-color: #ffe6ea;
+          padding: 10px;
+          border: #DDDBDA solid 1px;
+          border-radius: .25rem;
+      }
+  
+      span.dateFormat {display: none;}
+  
+      .tab-wrap:after {
+        content: '';
+        width: 100%;
+        height: 3px;
+        background: #364e96;;
+        display: block;
+        order: -1;
+      }
+      .tab-label {
+        color: #565656;
+        background: LightGray;
+        text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+        white-space: nowrap;
+        text-align: center;
+        padding: 10px .5em;
+        order: -1;
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+        flex: 1;
+      }
+      .tab-label:not(:last-of-type) {
+        margin-right: 5px;
+      }
+      .tab-content {
+        width: 100%;
+        height: 0;
+        overflow: auto;
+        opacity: 0;
+      }
+      /* アクティブなタブ */
+      .tab-switch:checked+.tab-label {
+        font-weight: bold;
+        color: White;
+        background: #364e96;;
+      }
+      .tab-switch:checked+.tab-label+.tab-content {
+        height: 100%;
+        padding: 15px;
+        opacity: 1;
+        transition: .5s opacity;
+        box-shadow: 0 0 3px rgba(0,0,0,.2);
+        background: White;
+      }
+      .tab-othermenu-label {
+        color: #565656;
+        background: LightGray;
+        text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+        white-space: nowrap;
+        text-align: center;
+        padding: 10px .5em;
+        order: -1;
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+        flex: 1;
+      }
+      .tab-othermenu-label:not(:last-of-type) {
+        margin-right: 5px;
+      }
+      .tab-othermenu-content {
+        width: 100%;
+        height: 0px;
+        overflow: hidden;
+        opacity: 0;
+      }
+      /* アクティブなタブ */
+      .tab-othermenu-switch:checked+.tab-othermenu-label {
+        font-weight: bold;
+        color: White;
+        background: #364e96;;
+      }
+      .tab-othermenu-switch:checked+.tab-othermenu-label+.tab-othermenu-content {
+        overflow-y: scroll;
+        height: var(--submenu-height);
+        padding: 15px;
+        opacity: 1;
+        transition: .5s opacity;
+        box-shadow: 0 0 3px rgba(0,0,0,.2);
+        background: White;
+        display:;
+      }
+      /* ラジオボタン非表示 */
+      .tab-switch {
+        display: none;
+      }
+      .tab-othermenu-switch {
+        display: none;
+      }
+  
+      summary {
+           color: #364e96;
+          }
+  
+      fieldset {
+        padding: 0px;
+      }
+  
+      .contactHistoryJuhasshinTable td {
+        width: 63px;
+      }
+
+      table.templeteList {
+        border-collapse: collapse;
+        border: 0;
+        overflow: scroll;
+        width: 348px;
+      }
+      table.templeteList th {
+        border: 1px solid #222;
+        border-style: dotted;
+      }
+      table.templeteList td {
+        border: 1px solid #222;
+        border-style: dotted;
+        padding-right: 4px;
+        white-space: nowrap;
+      }
+  
+      </style>
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.1.10/libphonenumber-js.min.js"></script>
+      <script src="myapp.js"></script>
+      <script type="text/javascript" charset="utf-8">
+        sforce.connection.sessionId='{!GETSESSIONID()}';
+         
+    </script>
+    <c:loadingDialog title="Getting Contacts" />
+    <apex:form id="idForm" html-autocomplete="off">
+        <div class="wrapper">
+            <div class="container">
+                <div class="main">
+                    <div class="main-header" id="idMainHeader" style="width: 100%;">
+                        <div>
+                            <div class="section-panel">
+                                <div>
+                                    <div>【見積計算表リスト】</div>
+                                    <div style="padding:5px 0 0 0;">
+                                        <apex:outputPanel id="idKeisanhyoWrapListPanel" layout="block" style="width: 100%">
+                                            <table class="sofujoList" id="idKeisanhyoWrapListTable">
+                                                <thead class="sofujoList_scrollHead">
+                                                    <tr>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:60px;"><font color="#FFFFFF">選択</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:105px;"><font color="#FFFFFF">見積計算表名</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">家族一日</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">家族二日</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">家族華やか</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">火葬シンプル</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬基本</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬仏壇</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬お花</font></th>   
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:120px;"><font color="#FFFFFF">火葬場</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:120px;"><font color="#FFFFFF">斎場</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">仏具有無</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:100px;"><font color="#FFFFFF">割引</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">事前ｱﾝｹｰﾄ</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">式後ｱﾝｹｰﾄ</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:90px;"><font color="#FFFFFF">参列者親族</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">僧侶手配</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">戒名授与</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:125px;"><font color="#FFFFFF">戒名・法名</font></th>
+                                                        <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:100px;"><font color="#FFFFFF">作成日時</font></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="sofujoList_scrollBody">
+                                                    <apex:variable var="rowNumKeisanhyoWrapList" value="{!0}" />
+                                                        <apex:repeat value="{!keisanhyoWrapList}" var="keisanhyoWrap" id="idKeisanhyoWrapList">
+                                                            <tr id="idKeisanhyoWrapTr{!rowNumKeisanhyoWrapList}">
+                                                                <th style="text-align: center;width: 60px;">
+                                                                    <div style="text-align: left; text-align:center;"><apex:inputCheckbox value="{!keisanhyoWrap.isSlt}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 105px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Name}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 70px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoIchinichi__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 70px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoFutsuka__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoHanayaka__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiSimple__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 70px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiKihon__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 70px;">
+                                                                  <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiButsugu__c}" /></div>
+                                                                  </th>
+                                                                <th style="text-align: center;width: 70px;">
+                                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiOhana__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 120px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Kasojo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 120px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Saijo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.ButsuguUmu__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 100px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.WaribikiService__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: center"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.JizenSurvey__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: center"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.ShikigoSurvey__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 90px;">
+                                                                <div style="text-align: left; padding-left: 5px;">
+                                                                    <apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SanretsushaShinzokuFrom__c}" />～<apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SanretsushaShinzokuTo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SoryoTehaiKibo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 80px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KaimyoKibo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 125px;">
+                                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KaimyoHomyo__c}" /></div>
+                                                                </th>
+                                                                <th style="text-align: center;width: 100px;">
+                                                                  <div style="text-align: center;">
+                                                                    <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                                                      <apex:param value="{!keisanhyoWrap.keisanhyoObj.CreatedDate + 9/24}" />
+                                                                    </apex:outputText>
+                                                                  </div>
+                                                                </th>
+                                                            </tr>
+                                                        <apex:variable var="rowNumKeisanhyoWrapList" value="{!rowNumKeisanhyoWrapList + 1}" />
+                                                    </apex:repeat>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </div>
+                                    <div>
+                                        <div style="display:flex; padding-top:10px;">
+                                            <div>
+                                                <input type="button" value="提案書作成" style="width:100px" onclick="chkMitsumoriKeisanhyo();" id="idTeianshoSakuseiBtn" />
+                                            </div>
+                                            <div style="padding-left:10px;">
+                                                <apex:outputLabel id="idTeianshoSakuseiKekkaMsgLbl" value="{!teianshoSakuseiKekkaMsg}" style="color:{!IF(teianshoSakuseiKekkaFlg,'red','green')};"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        function chkMitsumoriKeisanhyo(){
+                                            createTeiansho();
+                                        }
+                                    </script>
+                                    <apex:actionFunction name="createTeiansho" action="{!actCreateTeiansho}" reRender="idTeianshoSakuseiKekkaMsgLbl"></apex:actionFunction>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

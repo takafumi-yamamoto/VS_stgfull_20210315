@@ -1,0 +1,19 @@
+<apex:page >
+    <!-- <apex:includeScript value="/support/console/26.0/integration.js"/> -->
+    <script src="https://minrevi--stgfull.cs57.my.salesforce.com/support/console/41.0/integration.js" type="text/javascript"> 
+    </script>
+
+    <script type="text/javascript">
+        function testIsInConsole() {
+            if (sforce.console.isInConsole()) {
+                  alert('in console');
+               } else {
+                  alert('not in console');
+            }
+        }
+    </script>
+
+    <A HREF="#" onClick="testIsInConsole();return false;">
+    	Click here to check if the page is in the Service Cloud console
+    </A>
+</apex:page>

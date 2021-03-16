@@ -1,0 +1,299 @@
+<!--/**
+* ページ名: PriorityMunk
+* ページ概要: 僧侶検索画面
+* @created: 2017/11/30 Vinh Hua Quoc
+* @modified: 
+*/-->
+<apex:page controller="Ctrl_PriorityMunk" cache="false">
+<apex:includeScript value="{!URLFOR($Resource.jsCommonLibrary, 'gridView/gridviewscroll.js')}"/>
+<style>
+
+    .tbl_search {width: 100%;}
+    .tbl_search tr th {background-color: blue; color: white;}
+    .tbl_search tr td,.tbl_search tr th {vertical-align: middle !important;}
+    .tbl_search tr td input[type=text] {width:91.8%; height: 20px;}
+    .tbl_search tr th label {padding-left: 2px;}
+    .left_search,.right_search {/*border: solid black 1px;*/}
+    .btn_group {text-align: center; margin-top: 10px; margin-bottom: 10px;}
+    .btn_group input {width: 62px; height: 27px;}
+    .multiSelectPicklistRow select {width:75px !important;}
+    .multiSelectPicklistTable tr:first-child {display: none;}
+    .select_css{width: 94%; height: 25px;}
+    #divBlockId .apexp:first-of-type {float:left; width: 50%;}
+    #divBlockId .apexp:not(:first-of-type) {float:right; width: 49.5%;}
+    .cls_center{text-align: center;}
+
+    .tbl_result {width: 100%;border-collapse: collapse;border:1px solid #ececec;}
+    .tbl_result tr th, .tbl_result tr td {
+        border:1px solid #ececec;
+        padding: 2px 2px 2px 2px;
+        line-height: 15px;
+        vertical-align: middle;
+    }
+    .tbl_result tr th{
+        text-align: center;
+        background-color: blue;
+        color: white;
+    }
+    .tbl_result tr td{
+        background-color: white;
+    }
+    .tbl_result tr:hover td {background:#ececec;}
+    /* 処理中ポップアップおよび背景 */
+    .popupBackground {
+      background-color:transparent;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 998;
+      position: absolute;
+      cursor:wait;
+    }
+    .popupPanel {
+      background-color: #FCFCFC;
+      left: 50%;
+      width: 120px;
+      margin-left: -50px;
+      top: 50%;
+      height: 16px;
+      margin-top: -8px;
+      padding: 1em;
+      z-index: 999;
+      position: fixed;
+      cursor:pointer;
+    }
+    .cls_reloadMap {
+        padding-bottom: 5px;
+        text-align: right;
+    }
+    .cls_reloadMap input{width: 62px; height: 27px;}
+</style>
+
+<script type="text/javascript">
+function drawTable(){
+    var gridViewScroll = new GridViewScroll({
+        width : "100%",
+        height : 160,
+        elementID : "idTable"
+    });
+    gridViewScroll.enhance();
+}
+</script>
+
+<!-- アクションステータス -->
+<apex:actionStatus id="statusSaveTrip" stopText="">
+    <apex:facet name="start">
+    <div>
+    <div class="popupBackground" />
+    <div class="popupPanel">
+        <div>
+            <img style="vertical-align: middle;" src="/img/loading.gif"/>
+            <b style="vertical-align: middle;margin-left: 5px;">読み込み中です</b>
+        </div>
+    </div>
+    </div>
+    </apex:facet>
+</apex:actionStatus>
+<apex:form id="myFormId" styleClass="clsForm">
+<div class="cls_reloadMap">
+    <apex:commandButton styleClass="btn_style" 
+        action="{!reloadMap}" status="statusSaveTrip" 
+        reRender="mapPanelId" value="マップ更新"/>
+</div>
+<div id="divBlockId">
+    <apex:pageBlock >
+        <apex:pageBlockSection columns="1" title="{!$Label.Label_Rakuso_034}">
+        <!-- style="min-height: 288px;" -->
+        <apex:outputPanel id="searchPanelId" layout="block">
+            <table class="tbl_search">
+            <colgroup>
+                 <col style="width:8%;"/>
+                 <col style="width:8%;"/>
+                 <col style="width:34%;"/>
+                 <col style="width:8%;"/>
+                 <col style="width:8%;"/>
+                 <col style="width:34%;"/>
+            </colgroup>
+            <tr>
+                <th colspan="2"><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_001}"/></th>
+                <td><apex:inputField value="{!searchWrapper.account.ShikugunRef__c}"/></td>
+                <td colspan="3">
+
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2"><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_002}"/></th>
+                <td><apex:inputField value="{!searchWrapper.keiyakuBillingState.HomutaiokanoArea__c}"/>
+                    <!-- <c:MultiselectPicklist leftLabel="選択可能" 
+                        rightLabel="選択済み" 
+                        nameLeftOptions="{!billingStateLeft}"
+                        nameRightOptions="{!billingStateRight}"
+                        size="4" 
+                        width="60px"/>   -->
+                </td>
+                <th colspan="2"><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_003}"/></th>
+                <td><apex:inputField value="{!searchWrapper.keiyaku.HomutaiokanoArea__c}"/>
+                    <!-- <c:MultiselectPicklist leftLabel="選択可能" 
+                        rightLabel="選択済み" 
+                        nameLeftOptions="{!homutaiokanoAreaLeft}"
+                        nameRightOptions="{!homutaiokanoAreaRight}"
+                        size="4" 
+                        width="60px"/> -->
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_004}"/></th>
+                <td>
+                    <!-- <apex:selectList styleClass="select_css" size="1" value="{!searchWrapper.syushi}">
+                        <apex:selectOptions value="{!religionTempleOption}"/>
+                    </apex:selectList> -->
+                    <apex:inputField styleClass="select_css" value="{!searchWrapper.account.Syushi__c}"/>
+                </td>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_005}"/></th>
+                <td>
+                    <!-- <apex:selectList styleClass="select_css" size="1" value="{!searchWrapper.syuha}">
+                        <apex:selectOptions value="{!religionTempleOption}"/>
+                    </apex:selectList> -->
+                    <apex:inputField styleClass="select_css" value="{!searchWrapper.account.Syuha__c}"/>
+                </td>
+            </tr>
+
+            <tr>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_006}"/></th>
+                <td><apex:inputText value="{!searchWrapper.syozokusangojiinmeFurigana}"/></td>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_007}"/></th>
+                <td><apex:inputText value="{!searchWrapper.someiFurigana}"/></td>
+            </tr>
+
+            <tr>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_008}"/></th>
+                <td><apex:inputField styleClass="select_css" value="{!searchWrapper.keiyaku.Kaimyojuyonomiirai__c}"/></td>
+                <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_009}"/></th>
+                <td><apex:inputText value="{!searchWrapper.madoguchiSouryoRenrakuSaki}"/></td>
+            </tr>
+            
+            </table>
+        </apex:outputPanel>
+        <apex:outputPanel styleClass="btn_group" layout="block">
+            <apex:commandButton style="margin-right: 10px;" action="{!searchData}" status="statusSaveTrip" reRender="resultPanelId,msgInfoId,mapPanelId" value="{!$Label.Label_Rakuso_010}" oncomplete="drawTable();" />
+            <apex:commandButton action="{!clearData}" status="statusSaveTrip" reRender="searchPanelId,resultPanelId,msgInfoId,mapPanelId" value="{!$Label.Label_Rakuso_011}" />
+        </apex:outputPanel>
+        <!-- <apex:pageMessages id="msgId"/> -->
+        <apex:outputPanel id="msgInfoId" layout="block" style="text-align:center;">
+            <div style="height: 17px;">
+                <apex:outputText style="color:#cc0000;" escape="false" value="{!messageInfo}"/>
+            </div>
+        </apex:outputPanel>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+
+
+
+    <apex:pageBlock >
+        <apex:pageBlockSection columns="1" title="{!$Label.Label_Rakuso_035}">
+        <apex:outputPanel id="mapPanelId" layout="block" >
+
+            <apex:outputPanel layout="none" rendered="{!IF(markWraperList.size = 0, true,false)}">
+                <apex:map id="myMapId1" width="100%" height="283px" mapType="roadmap" center="{!mapCenterPosition}">
+                    <apex:mapMarker icon="{!URLFOR($Resource.jsCommonLibrary, 'image/red_mark.png')}"
+                    position="{!mapCenterPosition}">
+                        <apex:mapInfoWindow >
+                            <apex:outputPanel layout="block" style="font-weight: bold;">
+                                <apex:outputText >{!mapCenterPosition}</apex:outputText>
+                            </apex:outputPanel>
+                        </apex:mapInfoWindow>
+                    </apex:mapMarker>
+                </apex:map>
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="none" rendered="{!IF(markWraperList.size = 0, false,true)}">
+                <apex:map id="myMapId2" width="100%" height="283px" mapType="roadmap" center="{!mapCenterPosition}">
+                    <apex:repeat value="{!markWraperList}" var="item">
+                        <apex:mapMarker icon="{!URLFOR($Resource.jsCommonLibrary, 'image/red_mark.png')}"
+                            position="{latitude: {!item.keiyaku.MadoguchisoryoIdo__c}, longitude: {!item.keiyaku.MadoguchisoryoKeido__c}}" >
+                            <apex:mapInfoWindow >
+                                <apex:outputPanel layout="block" style="font-weight: bold;">
+                                    <apex:outputText >{!item.keiyaku.Madoguchisoryo__r.BillingState}{!item.keiyaku.Madoguchisoryo__r.BillingCity}{!item.keiyaku.Madoguchisoryo__r.BillingStreet}{!item.keiyaku.Madoguchisoryo__r.BillingPostalCode}</apex:outputText>
+                                </apex:outputPanel>
+                            </apex:mapInfoWindow>
+                        </apex:mapMarker>
+                    </apex:repeat>
+                </apex:map>
+            </apex:outputPanel>
+
+        </apex:outputPanel>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+
+</div>
+<div style="clear:both;"></div>
+<apex:pageBlock >
+    <apex:pageBlockSection columns="1" title="{!$Label.Label_Rakuso_036}">
+    <apex:outputPanel id="resultPanelId" layout="block">
+        <div id="scrollId">
+            <table class="tbl_result" id="idTable">
+                <thead>
+                    <!-- <colgroup>
+                         <col span="17" style="width:5.88%;"/>
+                    </colgroup> -->
+                    <tr>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_013}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_014}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_015}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_016}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_017}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_018}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_019}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_020}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_021}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_022}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_023}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_024}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_025}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_026}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_027}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_028}"/></th>
+                        <th><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_029}"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:repeat value="{!resultWraperList}" var="item">
+                        <tr>
+                            <td class="cls_center">
+                                <apex:outputText value="{0,date,yyyy/MM/dd}"> 
+                                    <apex:param value="{!item.keiyaku.Keiyakukaishibi__c}" /> 
+                                </apex:outputText>
+                            </td>
+                            <td><apex:outputText value="{!item.keiyaku.TokkiJiko__c}"/></td>
+                            <td><apex:outputText value="{!item.keiyaku.Syushi__c}"/></td>
+                            <td><apex:outputText value="{!item.keiyaku.Syuha__c}"/></td>
+                            <td>
+                                <apex:outputText value="{!item.keiyaku.Madoguchisoryo__r.ShozokuSangouSangoJiin__r.Name}"/>
+                            </td>
+                            <td>
+                                <apex:outputText value="{!item.keiyaku.Madoguchisoryo__r.ShozokuSangouSangoJiin__r.Name}{!item.keiyaku.Madoguchisoryo__r.ShozokuSangouSangoJiin__r.SangoJiinMeiFurigana__c}"/>
+                            </td>
+                            <td><apex:outputText value="{!item.keiyaku.MadoguchiSouryoRenrakuSaki__c}"/></td>
+                            <td><apex:outputText value="{!item.keiyaku.Madoguchisoryo__r.SeikyuSakiFax1__c}"/></td>
+                            <td><apex:outputLink value="/{!item.keiyaku.Madoguchisoryo__c}">{!item.keiyaku.Madoguchisoryo__r.Name}</apex:outputLink></td>
+                            <td>
+                                <apex:outputText value="{!item.keiyaku.Madoguchisoryo__r.BillingState}{!item.keiyaku.Madoguchisoryo__r.BillingCity}{!item.keiyaku.Madoguchisoryo__r.BillingStreet}{!item.keiyaku.Madoguchisoryo__r.BillingPostalCode}"/>
+                            </td>
+                            <td><apex:outputText value="{!item.keiyaku.HomutaiokanoArea__c}"/></td>
+                            <td style="text-align: right;"><apex:outputField value="{!item.keiyaku.Madoguchisoryo__r.Age__pc}"/></td>
+                            <td><apex:outputField value="{!item.keiyaku.Iraisyosofuhouhou__c}"/></td>
+                            <td><apex:outputField value="{!item.keiyaku.Madoguchisoryo__r.MailAddress__c}"/></td>
+                            <td><apex:outputField value="{!item.keiyaku.Madoguchisoryo__r.Gender__pc}"/></td>
+                            <td class="cls_center"><apex:outputField value="{!item.keiyaku.AmazonTaioka__c}"/></td>
+                            <td><apex:outputField value="{!item.keiyaku.Kaimyojuyonomiirai__c}"/></td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+        </div>
+    </apex:outputPanel>
+    </apex:pageBlockSection>
+</apex:pageBlock>
+</apex:form>
+</apex:page>

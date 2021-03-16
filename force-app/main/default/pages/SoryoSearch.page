@@ -1,0 +1,447 @@
+<!--/**
+* ページ名: PriorityMunk
+* ページ概要: 僧侶検索画面
+* @created: 2017/11/30 Vinh Hua Quoc
+* @modified:
+*/-->
+<apex:page controller="Ctl_SoryoSearch" cache="false">
+    <apex:includeScript value="{!URLFOR($Resource.jsCommonLibrary, 'gridView/gridviewscroll.js')}"/>
+    <apex:includeScript value="/support/console/41.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.jsCommonLibrary, 'jQuery/jquery-1.11.1.min.js')}"/>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxIYCRdQaHersS3Ew0Qp3TwcHmn6C8yP0&callback=initMap"></script>
+    <style>
+        thead.scrollHead,tbody.scrollBody{
+            display:block;
+        }
+        tbody.scrollBody{
+            overflow:auto;
+            height:317px;
+        }
+        table td{
+            overflow-wrap : break-word;
+        }
+        table {
+            border-collapse: collapse;
+            font-size: 12px;
+            width: 100%;
+            /*table-layout: fixed;*/
+        }
+        table.kensakujoken tr{
+            border-color: gray;
+            border-style: solid;
+            border-width: 1px 0;
+        }
+        table.kensakukekka tr.kensakukekkaTr {
+            border-color: gray;
+            border-style: solid;
+            border-width: 1px 0;
+        }
+        .cls_no{
+            width:30px;
+            padding-left: 300px;
+        }
+        .cls_tokkijiko{
+            width:160px;
+            word-break: break-all;
+        }
+        .cls_jiinshushi{
+            width:70px;
+        }
+        .cls_jiinshuha{
+            width:100px;
+        }
+        .cls_tanishubetsu{
+            width:60px;
+        }
+        .cls_jiinmeikana{
+            width:175px;
+        }
+        .cls_madoguchisomei{
+            width:80px;
+        }
+        .cls_obosanbinkeiyaku{
+            width:150px;
+        }
+        .cls_madoguchirenrakusaki{
+            width:90px;
+        }
+        .cls_madoguchisoryomail{
+            width:145px;
+            word-break: break-all;
+        }
+        .cls_madoguchifax{
+            width:80px;
+        }
+        .cls_madoguchikyojutchi{
+            width:220px;
+        }
+        .cls_madoguchisoryonenrei{
+            width:30px;
+        }
+        .cls_iraishosofuhoho{
+            width:55px;
+        }
+        .cls_madoguchisoryoseibetsu{
+            width:30px;
+        }
+        .cls_amazondaio{
+            width:75px;
+        }
+        .cls_kaimyonomiirai{
+            width:80px;
+        }
+        .cls_kyori{
+            width:50px;
+        }
+        .cls_claimsu{
+            width:50px;
+        }
+        .cls_hyouka{
+            width:50px;
+        }
+
+        /* table, th, td {
+        border: 1px solid black;
+        } */
+    </style>
+
+    <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    $j(document).ready(function($) {
+        $j('[id$="shikugunkanriRefId"]').prop("disabled",true);
+    });
+    function drawTable(){
+        // var gridViewScroll = new GridViewScroll({
+        //     width : "100%",
+        //     height : 160,
+        //     elementID : "idKensakuKekka"
+        // });
+        // gridViewScroll.enhance();
+    }
+
+        function changeRadio(idItemChange){
+            if(idItemChange == "radioLookupId"){
+                $j('[id$="radioLookupHiddenId"]').val(true);
+                $j('[id$="radioTextHiddenId"]').val(false);
+                $j('[id$="addressId"]').prop("disabled",true);
+                $j('[id$="shikugunkanriRefId"]').prop("disabled",false);
+                $j('[id$="addressId"]').val('');
+                //$j('[id$="searchPanelId"]').find("a").css("visibility", "visible");
+                $j('[id$="radioLookupId"]').prop('checked', true);
+                $j('[id$="shikugunkanriRefId"]').focus();
+            } else if(idItemChange == "radioTextId"){
+                $j('[id$="radioLookupHiddenId"]').val(false);
+                $j('[id$="radioTextHiddenId"]').val(true);
+                $j('[id$="shikugunkanriRefId"]').prop("disabled",true);
+                $j('[id$="addressId"]').prop("disabled",false);
+                $j('[id$="shikugunkanriRefId"]').val('');
+                //$j('[id$="searchPanelId"]').find("a").css("visibility", "hidden");
+                $j('[id$="radioTextId"]').prop('checked', true);
+                $j('[id$="addressId"]').focus();
+            }
+        }
+        function attrLatLngFromAddress(address){
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({'address': address}, function(results, status){
+                if(status == google.maps.GeocoderStatus.OK) {
+                    var lat = results[0].geometry.location.lat();
+                    var lng = results[0].geometry.location.lng();
+                    // 小数点第六位以下を四捨五入した値を緯度経度にセット、小数点以下の値が第六位に満たない場合は0埋め
+                    var latitudeJs = (Math.round(lat * 1000000) / 1000000).toFixed(6);
+                    var longitudeJs = (Math.round(lng * 1000000) / 1000000).toFixed(6);
+                    $j('[id$="latitudeHiddenId"]').val(latitudeJs);
+                    $j('[id$="longitudeHiddenId"]').val(longitudeJs);
+                    actionSearch();
+                }
+            });
+        }
+
+        function actionBeforeSearch(){
+
+            if($j('[id$="radioLookupId"]').is(':checked') && $j('[id$="shikugunkanriRefId"]').val() != ''){
+                actionSearch();
+            }
+            else if($j('[id$="radioTextId"]').is(':checked') && $j('[id$="addressId"]').val() != ''){
+                attrLatLngFromAddress($j('[id$="addressId"]').val());
+            }
+            else{
+                actionSearch();
+            }
+        }
+
+
+    </script>
+
+    <script language="JavaScript" type="text/javascript">
+        function eventOpen(index) {
+            var targetScheduleId = "schedule" + index;
+            var targetOpenBtnId = "openBtn" + index;
+            var targetCloseBtnId = "closeBtn" + index;
+            var scheduleElem = document.getElementById(targetScheduleId);
+            var openBtnElem = document.getElementById(targetOpenBtnId);
+            var closeBtnElem = document.getElementById(targetCloseBtnId);
+            scheduleElem.style.display = "";
+            openBtnElem.style.display = "none";
+            closeBtnElem.style.display = "";
+        }
+        function eventClose(index) {
+            var targetScheduleId = "schedule" + index;
+            var targetOpenBtnId = "openBtn" + index;
+            var targetCloseBtnId = "closeBtn" + index;
+            var scheduleElem = document.getElementById(targetScheduleId);
+            var openBtnElem = document.getElementById(targetOpenBtnId);
+            var closeBtnElem = document.getElementById(targetCloseBtnId);
+            scheduleElem.style.display = "none";
+            openBtnElem.style.display = "";
+            closeBtnElem.style.display = "none";
+        }
+    </script>
+
+<!-- アクションステータス -->
+    <apex:actionStatus id="statusSaveTrip" stopText="">
+        <!--apex:facet name="start">
+            <div>
+                <div class="popupBackground" />
+                <div class="popupPanel">
+                    <div>
+                        <img style="vertical-align: middle;" src="/img/loading.gif"/>
+                        <b style="vertical-align: middle;margin-left: 5px;">読み込み中です</b>
+                    </div>
+                </div>
+            </div>
+        </apex:facet-->
+    </apex:actionStatus>
+    <apex:form id="myFormId">
+        <table width="100%" border="0">
+            <tr>
+                <td width="40%" height="400px">
+                    <apex:pageBlock title="検索条件" tabStyle="Account">
+                        <apex:pageBlockSection columns="1" collapsible="false">
+                            <apex:outputPanel id="searchPanelId" layout="block">
+                                <table border="0" class="kensakujoken" cellspacing="0" cellpadding="11px" height="335px">
+                                    <tr>
+                                        <!-- <th width="30%" valign="middle"><apex:outputLabel escape="false" value="{!$Label.Label_Rakuso_001}"/></th>
+                                        <td width="70%"><apex:inputField value="{!searchJoken.ShikugunRef__c}"/></td> -->
+                                        <th width="100px">希望エリア</th>
+                                        <td width="25px" valign="middle">
+                                            <input id="radioTextId" name="searchtype"
+                                                    style="vertical-align: middle" type="radio" checked="checked"
+                                                    onchange="changeRadio('radioTextId');"
+                                                    value="Text"/>
+                                            <apex:inputHidden id="radioTextHiddenId" value="{!searchWrapper.radioText}"/>
+                                        </td>
+                                        <td width="200px">
+                                            <label onclick="changeRadio('radioTextId');" for="radioTextId"><apex:inputText id="addressId" value="{!searchWrapper.address}" style="width:200px"/></label>
+                                            <apex:inputHidden id="latitudeHiddenId" value="{!searchWrapper.latitudeAdress}"/>
+                                            <apex:inputHidden id="longitudeHiddenId" value="{!searchWrapper.longitudeAdress}"/>
+                                        </td>
+                                        <td width="25px" align="right">
+                                            <input id="radioLookupId" name="searchtype"
+                                                    style="vertical-align: middle" type="radio"
+                                                    onchange="changeRadio('radioLookupId');"
+                                                    value="Lookup"/>
+                                            <apex:inputHidden id="radioLookupHiddenId" value="{!searchWrapper.radioLookup}"/>
+                                        </td>
+                                        <td>
+                                            <label onclick="changeRadio('radioLookupId');" for="radioLookupId"><apex:inputField id="shikugunkanriRefId" value="{!searchJoken.ShikugunRef__c}"/></label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"><apex:outputLabel value="手配日"/></th>
+                                        <td colspan="3" valign="middle"><apex:inputField value="{!searchJoken.TehaibiKensakuyo__c}" html-autocomplete="off"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_007}"/></th>
+                                        <td colspan="3" valign="middle"><apex:inputText value="{!searchJoken.LastNameFurigana__pc}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_009}"/></th>
+                                        <td colspan="3" valign="middle"><apex:inputText value="{!searchJoken.Phone}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2">寺院宗旨</th>
+                                        <td valign="middle"><apex:inputField styleClass="select_css" value="{!searchJoken.JiinSyusi__c}"/></td>
+                                        <th>寺院宗派</th>
+                                        <td><apex:inputField styleClass="select_css" value="{!searchJoken.ShuhaKensakuYo__c}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_006}"/></th>
+                                        <td colspan="3"><apex:inputText value="{!searchJoken.SangoJiinMeiFurigana__c}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="2"><apex:outputLabel value="{!$Label.Label_Rakuso_008}"/></th>
+                                        <td colspan="3"><apex:inputField styleClass="select_css" value="{!searchJoken.Kaimyojuyonomiirai__c}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5" align="center">
+                                            <apex:commandButton style="margin-right: 10px;" onclick="actionBeforeSearch();return false;" status="statusSaveTrip" reRender="resultPanelId,msgInfoId,mapPanelId" value="{!$Label.Label_Rakuso_010}"  />
+                                            <apex:commandButton style="margin-right: 10px;" action="{!clearData}" status="statusSaveTrip" reRender="searchPanelId,resultPanelId,msgInfoId,mapPanelId" value="{!$Label.Label_Rakuso_011}" />
+                                            <apex:commandButton style="margin-right: 10px;" action="{!reloadMap}" status="statusSaveTrip" reRender="mapPanelId" value="マップ更新"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                            <apex:outputPanel id="msgInfoId" layout="block" style="text-align:center;">
+                                <div style="height: 17px;">
+                                    <apex:outputText style="color:#cc0000;" value="{!messageInfo}"/>
+                                </div>
+                            </apex:outputPanel>
+                        </apex:pageBlockSection>
+                    </apex:pageBlock>
+                </td>
+                <td width="60%" height="400px">
+                    <apex:pageBlock title="地図" tabStyle="Account">
+                        <apex:facet name="header">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                                <tboy>
+                                    <tr>
+                                        <td class="pbTitle" style="width:60px"><h2 class="mainTittle">地図</h2>
+                                        </td>
+                                        <td align="left"><font color="#f7584c">■</font> = 検索地点　<font color="#008b8b">■</font> = 窓口僧侶　<font color="#ff8c00">■</font> = 選択地点
+                                        </td>
+                                    </tr>
+                                </tboy>
+                            </table>
+                        </apex:facet>
+                        <apex:pageBlockSection columns="1" collapsible="false">
+                            <apex:outputPanel id="mapPanelId" layout="block">
+                                <apex:map id="myMapId2" width="100%" height="363px" mapType="roadmap" center="{'latitude':{!searchWrapper.centerLat},'longitude':{!searchWrapper.centerLon}}" zoomLevel="13">
+                                    <apex:mapMarker title="{!centerShikugun.Name}" icon="{!URLFOR($Resource.jsCommonLibrary, 'image/red_mark.png')}" position="{latitude: {!searchWrapper.defLat}, longitude: {!searchWrapper.defLon}}" >
+                                        <apex:mapInfoWindow >
+                                            <apex:outputPanel layout="block" style="font-weight: bold;">
+                                                <apex:outputText >{!centerShikugun.Name}</apex:outputText>
+                                            </apex:outputPanel>
+                                        </apex:mapInfoWindow>
+                                    </apex:mapMarker>
+                                    <apex:repeat value="{!resultWraperList}" var="item">
+                                        <apex:mapMarker title="{!item.keiyaku.Teikeisaki__r.Name}" icon="{!IF(AND(searchWrapper.centerLat=item.keiyaku.Teikeisaki__r.BillingLatitude,searchWrapper.centerLon=item.keiyaku.Teikeisaki__r.BillingLongitude),URLFOR($Resource.jsCommonLibrary, 'image/orange_mark.png'),URLFOR($Resource.jsCommonLibrary, 'image/green_mark.png'))}" position="{latitude: {!item.keiyaku.Teikeisaki__r.BillingLatitude}, longitude: {!item.keiyaku.Teikeisaki__r.BillingLongitude}}" >
+                                            <apex:mapInfoWindow >
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="No.{!item.resultIndex}"/>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="寺院名(カナ)："/><apex:outputLink value="/{!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__c}">{!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__r.Name}({!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__r.SangoJiinMeiFurigana__c})</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="窓口僧名："/><apex:outputLink value="/{!item.keiyaku.Teikeisaki__c}">{!item.keiyaku.Teikeisaki__r.Name}</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="お坊さん便契約："/><apex:outputLink value="/{!item.keiyaku.Id}">{!item.keiyaku.Name}</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="電話："/><apex:outputField value="{!item.keiyaku.MadoguchiSouryoRenrakuSaki__c}"/>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="住所："/><apex:outputText value="{!item.keiyaku.Teikeisaki__r.BillingState}{!item.keiyaku.Teikeisaki__r.BillingCity}{!item.keiyaku.Teikeisaki__r.BillingStreet}{!item.keiyaku.Teikeisaki__r.BillingPostalCode}"/>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="送客時注意点："/><apex:outputField value="{!item.keiyaku.Sokyakujicyuiten__c}"/>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="距離："/><apex:outputText value="{!item.distance}"/>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block">
+                                                    <apex:outputText style="font-weight: bold;" value="手配日時："/>
+                                                </apex:outputPanel>
+                                            </apex:mapInfoWindow>
+                                        </apex:mapMarker>
+                                    </apex:repeat>
+                                </apex:map>
+                            </apex:outputPanel>
+                        </apex:pageBlockSection>
+                    </apex:pageBlock>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <apex:pageBlock title="検索結果" tabStyle="Account">
+                        <apex:pageBlockSection columns="1" collapsible="false">
+                            <apex:outputPanel id="resultPanelId" layout="block">
+                                <table class="kensakukekka">
+                                    <thead class="scrollHead">
+                                        <tr>
+                                            <th class="cls_no">No.</th>
+                                            <th class="cls_tokkijiko">送客時注意点</th>
+                                            <th class="cls_claimsu">クレーム数</th>
+                                            <th class="cls_hyouka">評価</th>
+                                            <th class="cls_jiinshushi">寺院宗旨</th>
+                                            <th class="cls_jiinshuha">寺院宗派</th>
+                                            <th class="cls_tanishubetsu">単位種別</th>
+                                            <th class="cls_tehainichiji">ｽｹｼﾞｭｰﾙ</th>
+                                            <th class="denwa-hoyo-kahi"
+                                                style="">電話法要</th>
+                                            <th class="cls_jiindenohoyoka">寺院での法要可</th>
+                                            <th class="cls_jiinmeikana">寺院名(カナ)</th>
+                                            <th class="cls_madoguchisomei">窓口僧名</th>
+                                            <th class="cls_madoguchirenrakusaki">連絡先</th>
+                                            <th class="cls_madoguchikyojutchi">居住地</th>
+                                            <th class="cls_madoguchisoryonenrei">年齢</th>
+                                            <th class="cls_iraishosofuhoho">送付方法</th>
+                                            <th class="cls_madoguchisoryoseibetsu">性別</th>
+                                            <th class="cls_amazondaio">Amazon対応</th>
+                                            <th class="cls_kaimyonomiirai">戒名授与のみ</th>
+                                            <th class="cls_kyori">距離</th>
+                                            <th class="cls_johouSyaSuu">助法者数</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scrollBody">
+                                        <apex:repeat value="{!resultWraperList}" var="item">
+                                            <tr class="kensakukekkaTr" bgcolor="{!IF(item.clickFlg, '#dcdcdc','')}">
+                                                <td class="cls_no"><apex:commandButton value="{!item.resultIndex}" action="{!moveCenterPosition}" style="width:20px" reRender="resultPanelId,myMapId2">
+                                                                <apex:param name="pClickIndex" value="{!item.resultIndex}" assignTo="{!pClickIndex}"/>
+                                                                <apex:param name="pLat" value="{!item.lat}" assignTo="{!pLat}"/>
+                                                                <apex:param name="pLon" value="{!item.lon}" assignTo="{!pLon}"/>
+                                                                </apex:commandButton></td>
+                                                <td class="cls_tokkijiko" align="left"><apex:outputText value="{!item.keiyaku.Sokyakujicyuiten__c}"/></td>
+                                                <td class="cls_claimsu"><apex:outputText value="{!item.keiyaku.Teikeisaki__r.SouryoClaimNum__c}"/></td>
+                                                <td class="cls_hyouka"><apex:outputText value="{!item.keiyaku.Teikeisaki__r.HyokaSouryo__c}"/></td>
+                                                <td class="cls_jiinshushi"><apex:outputText value="{!item.keiyaku.Syushi__c}"/></td>
+                                                <td class="cls_jiinshuha"><apex:outputText value="{!item.keiyaku.Syuha__c}"/></td>
+                                                <td class="cls_tanishubetsu"><apex:outputText value="{!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__r.HoujinTanniKubun__c}"/></td>
+                                                <td class="cls_tehainichiji" style="width:100px">
+                                                    <div  style="display:{!IF(item.soryoScheduleList.size > 0, '', 'none')}"><input type="button" id="openBtn{!item.resultIndex}" value="▼" class="btn" onClick="eventOpen('{!item.resultIndex}');return false;"/><input type="button" id="closeBtn{!item.resultIndex}" value="▲" class="btn" onClick="eventClose('{!item.resultIndex}');return false;" style="display:none;" /></div>
+                                                </td>
+                                                <td class="denwa-hoyo-kahi" style="width:54px"><apex:outputText value="{!item.keiyaku.DenwaHoyoKahi__c}"/></td>
+                                                <td class="cls_jiindenohoyoka" style="width:100px">
+                                                    <apex:outputText value="{!item.keiyaku.JiinDenoHoyoKa__c}"/>
+                                                </td>
+                                                <td class="cls_jiinmeikana"><apex:outputLink value="/{!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__c}">{!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__r.Name}({!item.keiyaku.Teikeisaki__r.ShozokuSangouSangoJiin__r.SangoJiinMeiFurigana__c})</apex:outputLink></td>
+                                                <td class="cls_madoguchisomei"><apex:outputLink value="/{!item.keiyaku.Teikeisaki__c}">{!item.keiyaku.Teikeisaki__r.Name}</apex:outputLink></td>
+                                                <td class="cls_madoguchirenrakusaki"><apex:outputText value="{!item.keiyaku.MadoguchiSouryoRenrakuSaki__c}"/></td>
+                                                <td class="cls_madoguchikyojutchi"><apex:outputText value="{!item.keiyaku.Teikeisaki__r.BillingPostalCode} {!item.keiyaku.Teikeisaki__r.BillingState}{!item.keiyaku.Teikeisaki__r.BillingCity}{!item.keiyaku.Teikeisaki__r.BillingStreet}"/></td>
+                                                <td class="cls_madoguchisoryonenrei" align="center"><apex:outputField value="{!item.keiyaku.Teikeisaki__r.Nenrei__c}"/></td>
+                                                <td class="cls_iraishosofuhoho" align="center"><apex:outputField value="{!item.keiyaku.Iraisyosofuhouhou__c}"/></td>
+                                                <td class="cls_madoguchisoryoseibetsu" align="center"><apex:outputField value="{!item.keiyaku.Teikeisaki__r.Seibetsu__c}"/></td>
+                                                <td class="cls_amazondaio" align="center"><apex:outputText value="{!IF(item.keiyaku.AmazonTaioka__c,'✔','')}"/></td>
+                                                <td class="cls_kaimyonomiirai" align="center"><apex:outputField value="{!item.keiyaku.Kaimyojuyonomiirai__c}"/></td>
+                                                <td class="cls_kyori"><apex:outputText value="{!item.distance}"/></td>
+                                                <td class="cls_johouSyaSuu"><apex:outputText value="{!item.johouSyaSuu}"/></td>
+                                            </tr>
+                                            <tr id="schedule{!item.resultIndex}" style="display: none">
+                                                <td colspan="19">
+                                                    <table>
+                                                        <apex:repeat value="{!item.soryoScheduleList}" var="sekoSoryo">
+                                                            <tr>
+                                                                <td width="30px"></td>
+                                                                <td width="100px" align="right"><apex:outputLink value="/{!sekoSoryo.sekoSoryoId}"><apex:outputtext value="{!sekoSoryo.sekoSoryoName}" /></apex:outputLink></td>
+                                                                <apex:repeat value="{!sekoSoryo.eventList}" var="event">
+                                                                    <td width="200px" align="center"><apex:outputLink value="/{!event.Id}"><apex:outputtext value="{0, date, yyyy/MM/dd HH:mm}"><apex:param value="{!event.StartDateTime + 0.375}"></apex:param></apex:outputtext> - <apex:outputtext value="{0, date, yyyy/MM/dd HH:mm}"><apex:param value="{!event.EndDateTime + 0.375}"></apex:param></apex:outputtext> | </apex:outputLink></td>
+                                                                </apex:repeat>
+                                                                <td></td>
+                                                            </tr>
+                                                        </apex:repeat>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </apex:outputPanel>
+                        </apex:pageBlockSection>
+                    </apex:pageBlock>
+                </td>
+            </tr>
+        </table>
+        <apex:actionFunction name="actionSearch" action="{!searchData}" status="statusSaveTrip" reRender="msgInfoId,mapPanelId,resultPanelId" oncomplete="drawTable();"/>
+    </apex:form>
+</apex:page>

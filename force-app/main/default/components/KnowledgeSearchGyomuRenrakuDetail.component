@@ -1,0 +1,107 @@
+<apex:component >
+	<apex:attribute name="gyomuRenrakuDetail" type="GyomuRenraku__c" description="" />
+	<apex:attribute name="midokuUserIdMap" type="map" description="" />
+	<apex:attribute name="kidokuUserIdMap" type="map" description="" />
+	<apex:attribute name="editFlg" type="Boolean" description="" />
+	
+	<div style="display: flex;">
+        <div class="detail_title">
+			業務連絡詳細
+		</div>
+        <div>
+            <apex:outputPanel id="idGyomuRenrakuDetailButtonsPanel" rendered="{!editFlg}" >
+				<div style="margin-left: 10px;">
+					<input type="button" value="編集" onClick="navigateToUrl('/{!gyomuRenrakuDetail.Id}/e?retURL=%2Fapex%2FKnowledgeText%3Fisdtp%3Dp1%26clc%3D1&isdtp=p2','DETAIL','edit');" class="spread_title" />
+				</div>
+			</apex:outputPanel>
+        </div>
+        <div style="margin-left: 15px;">
+			<input type="button" value="参照" onClick="srcUp('/{!gyomuRenrakuDetail.Id}');" class="spread_title" />
+		</div>
+    </div>
+    <div style="width:100%; font-family: 'Salesforce Sans',Arial,sans-serif;">
+		<div style="display: flex; width:100%;">
+			<div style="width:100px;" class="dataList_div_th">
+				カテゴリ
+			</div>
+			<div style="width:calc(100% - 100px);" class="dataList_div_th">
+				タイトル
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:97px;" class="dataList_div_td">
+				<apex:outputText value="{!gyomuRenrakuDetail.Category__c}"/>
+			</div>
+			<div style="width:calc(100% - 97px);" class="dataList_div_td">
+				<apex:outputText value="{!gyomuRenrakuDetail.Name}"/>
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:100%;" class="dataList_div_th">
+				内容
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:100%;" class="dataList_div_td">
+				<apex:outputField value="{!gyomuRenrakuDetail.Naiyo__c}"/>
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:calc(100% - 380px);" class="dataList_div_th">
+				周知範囲
+			</div>
+			<div style="width:100px;" class="dataList_div_th">
+				作成日時
+			</div>
+			<div style="width:90px;" class="dataList_div_th">
+				作成者
+			</div>
+			<div style="width:100px;" class="dataList_div_th">
+				最終更新日
+			</div>
+			<div style="width:90px;" class="dataList_div_th">
+				最終更新者
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:calc(100% - 380px);" class="dataList_div_td">
+				<apex:outputText value="{!gyomuRenrakuDetail.ShuchiHani__c}"/>
+			</div>
+			<div style="width:97px;" class="dataList_div_td">
+				<apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+					<apex:param value="{!gyomuRenrakuDetail.CreatedDate + 9/24}"/>
+				</apex:outputText>
+			</div>
+			<div style="width:87px;" class="dataList_div_td">
+				<apex:outputText value="{!gyomuRenrakuDetail.CreatedBy.Name}"/>
+			</div>
+			<div style="width:97px;" class="dataList_div_td">
+				<apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+					<apex:param value="{!gyomuRenrakuDetail.SaishuKoshinbi__c + 9/24}"/>
+				</apex:outputText>
+			</div>
+			<div style="width:87px;" class="dataList_div_td">
+				<apex:outputText value="{!gyomuRenrakuDetail.SaishuKoshinshaRef__r.Name}"/>
+			</div>
+		</div>
+		<div style="display: flex; width:100%;">
+			<div style="width:100px; padding-top: 5px;" class="dataList_div_th">
+	            既読
+	        </div>
+	        <div style="width:calc(100% - 100px); padding: 4px" class="dataList_div_td">
+	            <apex:repeat value="{!midokuUserIdMap}" var="midokuUserWrap" id="idMidokuUserWrapListRepeat">
+		            <div style="display: flex;">
+		            	<div style="width: 100px;"><apex:outputText value="{!midokuUserIdMap[midokuUserWrap].userName}" /></div>
+		            	<div><apex:outputText value="{!midokuUserIdMap[midokuUserWrap].midokuStatus}" style="color: red;"/></div>
+		            </div>
+	        	</apex:repeat>
+	        	<apex:repeat value="{!kidokuUserIdMap}" var="kidokuUserWrap" id="idKidokuUserWrapListRepeat">
+		            <div style="display: flex;">
+		            	<div style="width: 100px;"><apex:outputText value="{!kidokuUserIdMap[kidokuUserWrap].userName}" /></div>
+		            	<div><apex:outputText value="{!kidokuUserIdMap[kidokuUserWrap].midokuStatus}" /></div>
+		            </div>
+	        	</apex:repeat>
+	        </div>
+		</div>
+	</div>
+</apex:component>

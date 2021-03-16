@@ -1,0 +1,237 @@
+public class Dao_TesuryoTekiyo {
+
+	private static Dao_TesuryoTekiyo instance;
+	public static Dao_TesuryoTekiyo getInstance(){
+		if(instance == null) instance = new Dao_TesuryoTekiyo();
+		return instance;
+	}
+	static public List<TesuryoTekiyo__c> getListByIds(list<id> ids){
+		list<TesuryoTekiyo__c> TesuryoTekiyoLst=[select id,
+		                                          //手数料適用名
+		                                          Name,
+		                                          //パートナー契約
+		                                          KeiyakuRef__c,
+												  KeiyakuRef__r.recordtypeID,
+												  KeiyakuRef__r.CoreRenkeiSchemeExp__c,
+		                                          //サービスID
+		                                          KeiyakuRef__r.ServiceId__c,
+		                                          //契約番号
+		                                          KeiyakuRef__r.KeiyakuBango__c,
+		                                          //契約有効
+		                                          KeiyakuRef__r.Keiyakuyuko__c,
+		                                          //提携先
+		                                          KeiyakuRef__r.Teikeisaki__c,
+		                                          //銀行名
+		                                          KeiyakuRef__r.Teikeisaki__r.BankName__c,
+		                                          //銀行支店名
+		                                          KeiyakuRef__r.Teikeisaki__r.BankBranchName__c,
+		                                          //口座番号
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountNo__c,
+		                                          //口座種別
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountType__c,
+		                                          //口座種別(Core連携用)
+		                                          KeiyakuRef__r.Teikeisaki__r.AccountTypeForCore__c,
+		                                          //口座名義
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountMeigi__c,		
+		                                          //提携先の取引先番号
+		                                          KeiyakuRef__r.TeikesakiTorihikisakiBango__c,  
+		                                          //葬儀社番号
+		                                          KeiyakuRef__r.Teikeisaki__r.SougisyaNo__c, 
+		                                          //提携先都道府県市区郡名
+		                                          KeiyakuRef__r.TeikeisakiTodofukenshikugunName__c,
+		                                          //提携先名
+		                                          KeiyakuRef__r.Teikeisaki__r.name,
+		                                          KeiyakuRef__r.Teikeisaki__r.LastName,
+		                                          KeiyakuRef__r.Teikeisaki__r.firstName,
+		                                          //取引先.郵便番号（請求先）
+		                                          KeiyakuRef__r.Teikeisaki__r.BillingPostalCode,
+		                                          //取引先.住所(請求先)
+		                                          KeiyakuRef__r.Teikeisaki__r.BillingAddress,	
+		                                          //取引先.経理担当者名
+		                                          KeiyakuRef__r.Teikeisaki__r.SeikyuSakiTantoName__c,	     
+		                                          //屋号（カナ）
+		                                          KeiyakuRef__r.Teikeisaki__r.NameYagouFurigana__c,      
+		                                          //入金締切条件
+		                                          KeiyakuRef__r.NyukinSimekiriJouken__c,
+		                                          //契約開始日
+		                                          KeiyakuRef__r.Keiyakukaishibi__c,
+		                                          //契約終了日
+		                                          KeiyakuRef__r.KeiyakuSyuryoBi__c,
+		                                          //通常手数料請求サイクル
+		                                          KeiyakuRef__r.paymentCycle__c,
+		                                          //処理ステータス
+		                                          KeiyakuRef__r.ShoriStatus__c,
+		                                          //処理ステータス備考
+		                                          KeiyakuRef__r.ShoriStatusBiko__c,
+		                                          //連携試行回数
+		                                          KeiyakuRef__r.TryCount__c,
+		                                          //連携試行最大回数
+		                                          KeiyakuRef__r.TryLimit__c,
+		                                          //作成日
+		                                          KeiyakuRef__r.CreatedDate,
+		                                          //更新日
+		                                          KeiyakuRef__r.LastModifiedDate,
+		                                          //手数料プラン
+		                                          TesuryoPlanRef__c,
+		                                          //手数料プラン名
+		                                          TesuryoPlanRef__r.Name,
+		                                          //コア手数料プランID
+		                                          TesuryoPlanRef__r.CoreTesuryoPlanId__c,
+		                                          //個別プランフラグ
+		                                          TesuryoPlanRef__r.KobetsuPlanFlag__c,
+		                                          //手数料値引設定可
+		                                          TesuryoPlanRef__r.TesuryoNebikiSetteiKa__c,
+		                                          //処理ステータス
+		                                          ShoriStatus__c,
+		                                          //処理ステータス備考
+		                                          ShoriStatusBiko__c,
+		                                          //承認ステータス
+		                                          ShoninStatus__c,
+		                                          //適用開始日
+		                                          TekiyoKaishiBi__c,
+		                                          //適用終了日
+		                                          TekiyoSyuryoBi__c,
+		                                          TryCount__c,
+		                                          TryLimit__c,	
+												  RyoriTesuryoAri__c,
+												  HenreihinTesuryoAri__c,
+												  OptionTesuryoAri__c,
+												  CardLoanTesuryoAri__c,
+												  AtobaraiTesuryoAri__c,
+		                                          KeiyakuRef__r.Teikeisaki__r.recordtypeID,                                          
+			                                          (select id,
+			                                                 //手数料値引明細名
+			                                                 Name, 
+			                                                 //割引プラン
+			                                                 WaribikiPlanRef__c,
+			                                                 //算出方法
+			                                                 Sanshutsuhoho__c,
+			                                                 //手数料金額
+			                                                 TesuryoKingaku__c,
+			                                                 //手数料適用
+			                                                 TesuryoTekiyoRef__c,
+			                                                 //手数料率
+			                                                 TesuryoRitsu__c,
+			                                                 //商品
+			                                                 ShohinRef__c
+			                                            from TesuryoTekiyo_TesuryoNebikiEntry__R)
+		                               from TesuryoTekiyo__c
+		                               where id in :ids];
+		return TesuryoTekiyoLst;		                               
+	}
+	static public List<TesuryoTekiyo__c> getListByKeiyakuIds(list<id> Keiyakuids){
+		list<TesuryoTekiyo__c> TesuryoTekiyoLst=[select id,
+		                                          //手数料適用名
+		                                          Name,
+		                                          //パートナー契約
+		                                          KeiyakuRef__c,
+		                                          //サービスID
+		                                          KeiyakuRef__r.ServiceId__c,
+		                                          //契約番号
+		                                          KeiyakuRef__r.KeiyakuBango__c,
+		                                          //契約有効
+		                                          KeiyakuRef__r.Keiyakuyuko__c,
+		                                          //提携先
+		                                          KeiyakuRef__r.Teikeisaki__c,
+		                                          //銀行名
+		                                          KeiyakuRef__r.Teikeisaki__r.BankName__c,
+		                                          //銀行支店名
+		                                          KeiyakuRef__r.Teikeisaki__r.BankBranchName__c,
+		                                          //口座番号
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountNo__c,
+		                                          //口座種別
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountType__c,
+		                                          //口座種別(Core連携用)
+		                                          KeiyakuRef__r.Teikeisaki__r.AccountTypeForCore__c,
+		                                          //口座名義
+		                                          KeiyakuRef__r.Teikeisaki__r.BankAccountMeigi__c,		
+		                                          //提携先の取引先番号
+		                                          KeiyakuRef__r.TeikesakiTorihikisakiBango__c,  
+		                                          //葬儀社番号
+		                                          KeiyakuRef__r.Teikeisaki__r.SougisyaNo__c, 
+		                                          //提携先都道府県市区郡名
+		                                          KeiyakuRef__r.TeikeisakiTodofukenshikugunName__c,
+		                                          //提携先名
+		                                          KeiyakuRef__r.Teikeisaki__r.name,
+		                                          KeiyakuRef__r.Teikeisaki__r.LastName,
+		                                          KeiyakuRef__r.Teikeisaki__r.firstName,
+		                                          //取引先.郵便番号（請求先）
+		                                          KeiyakuRef__r.Teikeisaki__r.BillingPostalCode,
+		                                          //取引先.住所(請求先)
+		                                          KeiyakuRef__r.Teikeisaki__r.BillingAddress,	
+		                                          //取引先.経理担当者名
+		                                          KeiyakuRef__r.Teikeisaki__r.SeikyuSakiTantoName__c,	     
+		                                          //屋号（カナ）
+		                                          KeiyakuRef__r.Teikeisaki__r.NameYagouFurigana__c,      
+		                                          //入金締切条件
+		                                          KeiyakuRef__r.NyukinSimekiriJouken__c,
+		                                          //契約開始日
+		                                          KeiyakuRef__r.Keiyakukaishibi__c,
+		                                          //契約終了日
+		                                          KeiyakuRef__r.KeiyakuSyuryoBi__c,
+		                                          //通常手数料請求サイクル
+		                                          KeiyakuRef__r.paymentCycle__c,
+		                                          //処理ステータス
+		                                          KeiyakuRef__r.ShoriStatus__c,
+		                                          //処理ステータス備考
+		                                          KeiyakuRef__r.ShoriStatusBiko__c,
+		                                          //連携試行回数
+		                                          KeiyakuRef__r.TryCount__c,
+		                                          //連携試行最大回数
+		                                          KeiyakuRef__r.TryLimit__c,
+		                                          //作成日
+		                                          KeiyakuRef__r.CreatedDate,
+		                                          //更新日
+		                                          KeiyakuRef__r.LastModifiedDate,
+		                                          //手数料プラン
+		                                          TesuryoPlanRef__c,
+		                                          //手数料プラン名
+		                                          TesuryoPlanRef__r.Name,
+		                                          //コア手数料プランID
+		                                          TesuryoPlanRef__r.CoreTesuryoPlanId__c,
+		                                          //個別プランフラグ
+		                                          TesuryoPlanRef__r.KobetsuPlanFlag__c,
+		                                          //手数料値引設定可
+		                                          TesuryoPlanRef__r.TesuryoNebikiSetteiKa__c,
+		                                          //対象契約種別
+		                                          //TesuryoPlanRef__r.TaishoKeiyakuShubetsu__c,
+		                                          //処理ステータス
+		                                          ShoriStatus__c,
+		                                          //処理ステータス備考
+		                                          ShoriStatusBiko__c,
+		                                          //承認ステータス
+		                                          ShoninStatus__c,
+		                                          //適用開始日
+		                                          TekiyoKaishiBi__c,
+		                                          //適用終了日
+		                                          TekiyoSyuryoBi__c,
+		                                          TryCount__c,
+		                                          TryLimit__c,	
+												  RyoriTesuryoAri__c,
+												  HenreihinTesuryoAri__c,
+												  OptionTesuryoAri__c,
+												  CardLoanTesuryoAri__c,
+												  AtobaraiTesuryoAri__c,
+		                                          KeiyakuRef__r.Teikeisaki__r.recordtypeID,                                          
+			                                          (select id,
+			                                                 //手数料値引明細名
+			                                                 Name, 
+			                                                 //割引プラン
+			                                                 WaribikiPlanRef__c,
+			                                                 //算出方法
+			                                                 Sanshutsuhoho__c,
+			                                                 //手数料金額
+			                                                 TesuryoKingaku__c,
+			                                                 //手数料適用
+			                                                 TesuryoTekiyoRef__c,
+			                                                 //手数料率
+			                                                 TesuryoRitsu__c,
+			                                                 //商品
+			                                                 ShohinRef__c
+			                                            from TesuryoTekiyo_TesuryoNebikiEntry__R)
+		                               from TesuryoTekiyo__c
+		                               where KeiyakuRef__c in :Keiyakuids];
+		return TesuryoTekiyoLst;		
+                               
+	}	
+}

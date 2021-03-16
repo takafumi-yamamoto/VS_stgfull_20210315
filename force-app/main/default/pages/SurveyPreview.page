@@ -1,0 +1,4 @@
+<apex:page standardcontroller="Survey__c" cache="false" sidebar="false" showheader="false" docType="html-5.0" standardStylesheets="false">
+    <apex:iframe src="/apex/SurveyTaker?sid={! Survey__c }&pcd=A8djjAWAnnE93h" height="1200" width="95%" scrolling="true" id="surveyTakerIframe"
+    />
+</apex:page>

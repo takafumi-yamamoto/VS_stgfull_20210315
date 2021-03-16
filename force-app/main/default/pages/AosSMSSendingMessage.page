@@ -1,0 +1,64 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="Opportunity" extensions="Aos_SMSSendingMessage" >
+<style type="text/css">
+<!-- 送信成功 -->
+.sendOk { color: blue; }
+<!-- 送信失敗 -->
+.sendNg   { color: red; font-weight: bold;}
+<!-- 受信履歴 -->
+.sendRireki   { color: green; font-weight: bold;}
+</style>
+
+
+    <apex:form id="AosSMS">
+    <apex:pageBlock title="取引先SMS送受信">
+    <table style="width: 100%;">
+    <tr>
+        <td style="width: 20%;">送信メッセージ</td>
+        <td style="width: 70%;">
+            <apex:inputTextArea value="{!sendText}"  rows="5" style="width: 100%;"></apex:inputTextArea>
+        </td>
+        <td style="width: 10%; text-align: center; vertical-align: bottom;">
+            <apex:commandButton value="送信" action="{!SendAosSMSMessage}" reRender="AosSMS" status="loading" />
+        </td>
+        </tr>
+    </table>        
+    <font color="{!If(status==0, 'green', 'red')}"><strong>
+    {!responseDateTime}
+    {!if(status==null, '', if(status==0, 'SMS送信が成功しました', 'エラーが発生しました。システム管理者にご連絡ください。エラーコード：'))}{!if(status==null, '', if(status<>0, status, ''))}</strong></font>
+    <apex:pageMessages showDetail="false" />
+    <br/><br/>
+    <apex:actionStatus id="loading">
+    <apex:facet name="start">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+        &nbsp;
+    </div>
+    <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+        <div style="display: inline-block; padding: 2px; background-color: #fff; width: 125px;">
+            <img src="/img/loading.gif" style="float: left; margin: 8px;" />
+            <span style="display: inline-block; padding: 10px 0px;">Please Wait...</span>
+        </div>
+    </div>
+    </apex:facet>
+    </apex:actionStatus>
+        <apex:pageBlockTable value="{!aosSMSSendingHistoryList}" var="aos">
+
+            <apex:column style="width:110px;　">
+                <apex:facet name="header"><apex:outputText value="SMS送受信履歴ID" /></apex:facet>
+                <apex:outputLink value="/{!aos.Id}" target="_blank" title="{!aos.Name}">{!aos.Name}</apex:outputLink>
+            </apex:column>
+            <apex:column style="width:70px;　">               
+                <apex:facet name="header"><apex:outputText value="種別" /></apex:facet>
+                <apex:outputText value="{!aos.SMSType__c}" styleClass="{!IF( aos.SMSType__c=='送信失敗','sendNg',IF( aos.SMSType__c=='送信履歴','sendOk', 'sendRireki'))}"/>
+            </apex:column>
+            <apex:column style="width:370px;">
+                <apex:facet name="header" ><apex:outputText value="メッセージ内容"/></apex:facet>
+                <apex:outputText value="{!aos.MessageTextFormula__c}" escape="false" styleClass="font:red;"/>
+            </apex:column>
+            <apex:column value="{!aos.CreatedDate}" style="width:120px;"/>
+
+
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page showHeader="false" sidebar="false">
+<site:googleAnalyticsTracking />
+<script type="text/javascript">
+    window.onload = function() {
+        window.location.href = "/surveytaker/SurveyTaker?sid="
+                            + "{! $CurrentPage.parameters.sid }"
+                            + "&caid=" + "{! $CurrentPage.parameters.caId }"
+                            + "&utm_source=" + "{! $CurrentPage.parameters.utm_source }"
+                            + "&utm_medium=" + "{! $CurrentPage.parameters.utm_medium }";
+    }
+</script>
+</apex:page>

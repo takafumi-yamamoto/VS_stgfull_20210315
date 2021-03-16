@@ -1,0 +1,747 @@
+<apex:page id="idPage" controller="SogiSeikyuDataSearchCtl" title="パートナー請求検索" action="{!init}" >
+	<apex:includeScript value="/support/console/44.0/integration.js" />
+
+	<script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+	<script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+    <style>
+        span.dateFormat {display: none;}
+
+        html body.sfdcBody {
+          background: rgba(176, 196, 223, 1.0);
+          padding: 10px 10px 0 10px;
+          font-size: 80%;
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        div {
+          font-family: 'Salesforce Sans',Arial,sans-serif;
+        }
+
+        th {
+          text-align: right;
+        }
+
+        td {
+          padding: 0 10px 0 0;
+        }
+
+        thead.scrollHead1,tbody.scrollBody1{
+            display:block;
+        }
+        tbody.scrollBody1{
+            overflow:auto;
+            /*height:600px;*/
+            max-height: 600px;
+        }
+
+        table.dataList_table {
+          border-collapse: collapse;
+          border: 0;
+        }
+
+        table.dataList_table th {
+          border: 1px solid #222;
+          border-style: dotted;
+          padding: 0px;
+          text-align: center;
+          color: #fff;
+          background-color: #364e96;
+          height: 19px;
+        }
+        table.dataList_table td {
+          border: 1px solid #222;
+          border-style: dotted;
+          padding: 0px;
+          white-space: nowrap;
+          height: 19px;
+        }
+        table.dataList_table tr:nth-child(odd) td {
+		  background-color: #ffffff;  
+		}
+		table.dataList_table tr:nth-child(even) td {  
+		  background-color: #EAF6FD;  
+		}  
+
+        .wrapper {
+          resize: both;
+        }
+
+        .container {
+        }
+        .main {
+            width: 100%;
+        }
+
+        .section-panel {
+          padding: 10px;
+          background-color: #fff;
+          border-radius: 3px;
+        }
+
+        .summarpanel {
+          display: flex;
+        }
+        
+    </style>
+    <script type="text/javascript">
+    	var tabId;
+	    window.sfdcPage.appendToOnloadQueue(
+	    	function() {
+	      		sforce.console.getEnclosingTabId(function(result) {
+        			tabId = result.id;
+            	});
+
+                if(tabId == null || tabId == 'null' || tabId == ''){
+                    sforce.console.openPrimaryTab(null, '/apex/SogiSeikyuDataSearch', true, 'パートナー請求検索(葬儀)', openSuccess);
+                }
+	    	}
+	    );
+
+        function allResCheck(val, len){
+            for(var i=0; i<len; i++){
+                document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked = val.checked;
+            }
+        }
+
+        function allTarCheck(val, len){
+            for(var i=0; i<len; i++){
+                document.getElementById('idPage:myFormId:idTarWrapList:' + i + ':idChkTarget').checked = val.checked;
+            }
+        }
+
+        function createSogiSeikyuDataDetail(errMsg, targetSize){
+        	if(errMsg == ''){
+	        	var seikyusaki = '';
+	        	var seikyuids = '';
+
+	        	for(var i=0; i<targetSize; i++){
+	                if(document.getElementById('idTarRowNum' + i).checked){
+	                  seikyusaki = document.getElementById('idPage:myFormId:idTarWrapList:' + i + ':idShodanbango').innerHTML;
+	                }
+	                else{
+	                  seikyuids += document.getElementById('idPage:myFormId:idTarWrapList:' + i + ':idShodanbango').innerHTML + ',';
+	                }
+	            }
+	            
+                sforce.console.openSubtab(tabId , '/apex/SogiSeikyuDataDetail?openType=new&seikyuNumber=' + seikyusaki + '&seikyuNumbers=' + seikyuids, true, seikyusaki, null, openSuccess);
+	   		}
+    	}
+
+        function addSogiSeikyuDataDetail(errMsg){
+        	if(errMsg == ''){
+                var seikyuId = document.getElementById('idPage:myFormId:idHdnSeikyuHeaderId').value;
+	        	var seikyuNumber = '';
+	        	var seikyuNumbers = '';
+                var seikyuDetailIds = '';
+                var tempSeikyuNumber = '';
+                var miSeikyuDetailWrapListTableObj = document.getElementById('ididMiSeikyuDetailWrapListTable');
+                for (var i = 0; i < miSeikyuDetailWrapListTableObj.rows.length; i++) {
+                    var seikyuDetailId = document.getElementById('idPage:myFormId:idMiSeikyuDetailWrapList:' + i + ':idHdnSeikyuDetailId').value;
+                    seikyuNumbers += document.getElementById('idPage:myFormId:idMiSeikyuDetailWrapList:' + i + ':idMiSeikyuDetailShodanbango').innerHTML + ',';
+                    seikyuDetailIds +=  seikyuDetailId != null && seikyuDetailId != '' ? seikyuDetailId + ',' : '';
+                    tempSeikyuNumber = document.getElementById('idPage:myFormId:idMiSeikyuDetailWrapList:' + i + ':idMiSeikyuDetailShodanbango').innerHTML;
+	                if(i == 0){ seikyuNumber = tempSeikyuNumber; }
+                    else if(seikyuNumber > tempSeikyuNumber){ seikyuNumber = tempSeikyuNumber; }
+                }
+                sforce.console.openSubtab(tabId , '/apex/SogiSeikyuDataDetail?openType=add&seikyuId=' + seikyuId + '&seikyuNumber=' + seikyuNumber + '&seikyuNumbers=' + seikyuNumbers + '&seikyuDetailIds=' + seikyuDetailIds, true, seikyuNumber, null, openSuccess);
+	   		}
+    	}
+
+        var openSuccess = function openSuccess(result) {
+            if (result.success == true) {
+                //alert('subtab successfully opened');
+            } else {
+                //alert('subtab cannot be opened');
+            }
+        };
+
+    	function openSogiSeikyuDataDetail(seikyusaki, targetId){
+            sforce.console.openSubtab(tabId , '/apex/SogiSeikyuDataDetail?openType=reference&seikyuNumber=' + seikyusaki + '&seikyuid=' + targetId, true, seikyusaki, null, openSuccess);
+    	}
+
+        function chkPdfPrint(targetSize){
+            var isSeikyuZumi = true;
+            var shodanBango = '';
+            for(var i=0; i<targetSize; i++){
+                if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idChkResult').checked){
+                    if(document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idSeikyuStatus').innerText == '請求済'){
+                        var seikyuNumber = document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idHdnSeikyuId').value;
+                        var shodanNumber = document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idHdnSeikyuBango').value;
+                        doPdfPrint(seikyuNumber, 'seikyusyo_' + shodanNumber + '.pdf');
+                    }
+                    else{
+                        isSeikyuZumi = false;
+                        shodanBango += document.getElementById('idPage:myFormId:idResWrapList:' + i + ':idShodanBango').innerText + '\r\n';
+                    }
+                }
+            }
+
+            if(!isSeikyuZumi){
+                alert('請求済みでないためPDFを出力できませんでした。\r\n' + shodanBango);
+            }
+        }
+
+        function doSearch(){
+            showLoadingDialog();
+
+            doSearchJs('SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.TorihikisakiBangoF__c', 'asc');
+        }
+
+        function doPdfPrint(partnerSeikyuNumber, name) {
+            var a = document.createElement('a');
+            a.download = name;
+            a.href = '{!ptWebEndPoint}' + '/api/internal/partnerseikyusho/' + partnerSeikyuNumber + '?f=' + name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function printBase64( base64 ) {
+            console.log( base64 );
+        }
+
+        function fetchFile( uri, callback ) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', uri, true);
+            xhr.responseType = "arraybuffer";
+            xhr.onload = callback;
+            xhr.send();
+        };
+
+        function getUnicodeString( arrayBuffer ) {
+            var bytes = new Uint8Array( arrayBuffer );
+            var binaryString = "";
+            for( var i = 0; i < bytes.byteLength; i++ ) {
+                binaryString += String.fromCharCode( bytes[ i ] );
+            }
+            return binaryString;
+        };
+
+        function getBase64( string ) {
+            return window.btoa( string );
+        }
+
+        function resWrapList(pegeVal){
+            
+            showLoadingDialog();
+
+            pageChangeJs(pegeVal);
+        }
+
+        function grSortChange(item, val){
+            
+            showLoadingDialog();
+
+            var aLabel = document.getElementById(val).innerText;
+            var sortItem = item;
+            var sortKey;
+            if(aLabel == '▲'){
+                document.getElementById(val).innerText = '▼';
+                sortKey = 'desc';
+            }
+            else{
+                document.getElementById(val).innerText = '▲';
+                sortKey = 'asc';
+            }
+            actSortJs(sortItem, sortKey);
+        }
+
+    </script>
+    <c:loadingDialog title="Getting Contacts" />
+    <apex:form id="myFormId" target="_blank">
+        <apex:actionFunction name="doSearchJs" action="{!searchData}" reRender="searchPanelId,idResultPanel,idTargetPanel" oncomplete="hideLoadingDialog();" >
+            <apex:param name="pSortItem" value="" />
+            <apex:param name="pSortKey" value="" />
+        </apex:actionFunction>
+        <apex:pageMessages id="msgId" />
+        <apex:actionFunction name="pageChangeJs" action="{!searchData}" reRender="idResultPanel,idResWrapList" oncomplete="hideLoadingDialog();">
+            <apex:param assignTo="{!pGrPageVal}" name="pGrPageVal" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="actSortJs" action="{!searchData}" reRender="searchPanelId,idResultPanel,idTargetPanel" oncomplete="hideLoadingDialog();" >
+            <apex:param name="pSortItem" value="" />
+            <apex:param name="pSortKey" value="" />
+        </apex:actionFunction>
+        <div class="wrapper">
+            <div class="container">
+                <div class="main" id="idMain">
+                    <div style="display: flex;">
+                        <div>
+                            <div class="section-panel">
+                                <apex:outputPanel id="searchPanelId" layout="block">
+                                    <div style="padding:0px;font-weight: bold;">【検索条件】</div>
+                                    <div style="display: flex;padding:5px 0px 0px 0px">
+                                        <div style="padding:0px 10px 0px 0px">
+                                            <table id="conditionTable">
+                                                <tr>
+                                                    <th style="vertical-align: middle; width:60px; padding-right: 5px;">売上日</th>
+                                                    <td>
+                                                        <apex:inputField id="idUriagebiFrom" value="{!searchJokenWrapper.partnerSeikyuJoken.KensakuyoUriagebiFrom__c}" />
+                                                        &nbsp;～&nbsp;<apex:inputField id="idUriagebiTo" value="{!searchJokenWrapper.partnerSeikyuJoken.KensakuyoUriagebiTo__c}" />
+                                                    </td>
+                                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px;">請求ステータス</th>
+                                                    <td><apex:inputField value="{!searchJokenWrapper.partnerSeikyuJoken.SeikyuStatus__c}" /></td>
+                                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px;">請求発送日</th>
+                                                    <td><apex:inputField value="{!searchJokenWrapper.partnerSeikyuJoken.KensakuyoSeikyushoHassobi__c}" />
+                                                    </td>
+                                                    <td><input type="button" class="btn" onclick="doSearch();" value="検索"/>
+                                                    </td>
+                                                    <th>
+                                                        <apex:message for="idUriagebiFrom" style="color: red;font-weight: bold;"/>
+                                                        <apex:message for="idUriagebiTo" style="color: red;font-weight: bold;"/>
+                                                        <apex:message for="idSogisha" style="color: red;font-weight: bold;"/>
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th style="vertical-align: middle; width: 60px; padding-right: 5px;">葬儀社</th>
+                                                    <td><apex:inputField id="idSogisha" value="{!searchJokenWrapper.partnerSeikyuJoken.PartnerKeiyakuRef__c}" style="width:189px"/></td>
+                                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px;">請求番号</th>
+                                                    <td><apex:inputText value="{!searchJokenWrapper.searchJokenSeikyuBango}" style="width:72px"/></td>
+                                                    <th style="vertical-align: middle; width: 100px; padding-right: 5px;">請求書送付方法</th>
+                                                    <td><apex:selectList value="{!searchJokenWrapper.searchJokenSeikyushoSofuHohoValue}" size="1">
+                                                            <apex:selectOptions value="{!searchJokenWrapper.searchJokenSeikyushoSofuHohoOptions}" />
+                                                        </apex:selectList>
+                                                    </td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                            <div style="display: flex;margin-top: 10px;">
+                                <div class="section-panel" style="width:1195px;">
+                                    <apex:outputPanel id="idResultPanel" layout="block" style="width: 100%">
+                                        <div style="padding:0px;font-weight: bold;">【検索結果】</div>
+                                        <div style="display: flex;padding:2px 17px 5px 0px; justify-content: space-between;">
+                                            <div style="display: flex;">
+                                                <div style="padding-top: 3px; padding-left: 11px; padding-right: 5px;">
+                                                    <input type="checkbox" onclick="allResCheck(this, '{!resWrapAllListSize}');"/>
+                                                </div>
+                                                <div style="padding-top: 3px; padding-right: 15px;">
+                                                    全て
+                                                </div>
+                                                <div style="padding-top: 6px; width: 25px; text-align: end;"><apex:outputText value="{!grPageFrom}" /></div>
+                                                <div style="padding-top: 3px;margin-left: 5px;">～</div>
+                                                <div style="padding-top: 6px;margin-left: 5px; width: 25px; text-align: end;"><apex:outputText value="{!grPageTo}" /></div>
+                                                <div style="padding-top: 6px;margin-left: 5px;">/</div>
+                                                <div style="padding-top: 6px;margin-left: 5px; width: 25px; text-align: end;"><apex:outputText value="{!grAllSize}" /></div>
+                                                <div style="padding-top: 3px;margin-left: 5px;">件</div>
+                                                <div style="padding-top: 1px;margin-left: 15px;"><apex:selectList id="idGrPageList" value="{!grPageVal}" size="1" multiselect="false" onChange="resWrapList(this.value);return false;" style="width: 40px; height: 22px;">
+                                                        <apex:selectOptions value="{!grPageOpt}"/>
+                                                    </apex:selectList>
+                                                </div>
+                                                <div style="padding-top: 6px;margin-left: 5px;">/</div>
+                                                <div style="padding-top: 6px;margin-left: 5px; width: 15px; text-align: end;"><apex:outputText value="{!grPageMax}" /></div>
+                                                <div style="padding-top: 3px;margin-left: 5px;">ページ</div>
+                                                <div style="margin-left: 15px;">
+                                                    <apex:commandButton onClick="resWrapList(1);return false;" value=" << " id="idFirstBtn" disabled="{!grFirstFlg}" />
+                                                </div>
+                                                <div style="margin-left: 5px;">
+                                                    <apex:commandButton onClick="resWrapList({!grPageVal - 1});return false;" value=" < " id="idBackBtn" disabled="{!grBackFlg}" />
+                                                </div>
+                                                <div style="padding-top: 2px;margin-left: 5px;">前</div>
+                                                <div style="padding-top: 2px;margin-left: 10px;">次</div>
+                                                <div style="margin-left: 5px;">
+                                                    <apex:commandButton onClick="resWrapList({!grPageVal + 1});return false;" value=" > " id="idNextBtn" disabled="{!grNextFlg}" />
+                                                </div>
+                                                <div style="margin-left: 5px;">
+                                                    <apex:commandButton onClick="resWrapList({!grPageMax});return false;" value=" >> " id="idLastBtn" disabled="{!grLastFlg}" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <input type="button" class="btn" onclick="chkPdfPrint('{!resWrapList.size}');" value="PDF印刷"/>
+                                            </div>
+                                        </div>
+                                        <div style="overflow-x: auto;">
+                                            <div style="width: 1365px;">
+                                                <table class="dataList_table">
+                                                    <tr>
+                                                        <th style="width:40px; text-align: center; font-weight:bold">
+                                                            <div>選択</div>
+                                                        </th>
+                                                        <th style="width:205px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>葬儀社</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.Name', 'idGrSogishaBtn');" id="idGrSogishaBtn" style="color:{!IF(pSortItem='SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.Name', 'red', 'white')}" >{!IF(AND(pSortItem='SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.Name',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:100px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>葬儀社番号</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.TorihikisakiBangoF__c', 'idGrSogishaBangoBtn');" id="idGrSogishaBangoBtn" style="color:{!IF(pSortItem='SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.TorihikisakiBangoF__c', 'red', 'white')}" >{!IF(AND(pSortItem='SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.TorihikisakiBangoF__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:85px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>商談番号</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('ShodanBango__c', 'idGrShodanBangoBtn');" id="idGrShodanBangoBtn" style="color:{!IF(pSortItem='ShodanBango__c', 'red', 'white')}" >{!IF(AND(pSortItem='ShodanBango__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:85px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>売上日</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('Utiagebi__c', 'idGrUriagebiBtn');" id="idGrUriagebiBtn" style="color:{!IF(pSortItem='Utiagebi__c', 'red', 'white')}" >{!IF(AND(pSortItem='Utiagebi__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:95px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>対象者</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('SimpleYasugoRef__r.TaishoshaRef__r.LastName', 'idGrTaishoshaNameBtn');" id="idGrTaishoshaNameBtn" style="color:{!IF(pSortItem='SimpleYasugoRef__r.TaishoshaRef__r.LastName', 'red', 'white')}" >{!IF(AND(pSortItem='SimpleYasugoRef__r.TaishoshaRef__r.LastName',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:96px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>入金締切日</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('NyukinSimekiriBiPartner__c', 'idGrNyukinSimekiriBiPartnerBtn');" id="idGrNyukinSimekiriBiPartnerBtn" style="color:{!IF(pSortItem='NyukinSimekiriBiPartner__c', 'red', 'white')}" >{!IF(AND(pSortItem='NyukinSimekiriBiPartner__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:96px; text-align: center; font-weight:bold">
+                                                            <div style="display: flex; justify-content: center; align-items: baseline;">
+                                                                <div>請求発送日</div>
+                                                                <div style="margin-left: 5px">
+                                                                    <a href="#" onClick="grSortChange('SeikyushoHassoubiPartner__c', 'idGrSeikyushoHassoubiPartnerBtn');" id="idGrSeikyushoHassoubiPartnerBtn" style="color:{!IF(pSortItem='SeikyushoHassoubiPartner__c', 'red', 'white')}" >{!IF(AND(pSortItem='SeikyushoHassoubiPartner__c',pSortKey='asc'), '▲', '▼')}</a>
+                                                                </div>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width:60px; text-align: center; font-weight:bold">
+                                                            <div>ｽﾃｰﾀｽ</div>
+                                                        </th>
+                                                        <th style="width:64px; text-align: center; font-weight:bold">
+                                                            <div>PW送客</div>
+                                                        </th>
+                                                        <th style="width:64px; text-align: center; font-weight:bold">
+                                                            <div>PW請求</div>
+                                                        </th>
+                                                        <th style="width:60px; text-align: center; font-weight:bold">
+                                                            <div>確認者</div>
+                                                        </th>
+                                                        <th style="width:60px; text-align: center; font-weight:bold">
+                                                            <div>送信者</div>
+                                                        </th>
+                                                        <th style="width:70px; text-align: center; font-weight:bold">
+                                                            <div>請求番号</div>
+                                                        </th>
+                                                        <th style="width:75px; text-align: center; font-weight:bold">
+                                                            <div>差戻理由</div>
+                                                        </th>
+                                                        <th style="width:85px; text-align: center; font-weight:bold">
+                                                            <div>請求データ</div>
+                                                        </th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div style="width: 1375px; height: 555px; overflow-y: auto">
+                                                <table class="dataList_table">
+                                                    <apex:variable var="resRowNumIndex" value="{!0}" />
+                                                    <apex:repeat value="{!resWrapList}" var="item" id="idResWrapList">
+                                                        <tr>
+                                                            <td style="width:40px; text-align: center;"><apex:inputCheckBox value="{!item.isSelected}" id="idChkResult"/></td>
+                                                            <td style="max-width:200px; padding-left: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><apex:outputLink value="/{!item.opp.SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__c}">{!item.sogishaName}</apex:outputLink></td>
+                                                            <td style="width:100px; text-align: center;"><apex:outputField value="{!item.opp.SimpleYasugoRef__r.SimpleYasugoKeiyakuRef__r.Teikeisaki__r.TorihikisakiBangoF__c}"/></td>
+                                                            <td style="width:85px; text-align: center;"><apex:outputLink value="/{!item.opp.Id}"><apex:outputField value="{!item.opp.ShodanBango__c}" id="idShodanBango"/></apex:outputLink></td>
+                                                            <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.Utiagebi__c}"/></td>
+                                                            <td style="max-width:90px; padding-left: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{!item.opp.SimpleYasugoRef__r.TaishoshaRef__r.LastName & ' ' & item.opp.SimpleYasugoRef__r.TaishoshaRef__r.FirstName}</td>
+                                                            <td style="width:96px; text-align: center;"><apex:outputField value="{!item.opp.NyukinSimekiriBiPartner__c}"/></td>
+                                                            <td style="width:96px; text-align: center;"><apex:outputField value="{!item.opp.SeikyushoHassoubiPartner__c}"/></td>
+                                                            <td style="width:60px; text-align: center;"><apex:outputText value="{!item.seikyuStatus}" id="idSeikyuStatus" /></td>
+                                                            <td style="width:64px; text-align: center;"><apex:image value="/img/checkbox_{!IF(item.isPWebSokyakushoRenkei, '', 'un')}checked.gif" title="{!IF(item.isPWebSokyakushoRenkei, 'Checked', 'Not Checked')}" /></td>
+                                                            <td style="width:64px; text-align: center;"><apex:image value="/img/checkbox_{!IF(item.isPWebSeikyushoRenkei, '', 'un')}checked.gif" title="{!IF(item.isPWebSeikyushoRenkei, 'Checked', 'Not Checked')}" /></td>
+                                                            <td style="width:60px; text-align: center;"><apex:outputText value="{!item.seikyuSakuseiSha}"/></td>
+                                                            <td style="width:60px; text-align: center;"><apex:outputText value="{!item.seikyuKakuninSha}"/></td>
+                                                            <td style="width:70px; text-align: center;"><input type="button" class="btn" style="padding: 1px;display: {!IF(item.seikyuBango == '', 'none', '')}" id="idSeikyuBangoBtn{!resRowNumIndex}" value="{!item.seikyuBango}" onclick="openSogiSeikyuDataDetail('{!item.seikyuBango}' , '{!item.seikyuId}');" />
+                                                            <apex:inputHidden id="idHdnSeikyuId" value="{!item.seikyuName}"/>
+                                                            <apex:inputHidden id="idHdnSeikyuBango" value="{!item.seikyuBango}"/></td>
+                                                            <td style="width:70px; padding-left: 5px"><apex:outputText value="{!item.seikyuSashimodoshiRiryu}" /></td>
+                                                            <td style="width:85px; text-align: center;"><apex:outputLink value="/{!item.seikyuId}">参照</apex:outputLink>
+                                                            </td>
+                                                        </tr>
+                                                        <apex:variable var="resRowNumIndex" value="{!resRowNumIndex + 1}" />
+                                                    </apex:repeat>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex;padding:10px 0px 0px 0px">
+                                            <input type="button" class="btn" value="請求対象リストへ追加" onclick="onClickSeikyuTaishoListAddBtn();"/>
+                                            <apex:actionFunction name="onClickSeikyuTaishoListAddBtnJs" action="{!addTargetList}" reRender="idResultPanel,idTargetPanel,idMiseikyuSogishaHeaderPanel,idMiSeikyuDetailPanel" oncomplete="chkTarWrapList();hideLoadingDialog();"/>
+                                            <script>
+                                                function chkTarWrapList(){
+                                                    var targetSize = document.getElementById('idTarWrapListTable').rows.length;
+                                                    if(targetSize == 0) return;
+
+                                                    var chkFlg = false;
+                                                    for (var i=0; i<targetSize; i++) {
+                                                        if(document.getElementById('idTarRowNum' + i).checked){
+                                                            chkFlg = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if(!chkFlg) document.getElementById('idTarRowNum0').checked = true;
+                                                }
+
+                                                function onClickSeikyuTaishoListAddBtn(){
+                                                    showLoadingDialog();
+                                                    onClickSeikyuTaishoListAddBtnJs();
+                                                }
+                                            </script>
+                                        </div>
+                                    </apex:outputPanel>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="width: calc(100% - 1212px)">
+                            <div class="section-panel" style="margin-left: 10px;">
+                                <apex:outputPanel id="idMiseikyuSogishaHeaderPanel" layout="block" style="width: 100%">
+                                    <div style="padding:0px;font-weight: bold;">【未請求リスト】</div>
+                                    <div>
+                                        <table class="dataList_table">
+                                            <tr>
+                                                <th style="width:96px; text-align: center; font-weight:bold">葬儀社番号</th>
+                                                <th style="width:245px; text-align: center; font-weight:bold">葬儀社名</th>
+                                                <th style="width:70px; text-align: center; font-weight:bold">顧客ID</th>
+                                                <th style="width:60px; text-align: center; font-weight:bold">ｽﾃｰﾀｽ</th>
+                                                <th style="width:81px; text-align: center; font-weight:bold">入金締切日</th>
+                                                <th style="width:65px; text-align: center; font-weight:bold">表示</th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div style="height: 61px; overflow-y: auto">
+                                        <table class="dataList_table" id="idMiSeikyuHeaderWrapListTable">
+                                            <apex:variable var="miSeikyuHeaderRowNumIndex" value="{!0}" />
+                                            <apex:repeat value="{!miSeikyuHeaderWrapList}" var="item" id="idMiSeikyuHeaderWrapList">
+                                                <tr id="idMiSeikyuHeaderWrapListTr{!miSeikyuHeaderRowNumIndex}">
+                                                    <td style="width:96px; text-align: center;"><apex:outputLabel value="{!item.miSeikyuHeader.PartnerKeiyakuRef__r.Teikeisaki__r.TorihikisakiBango__c}" id="idTorihikisakiBango"/></td>
+                                                    <td style="width:245px; text-align: left;"><apex:outputLabel value="{!LEFT(item.miSeikyuHeader.PartnerKeiyakuRef__r.Teikeisaki__r.Name, 20) & IF(LEN(item.miSeikyuHeader.PartnerKeiyakuRef__r.Teikeisaki__r.Name) > 20, '…', '')}" id="idSeikyuSogishaName"/></td>
+                                                    <td style="width:70px; text-align: center;"><apex:outputLabel value="{!item.miSeikyuHeader.KokyakuId__c}" id="idKokyakuId"/></td>
+                                                    <td style="width:60px; text-align: center;"><apex:outputLabel value="{!item.miSeikyuHeader.SeikyuStatus__c}" id="idSeikyuStatus"/></td>
+                                                    <td style="width:81px; text-align: center;"><apex:outputField value="{!item.miSeikyuHeader.NyukinShimekiribi__c}" id="idNyukinShimekiribi"/></td>
+                                                    <td style="width:65px; text-align: center;"><a href="#" onclick="chgBgColorMiseikyuRow('{!miSeikyuHeaderRowNumIndex}');displayMiSeikyuDetail('{!item.miSeikyuHeader.Id}');" id="idMiSeikyuDetailLink" ><apex:inputHidden id="idMiseikyuHeaderIdHdn" value="{!item.miSeikyuHeader.Id}"/><u>明細</u></a></td>
+                                                </tr>
+                                                <apex:variable var="miSeikyuHeaderRowNumIndex" value="{!miSeikyuHeaderRowNumIndex + 1}" />
+                                            </apex:repeat>
+                                        </table>
+                                        <script>
+                                            function chgBgColorMiseikyuRow(sltIndex){
+                                                for (var i=0; i < document.getElementById('idMiSeikyuHeaderWrapListTable').rows.length; i++) {
+                                                    if(i == sltIndex) document.getElementById('idMiSeikyuHeaderWrapListTr' + i).style.backgroundColor = '#ffe9aa';
+                                                    else document.getElementById('idMiSeikyuHeaderWrapListTr' + i).style.backgroundColor = '#FFFFFF';
+                                                }
+                                            }
+
+                                            function displayMiSeikyuDetail(seikyuHeaderId){
+                                                showLoadingDialog();
+                                                displayMiSeikyuDetailJs(seikyuHeaderId);
+                                            }
+                                        </script>
+                                        <apex:actionFunction name="displayMiSeikyuDetailJs" action="{!displaySeikyuSogishaDetail}" reRender="idMiSeikyuDetailPanel" oncomplete="hideLoadingDialog();" >
+                                            <apex:param assignTo="{!seikyuHeaderId}" name="seikyuHeaderId" value="" />
+                                        </apex:actionFunction>
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="section-panel" style="margin-top: 10px;margin-left: 10px;">
+                                <apex:outputPanel id="idMiSeikyuDetailPanel" layout="block" style="width: 100%">
+                                    <div style="display:flex;">
+                                        <div style="padding:0px;font-weight: bold;">【未請求明細リスト】</div>
+                                        <div style="display: flex;padding:0px; float: right;">
+                                            <apex:outputPanel id="idAlertMsg2Panel">
+                                                <apex:outputText id="idAlertMsg2" value="{!alertMessage2}" style="color: orange;font-weight: bold;" rendered="{!LEN(alertMessage2)>0}" escape="false"/>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <table class="dataList_table">
+                                            <tr>
+                                                <th style="width:40px; text-align: center; font-weight:bold">選択</th>
+                                                <th style="width:70px; text-align: center; font-weight:bold">商談番号</th>
+                                                <th style="width:85px; text-align: center; font-weight:bold">売上日</th>
+                                                <th style="width:95px; text-align: center; font-weight:bold">対象者</th>
+                                                <th style="width:85px; text-align: center; font-weight:bold">請求発送日</th>
+                                                <th style="width:85px; text-align: center; font-weight:bold">入金締切日</th>
+                                                <th style="width:55px; text-align: center; font-weight:bold">確認済</th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div style="height: 205px; overflow-y: auto">
+                                        <table class="dataList_table" id="ididMiSeikyuDetailWrapListTable">
+                                            <apex:variable var="seikyuSogishaDetailRowNumIndex" value="{!0}" />
+                                            <apex:repeat value="{!miSeikyuDetailWrapList}" var="item" id="idMiSeikyuDetailWrapList">
+                                                <tr>
+                                                    <td style="width:40px; text-align: center;"><apex:inputCheckBox value="{!item.isSelected}" id="idChkSeikyuSogishaDetail" disabled="{!IF(item.seikyuMeisaiId != null,'true', 'false')}" /><apex:inputHidden id="idHdnSeikyuDetailId" value="{!item.seikyuMeisaiId}"/></td>
+                                                    <td style="width:70px; text-align: center;"><apex:outputLabel value="{!item.opp.ShodanBango__c}" id="idMiSeikyuDetailShodanbango"/></td>
+                                                    <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.Utiagebi__c}"/></td>
+                                                    <td style="width:90px; padding-left: 5px">{!LEFT(item.opp.SimpleYasugoRef__r.TaishoshaRef__r.LastName & ' ' & item.opp.SimpleYasugoRef__r.TaishoshaRef__r.FirstName, 6) & IF(LEN(item.opp.SimpleYasugoRef__r.TaishoshaRef__r.LastName & ' ' & item.opp.SimpleYasugoRef__r.TaishoshaRef__r.FirstName) > 6, '…', '')}</td>
+                                                    <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.SeikyushoHassoubiPartner__c}"/></td>
+                                                    <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.NyukinSimekiriBiPartner__c}"/></td>
+                                                    <td style="width:55px; text-align: center;"><apex:inputCheckBox value="{!item.verified}" disabled="true" /></td>
+                                                </tr>
+                                                <apex:variable var="seikyuSogishaDetailRowNumIndex" value="{!seikyuSogishaDetailRowNumIndex + 1}" />
+                                            </apex:repeat>
+                                        </table>
+                                    </div>
+                                    <div style="display: flex;padding:10px 0px 0px 0px; justify-content: space-between;">
+                                        <div>
+                                            <input type="button" class="btn" value="未請求明細リストから削除" onclick="onClickMiseikyuDetailListDeleteBtn();"/>
+                                            <apex:actionFunction name="delMiseikyuDetailgetListJs" action="{!delMiseikyuDetailgetList}" reRender="idMiSeikyuDetailPanel" oncomplete="hideLoadingDialog();"/>
+                                            <script>
+                                                function onClickMiseikyuDetailListDeleteBtn(){
+                                                    showLoadingDialog();
+                                                    delMiseikyuDetailgetListJs();
+                                                }
+                                            </script>
+                                        </div>
+                                        <div>
+                                            <apex:outputPanel id="idAddSeikyuKakuninIraiPanel">
+                                                <div>
+                                                    <input type="button" class="btn" value="請求明細追加" onclick="chkSeikyuMeisaiTsuika();"/>
+                                                    <script>
+                                                        function chkSeikyuMeisaiTsuika(){
+                                                            if(document.getElementById('idPage:myFormId:idHdnSeikyuHeaderId').value == ''){ alert('請求先が選択されていません。'); }
+                                                            else{ checkAddSeikyuKakuninIraiJs(); }
+                                                        }
+                                                    </script>
+                                                    <apex:actionFunction name="checkAddSeikyuKakuninIraiJs" action="{!checkAddSeikyuKakuninIrai}" reRender="idAddSeikyuKakuninIraiPanel" oncomplete="addSogiSeikyuDataDetail('{!errorMessage1}');"/>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    <apex:inputHidden id="idHdnSeikyuHeaderId" value="{!seikyuHeaderId}"/>
+                                    <script>
+                                        chkAccountNumberMiSeikyuDetailWrapListJs();
+                                    </script>
+                                    <apex:actionFunction name="chkAccountNumberMiSeikyuDetailWrapListJs" action="{!chkAccountNumberMiSeikyuDetailWrapList}" reRender="idAlertMsg2Panel"/>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="section-panel" style="margin-top: 10px;margin-left: 10px;">
+                                <apex:outputPanel id="idTargetPanel" layout="block" style="width: 100%">
+                                    <div style="display:flex;">
+                                        <div style="padding:0px;font-weight: bold;">【請求対象リスト】</div>
+                                        <div style="display: flex;padding:0px; float: right;">
+                                            <apex:outputPanel id="idAlertMsg1Panel">
+                                                <apex:outputText id="idAlertMsg1" value="{!alertMessage1}" style="color: orange;font-weight: bold;" rendered="{!LEN(alertMessage1)>0}" escape="false"/>
+                                            </apex:outputPanel>
+                                        </div>
+                                        <div style="display: flex;padding:0px; float: right;">
+                                            <apex:outputPanel id="idErrMsg1Panel">
+                                                <apex:outputText id="idErrMsg1" value="{!errorMessage1}" style="color: red;font-weight: bold;" rendered="{!LEN(errorMessage1)>0}" escape="false"/>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex;padding:2px 0px 5px 0px; height: 24px">
+                                        <div style="padding-top: 3px; padding-left: 11px; padding-right: 5px;">
+                                            <input type="checkbox" value="全て" id="idChkTarget" onclick="allTarCheck(this, '{!tarWrapList.size}');"/>
+                                        </div>
+                                        <div style="padding-top: 3px; padding-right: 15px;">
+                                            全て
+                                        </div>
+                                        <div style="padding-top: 6px;margin-left: 5px; width: 25px; text-align: end;"><apex:outputText value="{!tarWrapList.size}" /></div>
+                                        <div style="padding-top: 3px;margin-left: 5px;">件</div>
+                                    </div>
+                                    <div>
+                                        <table class="dataList_table">
+                                            <tr>
+                                                <th style="width:40px; text-align: center; font-weight:bold">選択</th>
+                                                <th style="width:70px; text-align: center; font-weight:bold">商談番号</th>
+                                                <th style="width:85px; text-align: center; font-weight:bold">売上日</th>
+                                                <th style="width:205px; text-align: center; font-weight:bold">葬儀社</th>
+                                                <th style="width:95px; text-align: center; font-weight:bold">対象者</th>
+                                                <th style="width:85px; text-align: center; font-weight:bold">入金締切日</th>
+                                                <th style="width:55px; text-align: center; font-weight:bold">請求先</th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div style="height: 235px; overflow-y: auto">
+                                        <table class="dataList_table" id="idTarWrapListTable">
+                                            <apex:variable var="tarRowNumIndex" value="{!0}" />
+                                            <apex:repeat value="{!tarWrapList}" var="item" id="idTarWrapList">
+                                                <tr>
+                                                    <td style="width:40px; text-align: center;"><apex:inputCheckBox value="{!item.isSelected}" id="idChkTarget"/></td>
+                                                    <td style="width:70px; text-align: center;"><apex:outputLabel value="{!item.opp.ShodanBango__c}" id="idShodanbango"/></td>
+                                                    <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.Utiagebi__c}"/></td>
+                                                    <td style="width:200px; padding-left: 5px">{!LEFT(item.sogishaName, 15) & IF(LEN(item.sogishaName) > 15, '…', '')}</td>
+                                                    <td style="width:90px; padding-left: 5px">{!LEFT(item.opp.SimpleYasugoRef__r.TaishoshaRef__r.LastName & ' ' & item.opp.SimpleYasugoRef__r.TaishoshaRef__r.FirstName, 6) & IF(LEN(item.opp.SimpleYasugoRef__r.TaishoshaRef__r.LastName & ' ' & item.opp.SimpleYasugoRef__r.TaishoshaRef__r.FirstName) > 6, '…', '')}</td>
+                                                    <td style="width:85px; text-align: center;"><apex:outputField value="{!item.opp.NyukinSimekiriBiPartner__c}"/></td>
+                                                    <td style="width:55px; text-align: center;"><input type="radio" id="idTarRowNum{!tarRowNumIndex}" name="nmTarRowNum" value="{!tarRowNumIndex}" /></td>
+                                                </tr>
+                                                <apex:variable var="tarRowNumIndex" value="{!tarRowNumIndex + 1}" />
+                                            </apex:repeat>
+                                        </table>
+                                    </div>
+                                    <div style="display: flex;padding:10px 0px 0px 0px; justify-content: space-between;">
+                                        <div style="display: flex;">
+                                            <div>
+                                                <input type="button" class="btn" value="請求対象リストから削除" onclick="callDelTargetListJs();"/>
+                                                <script>
+                                                    function callDelTargetListJs(){
+                                                        showLoadingDialog();
+                                                        delTargetListJs();
+                                                    }
+                                                </script>
+                                                <apex:actionFunction name="delTargetListJs" action="{!delTargetList}" reRender="idTargetPanel,idMiseikyuSogishaHeaderPanel,idMiSeikyuDetailPanel" oncomplete="hideLoadingDialog();"/>
+                                            </div>
+                                            <div style="padding-left: 10px;">
+                                                <input type="button" class="btn" value="未請求明細リストへ追加" onclick="onClickMiseikyuDetailListAddBtn();"/>
+                                                <apex:actionFunction name="onClickMiseikyuDetailListAddBtnJs" action="{!addMiSeikyuDetailList}" reRender="idMiSeikyuDetailPanel,idErrMsg1Panel" oncomplete="hideLoadingDialog();"/>
+                                                <script>
+                                                    function onClickMiseikyuDetailListAddBtn(){
+                                                        showLoadingDialog();
+                                                        
+                                                        if(document.getElementById('idPage:myFormId:idHdnSeikyuHeaderId').value == ''){
+                                                            hideLoadingDialog();
+                                                            alert('請求先が選択されていません。');
+                                                        }
+                                                        else{
+                                                            onClickMiseikyuDetailListAddBtnJs();
+                                                        }
+                                                    }
+                                                </script>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <apex:outputPanel id="idSeikyuKakuninIraiPanel">
+                                                <div>
+                                                    <input type="button" class="btn" value="請求確認依頼" onclick="chkSeikyuSaki('{!tarWrapList.size}');"/>
+                                                    <script>
+                                                        function chkSeikyuSaki(targetSize){
+                                                            var chkFlg = false;
+                                                            for(var i=0; i<targetSize; i++){
+                                                                if(document.getElementById('idTarRowNum' + i).checked){
+                                                                    chkFlg = true;
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            if(chkFlg){ checkSeikyuKakuninIraiJs(); }
+                                                            else{ alert('請求先が選択されていません。'); }
+                                                        }
+                                                    </script>
+                                                    <apex:actionFunction name="checkSeikyuKakuninIraiJs" action="{!checkSeikyuKakuninIrai}" reRender="idSeikyuKakuninIraiPanel,idErrMsg1Panel" oncomplete="createSogiSeikyuDataDetail('{!errorMessage1}', '{!tarWrapList.size}');"/>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        chkAccountNumberTargetWrapListJs();
+                                    </script>
+                                    <apex:actionFunction name="chkAccountNumberTargetWrapListJs" action="{!chkAccountNumberTargetWrapList}" reRender="idAlertMsg1Panel"/>
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

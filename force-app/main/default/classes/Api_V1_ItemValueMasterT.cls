@@ -1,0 +1,31 @@
+@isTest
+public class Api_V1_ItemValueMasterT {
+    @isTest
+    public static void testForCoverage() {
+        Test.startTest();
+        Api_V1_ItemValueMaster.getMemberTourokuKibo('_');
+        Api_V1_ItemValueMaster.getWebAccountKibo('_');
+        Api_V1_ItemValueMaster.getSozokuSodanKibo('_');
+        Api_V1_ItemValueMaster.getShiryoSoufuHoho('_');
+        Api_V1_ItemValueMaster.getTaishoushaJokyo('_');
+        Api_V1_ItemValueMaster.getHakapitaSyuha('_');
+        Api_V1_ItemValueMaster.getTaisyosyaBodaijiUmu('_');
+        Api_V1_ItemValueMaster.getTaisyosyaFromCustomer('_');
+        Api_V1_ItemValueMaster.getAnchisakiKubun('_');
+        Api_V1_ItemValueMaster.getSimpleyasugoPlan('_');
+        Api_V1_ItemValueMaster.getSimpleyasugoObousanbinPlan('_');
+        Api_V1_ItemValueMaster.getSiryoSofuHoho('_');
+        Api_V1_ItemValueMaster.getTaisyosyaIsCustomer('_');
+        Api_V1_ItemValueMaster.getTaisyosyaMosyuUmu('_');
+        Api_V1_ItemValueMaster.getHojiHoyo('_');
+        Api_V1_ItemValueMaster.getKaimyoHomeijuyo('_');
+        Api_V1_ItemValueMaster.getKakuninRenrakuNoKiboUmu('_');
+        Api_V1_ItemValueMaster.getHoyouYoteiStaus('_');
+        Api_V1_ItemValueMaster.getKaimyoPlan('_');
+        Api_V1_ItemValueMaster.getSankotsuKaiiki('_');
+        Api_V1_ItemValueMaster.getEntrance('_');
+        Api_V1_ItemValueMaster.getRiyokaisu('_');
+        Api_V1_ItemValueMaster.getObonsetMap('_');
+        Test.stopTest();
+    }
+}

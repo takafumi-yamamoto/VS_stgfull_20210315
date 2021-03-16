@@ -1,0 +1,10 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="/support/console/48.0/integration.js"/>
+    <script type="text/javascript">
+        window.open( '/apex/TerapSeikyushoPrint?no={!$CurrentPage.parameters.no}' );
+        sforce.console.getEnclosingTabId((result)=>{
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        });
+    </script>
+</apex:page>

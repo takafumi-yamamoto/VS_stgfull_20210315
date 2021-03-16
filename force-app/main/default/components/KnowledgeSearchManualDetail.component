@@ -1,0 +1,154 @@
+<apex:component >
+    <apex:attribute name="manualDetail" type="Knowledge__kav" description="" />
+    <apex:attribute name="categoryLabelList" type="String[]" description="" />
+    
+    <div style="display: flex;">
+        <div class="detail_title">
+            マニュアル詳細
+        </div>
+        <div class="slidebox" style="margin-left: 10px;">
+            <input type="button" value="拡大" id="btn-inner" class="spread_title" />
+        </div>
+        <div style="margin-left: 15px;">
+            <input type="button" value="参照" onClick="srcUp('/{!manualDetail.Id}');" class="spread_title" />
+        </div>
+    </div>
+    <div style="height: 808px; overflow: auto;">
+        <div>
+            <table style="min-width: max-content;" cellpadding="0" cellspacing="0" class="dataDetail_table">
+                <tr>
+                    <th style="width:80px;">
+                        カテゴリ
+                    </th>
+                    <td style="min-width: 760px;">
+                        <apex:repeat value="{!categoryLabelList}" var="categoryLabel">
+                            <apex:outputText value="{!categoryLabel}"/><br/>
+                        </apex:repeat>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width:80px;">
+                        タイトル
+                    </th>
+                    <td>
+                        <apex:outputText value="{!manualDetail.Title}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width:80px;">
+                        概要
+                    </th>
+                    <td>
+                        <apex:outputField value="{!manualDetail.Summary}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width:80px;">
+                        詳細<br/>(社内向け)
+                    </th>
+                    <td>
+                        <apex:outputText value="{!manualDetail.Detail__c}" style="border-width: 0; word-break: break-all;" escape="false"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width:80px;">
+                        詳細<br/>(社外向け)
+                    </th>
+                    <td>
+                        <apex:outputText value="{!manualDetail.DetailShagaimuke__c}" style="border-width: 0; word-break: break-all;" escape="false"/>
+                    </td>
+                </tr>
+                <tr style="display:{!IF(manualDetail.AttachmentFile1__Name__s != null, '', 'none')} ">
+                    <th style="width:80px;">
+                        ファイル1
+                    </th>
+                    <td>
+                        <a href="#" onClick="run(1);return false">ダウンロード</a>&nbsp;&nbsp;{!manualDetail.AttachmentFile1__Name__s}
+                    </td>
+                </tr>
+                <tr style="display:{!IF(manualDetail.AttachmentFile2__Name__s != null, '', 'none')} ">
+                    <th style="width:80px;">
+                        ファイル2
+                    </th>
+                    <td>
+                        <a href="#" onClick="run(2);return false">ダウンロード</a>&nbsp;&nbsp;{!manualDetail.AttachmentFile2__Name__s}
+                    </td>
+                </tr>
+                <tr style="display:{!IF(manualDetail.AttachmentFile3__Name__s != null, '', 'none')} ">
+                    <th style="width:80px;">
+                        ファイル3
+                    </th>
+                    <td>
+                        <a href="#" onClick="run(3);return false">ダウンロード</a>&nbsp;&nbsp;{!manualDetail.AttachmentFile3__Name__s}
+                    </td>
+                </tr>
+                <tr style="display:{!IF(manualDetail.AttachmentFile4__Name__s != null, '', 'none')} ">
+                    <th style="width:80px;">
+                        ファイル4
+                    </th>
+                    <td>
+                        <a href="#" onClick="run(4);return false">ダウンロード</a>&nbsp;&nbsp;{!manualDetail.AttachmentFile4__Name__s}
+                    </td>
+                </tr>
+                <tr style="display:{!IF(manualDetail.AttachmentFile5__Name__s != null, '', 'none')} ">
+                    <th style="width:80px;">
+                        ファイル5
+                    </th>
+                    <td>
+                        <a href="#" onClick="run(5);return false">ダウンロード</a>&nbsp;&nbsp;{!manualDetail.AttachmentFile5__Name__s}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function run(pIndex){
+            var queryStr = "Select Id, AttachmentFile1__Name__s, AttachmentFile1__ContentType__s, AttachmentFile1__Body__s, AttachmentFile2__Name__s, AttachmentFile2__ContentType__s, AttachmentFile2__Body__s, AttachmentFile3__Name__s, AttachmentFile3__ContentType__s, AttachmentFile3__Body__s, AttachmentFile4__Name__s, AttachmentFile4__ContentType__s, AttachmentFile4__Body__s, AttachmentFile5__Name__s, AttachmentFile5__ContentType__s, AttachmentFile5__Body__s From Knowledge__kav where Id = '{!manualDetail.Id}'";
+            // クエリ発行
+            var result = sforce.connection.query(queryStr);
+            // レコード取得
+            var records = result.getArray("records");
+            var a = document.createElement("a");
+
+            if(pIndex == 1){
+                a.href = URL.createObjectURL(new Blob([toBlob(records[0].AttachmentFile1__Body__s)], {type: records[0].AttachmentFile1__ContentType__s}));
+                a.download = records[0].AttachmentFile1__Name__s;
+            }
+            else if(pIndex == 2){
+                a.href = URL.createObjectURL(new Blob([toBlob(records[0].AttachmentFile2__Body__s)], {type: records[0].AttachmentFile2__ContentType__s}));
+                a.download = records[0].AttachmentFile2__Name__s;
+            }
+            else if(pIndex == 3){
+                a.href = URL.createObjectURL(new Blob([toBlob(records[0].AttachmentFile3__Body__s)], {type: records[0].AttachmentFile3__ContentType__s}));
+                a.download = records[0].AttachmentFile3__Name__s;
+            }
+            else if(pIndex == 4){
+                a.href = URL.createObjectURL(new Blob([toBlob(records[0].AttachmentFile4__Body__s)], {type: records[0].AttachmentFile4__ContentType__s}));
+                a.download = records[0].AttachmentFile4__Name__s;
+            }
+            else if(pIndex == 5){
+                a.href = URL.createObjectURL(new Blob([toBlob(records[0].AttachmentFile5__Body__s)], {type: records[0].AttachmentFile5__ContentType__s}));
+                a.download = records[0].AttachmentFile5__Name__s;
+            }
+            a.target   = '_blank';
+            a.click();
+        }
+
+        function toBlob(base64) {
+            var bin = atob(base64.replace(/^.*,/, ''));
+            var buffer = new Uint8Array(bin.length);
+            for (var i = 0; i < bin.length; i++) {
+                buffer[i] = bin.charCodeAt(i);
+            }
+            // Blobを作成
+            try{
+                var blob = new Blob([buffer.buffer], {
+                    type: 'image/png'
+                });
+            }catch (e){
+                return false;
+            }
+            return blob;
+        }
+    </script>
+</apex:component>

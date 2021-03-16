@@ -1,0 +1,2391 @@
+<apex:page id="idPage" docType="html-5.0" standardController="SogiShiryoSofu__c" extensions="SogiMitsumoriKeisanhyoCtl,SwitchRemoteAction" action="{!init}" cache="false" title="見積計算表">
+<!-- test add add add -->
+  <script src="/soap/ajax/44.0/connection.js" type="text/javascript"></script>
+  <script src="/soap/ajax/44.0/apex.js" type="text/javascript"></script>
+
+  <apex:includeScript value="/support/console/44.0/integration.js" />
+  <style>
+
+    :root {
+      --main-height: 0px;
+      --submenu-height: 0px;
+    }
+    
+    .wrapper {
+      resize: both;
+    }
+
+    .container {
+      display: flex;
+    }
+
+    .main {
+      /*width: 80%;*/
+    }
+
+    .main-header {}
+
+    .section-panel {
+      display: flex;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 3px;
+    }
+
+    .summarpanel {
+      display: flex;
+    }
+
+    .center-column {}
+
+    .main-contents {
+      width: 100%;
+      margin-top: 10px;
+      height: var(--main-height);
+      overflow-y:scroll;
+    }
+
+    .kibo {
+      display: flex;
+      width: 100%;
+    }
+
+    .ryokin {
+      display: flex;
+      width: 100%;
+    }
+
+    .kiboshiharaihoho {
+      width: 100%;
+      border-radius: 3px;
+    }
+
+    .shiryosofu {
+      display: flex;
+      width: 100%;
+    }
+
+    .side {
+      width: 100%;
+      /*height: 775px;*/
+      overflow-y: auto;
+      padding: 0 0 0 10px;
+    }
+
+    html body.sfdcBody {
+      background: rgba(176, 196, 223, 1.0);
+      padding: 10px 10px 0 10px;
+      font-size: 80%;
+      font-family: 'Salesforce Sans',Arial,sans-serif;
+    }
+
+    div {
+      font-family: 'Salesforce Sans',Arial,sans-serif;
+    }
+
+    th {
+      text-align: right;
+      font-family: 'Salesforce Sans',Arial,sans-serif;
+    }
+
+    td {
+      padding: 0 10px 0 0;
+      font-family: 'Salesforce Sans',Arial,sans-serif;
+    }
+
+    .contactHistoryLabel {
+      padding-right: 5px;
+      text-align: right;
+      font-weight: bold;
+      font-family: 'Salesforce Sans',Arial,sans-serif;
+    }
+
+    .square_btn1 {
+      display: inline-block;
+      padding: 0.1em 0 0 0;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgb(221, 219, 218);
+      background: rgba(27, 82, 151, 1.0);
+      border-radius: 3px;
+      transition: .4s;
+      text-align: center;
+    }
+
+    .square_btn1:hover {
+      background: white;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn1.active {
+      background-color: #ccc;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn1>span:last-of-type,
+    .square_btn1.active>span:first-of-type {
+      display: none;
+    }
+
+    .square_btn1.active>span:last-of-type {
+      display: inline;
+    }
+
+    .square_btn2 {
+      display: inline-block;
+      padding: 0.1em 0 0 0;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgb(221, 219, 218);
+      background: rgba(27, 82, 151, 1.0);
+      border-radius: 3px;
+      transition: .4s;
+      text-align: center;
+    }
+
+    .square_btn2:hover {
+      background: white;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn2.active {
+      background-color: #ccc;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn2>span:last-of-type,
+    .square_btn2.active>span:first-of-type {
+      display: none;
+    }
+
+    .square_btn2.active>span:last-of-type {
+      display: inline;
+    }
+
+    .square_btn3 {
+      display: inline-block;
+      padding: 0.1em 0 0 0;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgb(221, 219, 218);
+      background: rgba(27, 82, 151, 1.0);
+      border-radius: 3px;
+      transition: .4s;
+      text-align: center;
+    }
+
+    .square_btn3:hover {
+      background: white;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn3.active {
+      background-color: #ccc;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn3>span:last-of-type,
+    .square_btn3.active>span:first-of-type {
+      display: none;
+    }
+
+    .square_btn3.active>span:last-of-type {
+      display: inline;
+    }
+
+    .square_btn4 {
+      display: inline-block;
+      padding: 0.1em 0 0 0;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgb(221, 219, 218);
+      background: rgba(27, 82, 151, 1.0);
+      border-radius: 3px;
+      transition: .4s;
+      text-align: center;
+    }
+
+    .square_btn4:hover {
+      background: white;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn4.active {
+      background-color: #ccc;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .square_btn4>span:last-of-type,
+    .square_btn4.active>span:first-of-type {
+      display: none;
+    }
+
+    .square_btn4.active>span:last-of-type {
+      display: inline;
+    }
+
+    .ryunyuNyuden_btn {
+      display: inline-block;
+      padding: 0.1em 0 0 0;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgb(221, 219, 218);
+      background: rgba(27, 82, 151, 1.0);
+      border-radius: 3px;
+      transition: .4s;
+      text-align: center;
+    }
+
+    .ryunyuNyuden_btn:hover {
+      background: white;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .ryunyuNyuden_btn.active {
+      background-color: #ccc;
+      color: rgba(27, 82, 151, 1.0);
+    }
+
+    .ryunyuNyuden_btn>span:last-of-type,
+    .ryunyuNyuden_btn.active>span:first-of-type {
+      display: none;
+    }
+
+    .ryunyuNyuden_btn.active>span:last-of-type {
+      display: inline;
+    }
+
+    .row {
+      margin-top: 5px;
+    }
+
+    .buttonstyle {
+      width: 100px;
+    }
+
+    .buttonstyle3 {
+      width: 40px;
+      /*height: 20px;*/
+    }
+
+    .buttonstyle4 {
+      width: 75px;
+    }
+
+    .tabs {
+      margin-top: 50px;
+      /*padding-bottom: 40px;*/
+      background-color: #fff;
+      width: 100%;
+      /*padding: 5px;*/
+      margin: 0 auto;
+    }
+    /*タブのスタイル*/
+
+    .tab_item {
+      width: calc(100%/4);
+      height: 30px;
+      border-bottom: 3px solid rgba(0, 112, 210, 0.1);
+      background-color: #d9d9d9;
+      line-height: 30px;
+      font-size: 11px;
+      text-align: center;
+      color: #565656;
+      display: block;
+      float: left;
+      text-align: center;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+
+    .tab_item:hover {
+      opacity: 0.75;
+    }
+    /*ラジオボタンを全て消す*/
+
+    input[name="tab_item"] {
+      display: none;
+    }
+    /*タブ切り替えの中身のスタイル*/
+
+    .tab_content {
+      display: none;
+      padding: 5px;
+      clear: both;
+      /*height: 447px;*/
+      overflow-y: auto;
+    }
+
+    .tabs input:checked+.tab_item {
+      background-color: rgba(0, 112, 210, 0.1);
+      color: #000;
+    }
+
+    .titleDetaile {
+      color: rgb(0, 95, 178);
+    }
+
+    .onakunariCheck {
+      background-color: pink;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    table.ex_table {
+      border-collapse: collapse;
+      border: 0;
+    }
+
+    table.ex_table th {
+      border: 1px solid #222;
+      border-style: dotted;
+    }
+    table.ex_table td {
+      border: 1px solid #222;
+      border-style: dotted;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+    .clshidArea {
+      position: absolute;
+      padding: 5px;
+      color: #000;
+      border-radius: 10px;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 5px;
+      background: #FFFFFF;
+      border:1px solid #000;
+      display:none;
+    }
+    table.kensakukekka {
+      border-collapse: collapse;
+      border: 0;
+      overflow: scroll;
+    }
+    table.kensakukekka th {
+      border: 1px solid #222;
+      border-style: dotted;
+    }
+    table.kensakukekka td {
+      border: 1px solid #222;
+      border-style: dotted;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+    table.sofujoList {
+      border-collapse: collapse;
+      border: 0;
+      overflow: scroll;
+    }
+    table.sofujoList th {
+      border: 1px solid #222;
+      border-style: dotted;
+    }
+    table.sofujoList td {
+      border: 1px solid #222;
+      border-style: dotted;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+    thead.sofujoList_scrollHead,tbody.sofujoList_scrollBody{
+        display:block;
+    }
+    tbody.sofujoList_scrollBody{
+        overflow:auto;
+        width: 100%;
+        height: 139px;
+    }
+    .saijoTeianList_name{
+        width: 300px;
+    }
+    .titlePanelPink {
+    color: hotpink;
+    }
+
+    .titlePanelGreen {
+        color: darkgreen;
+    }
+
+    .bgGreen {
+      background-color: #beedbe;
+        padding: 10px;
+        border: #DDDBDA solid 1px;
+        border-radius: .25rem;
+    }
+
+    .bgPink {
+      background-color: #ffe6ea;
+        padding: 10px;
+        border: #DDDBDA solid 1px;
+        border-radius: .25rem;
+    }
+
+    .item_label_1 {
+        padding-right: 5px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+        text-align: right;
+        font-weight: bold;
+    }
+    .item_value_1 {
+        padding-top: 3px;
+    }
+
+    .sfdcoutputText {
+        width: 80px;
+        text-align: right;
+        font-weight: bold;
+        white-space: nowrap;
+        vertical-align: top;
+        border-collapse: separate;
+        border-spacing: 2px;
+        font-family: 'Salesforce Sans',Arial,sans-serif;
+        margin-left: 15px;
+    }
+
+    span.dateFormat {display: none;}
+
+    .contactHistoryTabs {
+      display: flex;
+      flex-wrap: wrap
+    }
+    .tab-wrap:after {
+      content: '';
+      width: 100%;
+      height: 3px;
+      background: #364e96;;
+      display: block;
+      order: -1;
+    }
+    .tab-label {
+      color: #565656;
+      background: LightGray;
+      text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+      white-space: nowrap;
+      text-align: center;
+      padding: 10px .5em;
+      order: -1;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+      flex: 1;
+    }
+    .tab-label:not(:last-of-type) {
+      margin-right: 5px;
+    }
+    .tab-content {
+      width: 100%;
+      height: 0;
+      overflow: auto;
+      opacity: 0;
+    }
+    /* アクティブなタブ */
+    .tab-switch:checked+.tab-label {
+      font-weight: bold;
+      color: White;
+      background: #364e96;;
+    }
+    .tab-switch:checked+.tab-label+.tab-content {
+      height: 100%;
+      padding: 15px;
+      opacity: 1;
+      transition: .5s opacity;
+      box-shadow: 0 0 3px rgba(0,0,0,.2);
+      background: White;
+    }
+    .tab-othermenu-label {
+      color: #565656;
+      background: LightGray;
+      text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+      white-space: nowrap;
+      text-align: center;
+      padding: 10px .5em;
+      order: -1;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+      flex: 1;
+    }
+    .tab-othermenu-label:not(:last-of-type) {
+      margin-right: 5px;
+    }
+    .tab-othermenu-content {
+      width: 100%;
+      height: 0px;
+      overflow: hidden;
+      opacity: 0;
+    }
+    /* アクティブなタブ */
+    .tab-othermenu-switch:checked+.tab-othermenu-label {
+      font-weight: bold;
+      color: White;
+      background: #364e96;;
+    }
+    .tab-othermenu-switch:checked+.tab-othermenu-label+.tab-othermenu-content {
+      overflow-y: scroll;
+      height: var(--submenu-height);
+      padding: 15px;
+      opacity: 1;
+      transition: .5s opacity;
+      box-shadow: 0 0 3px rgba(0,0,0,.2);
+      background: White;
+      display:;
+    }
+    /* ラジオボタン非表示 */
+    .tab-switch {
+      display: none;
+    }
+    .tab-othermenu-switch {
+      display: none;
+    }
+
+    summary {
+		 color: #364e96;
+		}
+
+    fieldset {
+      padding: 0px;
+    }
+
+    .contactHistoryJuhasshinTable td {
+      width: 63px;
+    }
+    .contactHistoryTabs textarea {
+      width: 95%;
+    }
+    table.templeteList {
+      border-collapse: collapse;
+      border: 0;
+      overflow: scroll;
+      width: 348px;
+    }
+    table.templeteList th {
+      border: 1px solid #222;
+      border-style: dotted;
+    }
+    table.templeteList td {
+      border: 1px solid #222;
+      border-style: dotted;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+
+    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.1.10/libphonenumber-js.min.js"></script>
+    <script src="myapp.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      sforce.connection.sessionId='{!GETSESSIONID()}';
+
+      var time_limit=500; //制限時間
+      var timer_id = null;
+
+      $(document).on('keydown',function(e){
+        if(e.keyCode != 9){
+          if(this.activeElement.id.indexOf(':idKasobaName') > 0) {
+            clearTimeout(timer_id);
+            timer_id=setTimeout(timer_func(this.activeElement.id, 'kaso'), time_limit);
+          }
+          else if(this.activeElement.id.indexOf(':idSaijoName') > 0) {
+            clearTimeout(timer_id);
+            timer_id=setTimeout(timer_func_saijo(this.activeElement.id, 'saijo'), time_limit);
+          }
+        }
+      });
+
+      function timer_func(ojbId, shisetsuKubun){
+        var prm01 = document.getElementById(ojbId).value;
+        var prmIndex = ojbId.replace('idPage:idForm:idRyokinhyoShikiKasobaRyokinList:', '').replace(':idKasobaName', '').replace('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:', '').replace(':idSaijoName', '');
+        if(prm01.length > 1) {
+          SwitchRemoteAction.rmtActGetShisetsu(
+            prm01,
+            shisetsuKubun,
+            function(result, event) {
+              if (result == null || result == '') {
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'none';
+                return false;
+              }
+              else{
+                clearTimeout(timer_id);
+                timer_id=null;
+
+                var targetElement = document.getElementById(ojbId);
+                var clientRect = targetElement.getBoundingClientRect();
+                var x = clientRect.left;
+                var y = clientRect.top + 19;
+
+                var tmp01 = result.length;
+                var div_element = document.createElement("div")
+                var tmpstr = '<div>';
+                if(Number(tmp01) > 0) {
+                  for (i=0; i<tmp01;i++) {
+                    tmpstr += '<div onclick=\"fncSetItems(\'' + prmIndex + '\',\'' + result[i].Name + '\',\'' + ojbId + '\',\'' + shisetsuKubun + '\');return false;\" onmouseover=\"this.style.backgroundColor=\'#e3f3ff\'\" onMouseOut=\"this.style.backgroundColor=\'#FFFFFF\'\">';
+                    tmpstr +=  result[i].Name + ' ';
+                    if(result[i].ShisetsumeiFurigana__c != undefined) { tmpstr += '(' + result[i].ShisetsumeiFurigana__c + ')'; }
+                    tmpstr += '</div>';
+                  }
+                }
+                tmpstr += '</div>';
+                div_element.innerHTML = tmpstr;
+
+                var parent_obj = document.getElementById('hidArea' + shisetsuKubun + prmIndex);
+                while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+                parent_obj.appendChild(div_element);
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'block';
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.top = y + 'px';
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.left = x + 'px';
+
+                return false;
+              }
+            },
+            {
+              escape: true
+            }
+          );
+        } else {
+          document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'none';
+        }
+      }
+
+      function timer_func_saijo(ojbId, shisetsuKubun){
+        var prm01 = document.getElementById(ojbId).value;
+        var prmIndex = ojbId.replace('idPage:idForm:idRyokinhyoShikiKasobaRyokinList:', '').replace(':idKasobaName', '').replace('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:', '').replace(':idSaijoName', '');
+        if(prm01.length > 1) {
+          SwitchRemoteAction.rmtActGetSaijo(
+            prm01,
+            function(result, event) {
+              if (result == null || result == '') {
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'none';
+                return false;
+              }
+              else{
+                clearTimeout(timer_id);
+                timer_id=null;
+
+                var targetElement = document.getElementById(ojbId);
+                var clientRect = targetElement.getBoundingClientRect();
+                var x = clientRect.left;
+                var y = clientRect.top + 19;
+
+                var tmp01 = result.length;
+                var div_element = document.createElement("div")
+                var tmpstr = '<div>';
+                if(Number(tmp01) > 0) {
+                  for (i=0; i<tmp01;i++) {
+                    tmpstr += '<div onclick=\"fncSetItems(\'' + prmIndex + '\',\'' + result[i].Name + '\',\'' + ojbId + '\',\'' + shisetsuKubun + '\');return false;\" onmouseover=\"this.style.backgroundColor=\'#e3f3ff\'\" onMouseOut=\"this.style.backgroundColor=\'#FFFFFF\'\">';
+                    tmpstr +=  result[i].Name + ' ';
+                    if(result[i].ShisetsumeiFurigana__c != undefined) { tmpstr += '(' + result[i].ShisetsumeiFurigana__c + ')'; }
+                    tmpstr += '</div>';
+                  }
+                }
+                tmpstr += '</div>';
+                div_element.innerHTML = tmpstr;
+
+                var parent_obj = document.getElementById('hidArea' + shisetsuKubun + prmIndex);
+                while (parent_obj.hasChildNodes()) { parent_obj.removeChild(parent_obj.firstChild); }
+                parent_obj.appendChild(div_element);
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'block';
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.top = y + 'px';
+                document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.left = x + 'px';
+
+                return false;
+              }
+            },
+            {
+              escape: true
+            }
+          );
+        } else {
+          document.getElementById('hidArea' + shisetsuKubun + prmIndex).style.display = 'none';
+        }
+      }
+
+      function fncSetItems(pParam01,pParam02,prmIndex,shisetsuKubun) {
+        document.getElementById(prmIndex).value = pParam02;
+        document.getElementById('hidArea' + shisetsuKubun + pParam01).style.display = 'none';
+      }
+      
+      function chgButsuguUmu(){
+        priceCalculationJs();
+      }
+
+      function chgKaiinWaribiki(){
+        var waribiki = document.getElementById('idPage:idForm:idMKJokenWaribiki').value;
+        if(waribiki == '非会員'){
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').disabled = true;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').disabled = true;
+        }
+        else if(waribiki == 'よりそう会員' || waribiki == '旧よりそう会員'){
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').disabled = false;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').disabled = false;
+        }
+        else if(waribiki == 'お葬式予約会員'){
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').disabled = true;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').disabled = true;
+        }
+        else {
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenJizenSurvey').disabled = true;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').checked = false;
+          document.getElementById('idPage:idForm:idMKJokenShikigoSurvey').disabled = true;
+        }
+
+        // if(document.getElementById('idCampaignSogiyoBouquetFlg').value == 'true'){
+        //   document.getElementById('idPage:idForm:idCampaignSogiyoBouquetChk').checked = true;
+        // }
+        priceCalculationJs();
+      }
+
+      function setSoryoTehaiKiboMain(){
+        if(document.getElementById('idPage:idForm:idRyokinHyoSoryoTehaiKiboUmu').value == '希望する'){
+          document.getElementById('idPage:idForm:idRyokinHyoShikiSoryoTehai').checked = true;
+        }
+        else{
+          document.getElementById('idPage:idForm:idRyokinHyoShikiSoryoTehai').checked = false;
+        }
+        priceCalculationJs();
+      }
+
+      function setSoryoTehai(){
+        if(document.getElementById('idPage:idForm:idRyokinHyoShikiSoryoTehai').checked){
+          document.getElementById('idPage:idForm:idRyokinHyoSoryoTehaiKiboUmu').value = '希望する';
+        }
+        else{
+          document.getElementById('idPage:idForm:idRyokinHyoSoryoTehaiKiboUmu').value = '希望しない';
+        }
+        priceCalculationJs();
+      }
+
+      function setKaimyoUmu(){
+        if(document.getElementById('idPage:idForm:idRyokinhyoShikiKaimyojuyo').checked){
+          document.getElementById('idPage:idForm:idRyokinHyoKaimyoJuyoKiboUmu').value = '希望する';
+        }
+        else{
+          document.getElementById('idPage:idForm:idRyokinHyoKaimyoJuyoKiboUmu').value = '希望しない';
+        }
+        priceCalculationJs();
+      }
+
+      function setKaimyoKiboMain(){
+        if(document.getElementById('idPage:idForm:idRyokinHyoKaimyoJuyoKiboUmu').value == '希望する'){
+          document.getElementById('idPage:idForm:idRyokinhyoShikiKaimyojuyo').checked = true;
+        }
+        else{
+          document.getElementById('idPage:idForm:idRyokinhyoShikiKaimyojuyo').checked = false;
+        }
+      }
+
+      function chgBackColorRyoriSaidanUpGread(obj){
+        if(obj.checked){
+          document.getElementById('idSaidanUpGreadTr').style.backgroundColor = '#FFFFFF';
+          document.getElementById('idPage:idForm:idSaidanUpGreadSelectList').style.backgroundColor = '#FFFFFF';
+        }
+        else{
+          document.getElementById('idSaidanUpGreadTr').style.backgroundColor = 'gray';
+          document.getElementById('idPage:idForm:idSaidanUpGreadSelectList').style.backgroundColor = 'gray';
+        }
+      }
+
+      
+
+      
+
+    </script>
+    <c:loadingDialog title="Getting Contacts" />
+    <apex:form id="idForm" html-autocomplete="off">
+      <apex:actionFunction name="priceCalculationJs" action="{!actPriceCalculation}" reRender="idKeisanhyoEditPanel"></apex:actionFunction>
+
+        <div class="wrapper">
+            <div class="container">
+                <div class="main">
+                    <div class="main-header" id="idMainHeader" style="width: 100%;">
+                      <div>
+                        <div class="section-panel">
+                          <div>
+                            <div>【見積計算表リスト】</div>
+                            <div style="padding:5px 0 0 0;">
+                              <apex:outputPanel id="idKeisanhyoWrapListPanel" layout="block" style="width: 100%">
+                                <table class="sofujoList" id="idKeisanhyoWrapListTable">
+                                  <thead class="sofujoList_scrollHead">
+                                      <tr>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:105px;"><font color="#FFFFFF">見積計算表名</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">家族一日</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">家族二日</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">家族華やか</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">火葬ｼﾝﾌﾟﾙ</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬基本</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬仏具</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:70px;"><font color="#FFFFFF">火葬お花</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:150px;"><font color="#FFFFFF">火葬場</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:150px;"><font color="#FFFFFF">斎場</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">仏具有無</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:100px;"><font color="#FFFFFF">割引</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">事前ｱﾝｹｰﾄ</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">式後ｱﾝｹｰﾄ</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:90px;"><font color="#FFFFFF">参列者親族</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">僧侶手配</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:80px;"><font color="#FFFFFF">戒名授与</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:125px;"><font color="#FFFFFF">戒名・法名</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:100px;"><font color="#FFFFFF">作成日時</font></th>
+                                          <th style="background-color: #364e96;color: white;text-align: center; font-family: 'Salesforce Sans',Arial,sans-serif;width:90px;"><font color="#FFFFFF">アクション</font></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody class="sofujoList_scrollBody">
+                                    <apex:variable var="rowNumKeisanhyoWrapList" value="{!0}" />
+                                      <apex:repeat value="{!keisanhyoWrapList}" var="keisanhyoWrap" id="idKeisanhyoWrapList">
+                                          <tr id="idKeisanhyoWrapTr{!rowNumKeisanhyoWrapList}">
+                                              <th style="text-align: center;width: 105px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Name}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 70px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoIchinichi__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 70px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoFutsuka__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KazokusoHanayaka__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiSimple__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 70px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiKihon__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 70px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiButsugu__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 70px;">
+                                                <div style="text-align: center;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KasoshikiOhana__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 150px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Kasojo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 150px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.Saijo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.ButsuguUmu__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 100px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.WaribikiService__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: center"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.JizenSurvey__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: center"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.ShikigoSurvey__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 90px;">
+                                                <div style="text-align: left; padding-left: 5px;">
+                                                  <apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SanretsushaShinzokuFrom__c}" />～<apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SanretsushaShinzokuTo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.SoryoTehaiKibo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 80px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KaimyoKibo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 125px;">
+                                                <div style="text-align: left; padding-left: 5px;"><apex:outputField value="{!keisanhyoWrap.keisanhyoObj.KaimyoHomyo__c}" /></div>
+                                              </th>
+                                              <th style="text-align: center;width: 100px;">
+                                                <div style="text-align: center;">
+                                                  <apex:outputText value="{0, date, yy/MM/dd HH:mm}">
+                                                    <apex:param value="{!keisanhyoWrap.keisanhyoObj.CreatedDate + 9/24}" />
+                                                  </apex:outputText>
+                                                </div>
+                                              </th>
+                                              <th style="text-align: center;width: 90px;">
+                                                <div style="display:flex;justify-content:space-between;">
+                                                  <div style="font-size: 90%;padding-left: 10px;">
+                                                      <a href="#" onclick="showLoadingDialog();editKeisanhyo('{!keisanhyoWrap.keisanhyoObj.Id}');" id="idEditA" ><u>参照</u></a>
+                                                  </div>
+                                                  <div style="font-size: 90%;padding-right: 10px;">
+                                                      <a href="#" onclick="showLoadingDialog();deleteKeisanhyo('{!keisanhyoWrap.keisanhyoObj.Id}');" id="idDeleteA" ><u>削除</u></a>
+                                                  </div>
+                                                </div>
+                                              </th>
+                                          </tr>
+                                          <apex:variable var="rowNumKeisanhyoWrapList" value="{!rowNumKeisanhyoWrapList + 1}" />
+                                      </apex:repeat>
+                                  </tbody>
+                                </table>
+                                <apex:actionFunction name="editKeisanhyo" action="{!actloadKeisanhyo}" reRender="idKeisanhyoWrapListPanel,idKeisanhyoEditPanel,idKeisanhyoConditionPanel" oncomplete="disUpdateBtn();hideLoadingDialog();" >
+                                  <apex:param assignTo="{!pKeisanhyoId}" name="pKeisanhyoId" value="" />
+                                </apex:actionFunction>
+                                <apex:actionFunction name="deleteKeisanhyo" action="{!actDeleteKeisanhyo}" reRender="idKeisanhyoWrapListPanel,idKeisanhyoEditPanel,idKeisanhyoConditionPanel" oncomplete="hideLoadingDialog();" >
+                                  <apex:param assignTo="{!pKeisanhyoId}" name="pKeisanhyoId" value="" />
+                                </apex:actionFunction>
+                              </apex:outputPanel>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div style="padding-top:10px;">
+                        <div class="section-panel">
+                          <div>
+                            <div style="width:100%;">
+                                <div>【見積計算表詳細】</div>
+                                <div style="display:flex;padding:5px 0 0 0;">
+                                  <div>
+                                    <apex:outputpanel id="idKeisanhyoEditPanel">
+                                      <div style="width:100%;text-align:center;">
+                                        <table class="ex_table" width="100%">
+                                          <tr>
+                                            <th colspan="7" style="background-color: #364e96;text-align: right;padding-right: 10px;"><font color="#FFFFFF">提案対象</font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKazoku1nichiTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKazoku2nichiTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKazokuhanayakaTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:80px" id="idKasoSimpleTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKasoKihonTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKasoButsuguTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idKasoOhanaTeianTaisho" onClick="priceCalculationJs();"><font color="#FFFFFF"><apex:inputField value="{!displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c}" /></font></th>
+                                            <th style="background-color: #364e96; text-align: center;width:200px"><font color="#FFFFFF"></font></th>
+                                          </tr>
+                                          <tr>
+                                            <th colspan="7" style="background-color: #364e96;text-align: right;padding-right: 10px;"><font color="#FFFFFF">プラン名</font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKazoku1NichiPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.Kazoku1nichiName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKazoku2NichiPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.Kazoku2nichiName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKazokuHanayakaPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.KazokuhanayakaName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:80px" id="idRyokinhyoKasoSimplePlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.KasoSimpleName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKasoKihonPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.KasoKihonName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKasoButsuguPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.KasoButsuguName__c}" /></font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(230, 61, 0);', '#364e96;')} text-align: center;width:70px" id="idRyokinhyoKasoOhanaPlan"><font color="#FFFFFF"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoPlanName.keisanhyoMeisai.KasoOhanaName__c}" /></font></th>
+                                            <th style="background-color: #364e96; text-align: center;"><font color="#FFFFFF">備考</font></th>
+                                          </tr>
+                                          <!-- 本体 -->
+                                          <tr>
+                                            <th colspan="7" style="background-color: #364e96;text-align: right;padding-right: 10px;"><font color="#FFFFFF">プラン料金 (税抜)</font></th>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiPlan.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td></td>
+                                          </tr>
+                                          <tr>
+                                            <th colspan="5" style="background-color: #364e96;text-align: right;width:165px;vertical-align: top;" rowspan="5"><font color="#FFFFFF">割引（税抜）&nbsp;&nbsp;</font></th>
+                                            <td colspan="2" style="text-align: right;padding-right: 10px;"><apex:outputField value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.OptionName__c}" id="idRyokinhyoButsuguNashiLabel" /></td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoButsuguNashi.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td></td>
+                                          </tr>
+                                          <tr>
+                                            <td colspan="2" style="text-align: right;padding-right: 10px; height:20px;"><apex:outputField value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.OptionName__c}" id="idRyokinhyoShikiWaribikiLabel" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: left;padding-left: 3px">
+                                              <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiWaribiki.keisanhyoMeisai.Biko__c}" />
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td colspan="2" style="text-align: right;padding-right: 10px;"><apex:outputField value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.OptionName__c}" id="idRyokinhyoJizenAnketoWaribikiLabel" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: left;padding-left: 3px">
+                                              <apex:outputText value="{!displayKeisanhyoData.ryokinhyoJizenAnketoWaribiki.keisanhyoMeisai.Biko__c}" />
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td colspan="2" style="text-align: right;padding-right: 10px;"><apex:outputField value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.OptionName__c}" id="idRyokinhyoShikiAnketoWaribikiLabel" /></td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: left;padding-left: 3px">
+                                              <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiAnketoWaribiki.keisanhyoMeisai.Biko__c}" />
+                                            </td>
+                                          </tr>
+                                          <!-- アライアンス割 -->
+                                          <tr>
+                                            <td colspan="2" style="text-align: right;padding-right: 10px;"><apex:outputField value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.OptionName__c}" id="idRyokinhyoAllianceWaribikiLabel" /></td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="text-align: left;padding-left: 3px">
+                                              <apex:outputText value="{!displayKeisanhyoData.ryokinhyoAllianceWaribiki.keisanhyoMeisai.Biko__c}" />
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th colspan="7" style="text-align: right;padding-right: 10px;"><font color="red">本体小計 (税抜)</font></th>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKazoku1Nichi">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKazoku2Nichi">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKazokuHanayaka">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color:{!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKasoSimple">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color:{!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKasoKihon">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color:{!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKasoButsugu">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeinukiKasoOhana">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeinuki.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: lightcyan;"></td>
+                                          </tr>
+                                          <tr>
+                                            <th colspan="7" style="text-align: right;padding-right: 10px;"><font color="red">本体小計 (税込)</font></th>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKazoku1Nichi">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKazoku2Nichi">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idKazokuHontaiShokei">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKasoSimple">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKasoKihon">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKasoButsugu">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color:{!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idHontaiShokeiZeikomiKasoOhana">
+                                              <apex:outputText value="{0, number, ###,###}">
+                                                <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiHontaiShokeiZeikomi.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                              </apex:outputText>
+                                            </td>
+                                            <td style="background-color: lightcyan;"></td>
+                                          </tr>
+                                          <tr>
+                                            <th style="background-color: #364e96;text-align: center;width:112px;"><font color="#FFFFFF">アクション</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width: 40px;"><font color="#FFFFFF">対象</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width:250px;"><font color="#FFFFFF">オプション品名</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width: 40px;"><font color="#FFFFFF">充当</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width: 73px;"><font color="#FFFFFF">金額(税抜)</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width: 73px;"><font color="#FFFFFF">金額(税込)</font></th>
+                                            <th style="background-color: #364e96;text-align: center;width: 70px;"><font color="#FFFFFF">数量</font></th>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <td style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(230, 61, 0);', ' #364e96;')}"></td>
+                                            <th style="background-color: #364e96;text-align: center;"></th>
+                                          </tr>
+                                          <!-- 僧侶手配 -->
+                                          <tr id="idSoryoTehaiTr" style="background-color: {!IF(displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="text-align: center;width:112px;"></th>
+                                            <th style="text-align: center;width:40px;"><apex:inputCheckbox value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.SltFlg__c}" id="idRyokinHyoShikiSoryoTehai" onclick="setSoryoTehai();" /></th>
+                                            <th style="text-align: left;width: 250px;">
+                                              <div style="padding-left: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.ItemName__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;width: 40px;"></th>
+                                            <td style="padding:0;" colspan="2"><apex:outputText value="形式による" /></td>
+                                            <th style="text-align: right; width: 70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right; width:70px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiSoryotehai.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="width:200px;"></th>
+                                          </tr>
+                                          <!-- 戒名 -->
+                                          <tr id="idKaimyojuyoTr" style="background-color: {!IF(displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th></th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.SltFlg__c}" id="idRyokinhyoShikiKaimyojuyo" onclick="setKaimyoUmu()"/></th>
+                                            <th style="text-align: left;">
+                                              <div style="padding-left: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.ItemName__c}" />&nbsp;(<apex:outputText value="{!displayKeisanhyoData.keisanhyoObj.KaimyoHomyo__c}" id="idRyokinHyoKaimyoHomyoLabel"/>)
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;"></th>
+                                            <th style="text-align: right;width: 73px;">
+                                            </th>
+                                            <th style="text-align: right;width: 73px;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiKaimyojuyo.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th></th>
+                                          </tr>
+                                          <!-- 火葬場料金 -->
+                                          <apex:variable var="rowNumKasoba" value="{!0}" />
+                                          <apex:repeat value="{!displayKeisanhyoData.ryokinhyoShikiKasobaRyokinList}" var="item" id="idRyokinhyoShikiKasobaRyokinList">
+                                          <tr id="idKasobaRyokinTr{!rowNumKasoba}" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="padding:0">
+                                              <div style="display:flex">
+                                                <div style="margin:0 5px 0 10px">
+                                                  <input type="button" value="+" style="width:40px" onclick="addKasobaItemJs('{!rowNumKasoba}');" id="idAddKasobaItem" />
+                                                </div>
+                                                <div style="margin:0 5px 0 10px;display: {!IF(displayKeisanhyoData.ryokinhyoShikiKasobaRyokinList.size > 1, '', 'none')}">
+                                                  <input type="button" value="-" style="width:40px" onclick="delKasobaItemJs('{!rowNumKasoba}');" id="idDelKasobaItem" />
+                                                </div>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;background-color: {!IF(displayKeisanhyoData.ryokinhyoShikiKasobaRyokinList.size > 1, '#8732cc', '')}"><apex:inputCheckbox id="idKasobaCheckbox" value="{!item.keisanhyoMeisai.SltFlg__c}" onclick="checkKasoba(this, '{!rowNumKasoba}', '{!displayKeisanhyoData.ryokinhyoShikiKasobaRyokinList.size}');"/></th>
+                                            <th style="text-align: left;">
+                                              <div style="font-size: 90%;padding:0px 0px 0px 3px">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.ItemName__c}" />&nbsp;&nbsp;<apex:inputText id="idKasobaName" value="{!item.keisanhyoMeisai.OptionName__c}" style="width:180px;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onblur="delShisetsuSuggest();"/>
+                                              </div>
+                                              <div id="hidAreakaso{!rowNumKasoba}" class="clshidArea"></div>
+                                            </th>   
+                                            <th style="text-align: center;"></th>
+                                            <th></th>
+                                            <th style="text-align: right;">
+                                              <div>
+                                                <apex:inputField id="idKasobaRyokinKingakuZeikomi" value="{!item.keisanhyoMeisai.UnitPriceZeikomi__c}" style="width:65px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}"  onblur="priceCalculationJs();" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinKasoKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinIchinichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinKazokuKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinSimpleKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinKihon">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaRyokinButsugu">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idKasobaKasoOhanaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th></th>
+                                          </tr>
+                                          <apex:variable var="rowNumKasoba" value="{!rowNumKasoba + 1}" />
+                                          </apex:repeat>
+                                          <script>
+                                            function checkKasoba(obj, index, maxIndex){
+                                              for(var i=0; i<maxIndex; i++){
+                                                if(i != index || !obj.checked){
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiKasobaRyokinList:' + i + ':idKasobaCheckbox').checked = false;
+                                                }
+                                              }
+                                              priceCalculationJs();
+                                            }
+                                          </script>
+                                          <apex:actionFunction name="addKasobaItemJs" action="{!addKasobaItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbAddKasobaIndex}" name="ojbAddKasobaIndex" value="" /> </apex:actionFunction>
+                                          <apex:actionFunction name="delKasobaItemJs" action="{!delKasobaItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbDelKasobaIndex}" name="ojbDelKasobaIndex" value="" /> </apex:actionFunction>
+                                          <!-- 斎場料金 -->
+                                          <apex:variable var="rowNumSaijo" value="{!0}" />
+                                          <apex:repeat value="{!displayKeisanhyoData.ryokinhyoShikiSaijoRyokinList}" var="item" id="idRyokinhyoShikiSaijoRyokinList">
+                                          <tr id="idSaijoRyokinTr{!rowNumSaijo}" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="padding:0">
+                                              <div style="display:flex">
+                                                <div style="margin:0 5px 0 10px">
+                                                  <input type="button" value="+" style="width:40px" onclick="addSaijoItemJs('{!rowNumSaijo}');" id="idAddSaijoItem" />
+                                                </div>
+                                                <div style="margin:0 5px 0 10px;display: {!IF(displayKeisanhyoData.ryokinhyoShikiSaijoRyokinList.size > 1, '', 'none')}">
+                                                  <input type="button" value="-" style="width:40px" onclick="delSaijoItemJs('{!rowNumSaijo}');" id="idDelSaijoItem" />
+                                                </div>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;background-color: {!IF(displayKeisanhyoData.ryokinhyoShikiSaijoRyokinList.size > 1, '#1e90ff', '')}"><apex:inputCheckbox id="idSaijoCheckbox" value="{!item.keisanhyoMeisai.SltFlg__c}" onclick="checkSaijo(this, '{!rowNumSaijo}', '{!displayKeisanhyoData.ryokinhyoShikiSaijoRyokinList.size}');"/></th>
+                                            <th style="text-align: left;">
+                                              <div style="font-size: 90%;padding:0px 0px 0px 3px">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.ItemName__c}" />&nbsp;&nbsp;<apex:inputText id="idSaijoName" value="{!item.keisanhyoMeisai.OptionName__c}" style="width:180px;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onblur="delShisetsuSuggest();"/>
+                                              </div>
+                                              <div id="hidAreasaijo{!rowNumSaijo}" class="clshidArea">></div>
+                                            </th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!item.keisanhyoMeisai.PlanJuto__c}" id="idSaijoJuto" onclick="priceCalculationJs();" /></th>
+                                            <th><apex:inputField id="idSaijoKingaku" value="{!item.keisanhyoMeisai.UnitPriceZeinuki__c}" style="width:65px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onblur="setSaijoKingaku('{!rowNumSaijo}');" /></th>
+                                            <th style="text-align: right;"><apex:inputField id="idSaijoKingakuZeikomi" value="{!item.keisanhyoMeisai.UnitPriceZeikomi__c}" style="width:65px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}"  onblur="setSaijoKingakuZeikomi('{!rowNumSaijo}');" />
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th>
+                                              <apex:inputField id="idSaijoIchinichiKei" value="{!item.keisanhyoMeisai.Kazoku1nichiFee__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}; {!IF(item.keisanhyoMeisai.PlanJuto__c, 'pointer-events : none;background:#eee;', '')}" onblur="priceCalculationJs()"/>
+                                            </th>
+                                            <th>
+                                              <apex:inputField id="idSaijoKazokuKei" value="{!item.keisanhyoMeisai.Kazoku2nichiFee__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}; {!IF(item.keisanhyoMeisai.PlanJuto__c, 'pointer-events : none;background:#eee;', '')}" onblur="priceCalculationJs()"/>
+                                            </th>
+                                            <th>
+                                              <apex:inputField id="idSaijoIppanKei" value="{!item.keisanhyoMeisai.KazokuhanayakaFee__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}; {!IF(item.keisanhyoMeisai.PlanJuto__c, 'pointer-events : none;background:#eee;', '')}" onblur="priceCalculationJs()"/>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="0" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="0" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="0" />
+                                              </div>
+                                            </th>
+                                            <th></th>
+                                          </tr>
+                                          <apex:variable var="rowNumSaijo" value="{!rowNumSaijo + 1}" />
+                                          </apex:repeat>
+                                          <script>
+                                            function checkSaijo(obj, index, maxIndex){
+                                              for(var i=0; i<maxIndex; i++){
+                                                if(i != index || !obj.checked){
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoCheckbox').checked = false;
+                                                }
+                                              }
+                                              priceCalculationJs();
+                                            }
+
+                                            function setSaijoKingaku(objIndex){
+                                              var kingaku = document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + objIndex + ':idSaijoKingaku').value;
+                                              if(kingaku != ''){
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + objIndex + ':idSaijoKingakuZeikomi').value = '';
+                                              }
+                                              priceCalculationJs();
+                                            }
+
+                                            function setSaijoKingakuZeikomi(objIndex){
+                                              var kingakuZeikomi = document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + objIndex + ':idSaijoKingakuZeikomi').value;
+                                              if(kingakuZeikomi != ''){
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + objIndex + ':idSaijoKingaku').value = '';
+                                              }
+                                              priceCalculationJs();
+                                            }
+                                          </script>
+                                          <apex:actionFunction name="addSaijoItemJs" action="{!addSaijoItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbAddSaijoIndex}" name="ojbAddSaijoIndex" value="" /> </apex:actionFunction>
+                                          <apex:actionFunction name="delSaijoItemJs" action="{!delSaijoItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbDelSaijoIndex}" name="ojbDelSaijoIndex" value="" /> </apex:actionFunction>
+                                          <!-- 祭壇アップグレード -->
+                                          <tr id="idSaidanUpGreadTr" style="background-color: {!IF(displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th></th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.SltFlg__c}" onclick="chgBackColorRyoriSaidanUpGread(this);priceCalculationJs();" /></th>
+                                            <th style="text-align: left;padding-left: 3px"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.ItemName__c}" />&nbsp;&nbsp;<apex:selectList id="idSaidanUpGreadSelectList" value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.ItemCode__c}" size="1" onchange="priceCalculationJs();" style="background-color: {!IF(displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                                  <apex:selectOptions value="{!displayKeisanhyoData.saidanUpGreadOption}"/>
+                                                </apex:selectList></th>
+                                            <th style="text-align: center;">
+                                            </th>
+                                            <th></th>
+                                            <th style="text-align: right;">
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoSaidanUpGread.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: left;"></th>
+                                          </tr>
+                                          <!-- よりそうオプション-->
+                                          <apex:variable var="rowNumYorisoOption" value="{!0}" />
+                                          <apex:repeat value="{!displayKeisanhyoData.ryokinhyoYorisoOptionList}" var="item" id="idRyokinhyoYorisoOptionList">
+                                          <tr id="idYorisoOptionTr{!rowNumYorisoOption}" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="padding:0">
+                                              <div style="display:flex;">
+                                                <div style="margin:0 5px 0 10px">
+                                                  <input type="button" value="+" style="width:40px" onclick="addYorisoOptionItem(this);" id="idAddYorisoOptionItem-{!rowNumYorisoOption}" />
+                                                </div>
+                                                <div style="margin:0 5px 0 10px;display: {!IF(displayKeisanhyoData.ryokinhyoYorisoOptionList.size > 1, '', 'none')}">
+                                                  <input type="button" value="-" style="width:40px" onclick="delYorisoOptionItem(this);" id="idDelYorisoOptionItem-{!rowNumYorisoOption}" />
+                                                </div>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!item.keisanhyoMeisai.SltFlg__c}" onclick="chgBackColorYorisoOption(this, '{!rowNumYorisoOption}', '{!displayKeisanhyoData.ryokinhyoYorisoOptionList.size}');setRyokinhyoYorisoOption('{!rowNumYorisoOption}');" /></th>
+                                            <th style="text-align: left">よりそうｵﾌﾟｼｮﾝ&nbsp;&nbsp;<apex:selectList id="idYorisoOptionItem" value="{!item.keisanhyoMeisai.ItemCode__c}" size="1" onchange="setRyokinhyoYorisoOption('{!rowNumYorisoOption}');" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                                <apex:selectOptions value="{!displayKeisanhyoData.yorisoOption}"/>
+                                              </apex:selectList></th>
+                                            <th style="text-align: center;"></th>
+                                            <th style="text-align: center;"></th>
+                                            <th style="text-align: center;"></th>
+                                            <th><apex:inputField id="idYorisoOptionSuryo" value="{!item.keisanhyoMeisai.Suryo__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onchange="setRyokinhyoYorisoOption('{!rowNumYorisoOption}');" /></th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKazoku1NichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKazoku2NichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKazokuHanayakaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKasoSimpleKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKasoKihonKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKasoButsuguKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idYorisoOptionKasoOhanaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: left;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.Biko__c}" />
+                                              </div>
+                                            </th>
+                                          </tr>
+                                            <apex:variable var="rowNumYorisoOption" value="{!rowNumYorisoOption + 1}" />
+                                          </apex:repeat>
+                                          <script>
+                                            function addYorisoOptionItem(obj){
+                                              var ojbIndex = obj.id.replace('idAddYorisoOptionItem-', '');
+                                              addYorisoOptionItemJs(ojbIndex);
+                                            }
+
+                                            function delYorisoOptionItem(obj){
+                                              var ojbIndex = obj.id.replace('idDelYorisoOptionItem-', '');
+                                              delYorisoOptionItemJs(ojbIndex);
+                                            }
+
+                                            function chgBackColorYorisoOption(obj, index, maxIndex){
+                                              var bgColor = 'gray';
+                                              if(obj.checked) bgColor = '#FFFFFF';
+                                              
+                                              document.getElementById('idYorisoOptionTr' + index).style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoYorisoOptionList:' + index + ':idYorisoOptionItem').style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoYorisoOptionList:' + index + ':idYorisoOptionSuryo').style.backgroundColor = bgColor;
+                                            }
+
+                                            function setRyokinhyoYorisoOption(objIndex){
+                                              var item = document.getElementById('idPage:idForm:idRyokinhyoYorisoOptionList:' + objIndex + ':idYorisoOptionItem').value;
+                                              if(item == null || item == '') return;
+
+                                              var suryo = document.getElementById('idPage:idForm:idRyokinhyoYorisoOptionList:' + objIndex + ':idYorisoOptionSuryo').value;
+                                              if(suryo == null || suryo == '') document.getElementById('idPage:idForm:idRyokinhyoYorisoOptionList:' + objIndex + ':idYorisoOptionSuryo').value = 0;
+                                              if(suryo != 0 && !suryo.match(/[0-9]+/)) return;
+
+                                              priceCalculationJs();
+                                            }
+                                          </script>
+                                          <apex:actionFunction name="addYorisoOptionItemJs" action="{!addYorisoOptionItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbAddIndex}" name="ojbAddIndex" value="" /> </apex:actionFunction>
+                                          <apex:actionFunction name="delYorisoOptionItemJs" action="{!delYorisoOptionItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbDelIndex}" name="ojbDelIndex" value="" /> </apex:actionFunction>
+                                          <!-- 葬儀社オプション-->
+                                          <apex:variable var="rowNumSogishaOption" value="{!0}" />
+                                          <apex:repeat value="{!displayKeisanhyoData.ryokinhyoSogishaOptionList}" var="item" id="idRyokinhyoSogishaOptionList">
+                                          <tr id="idSogishaOptionTr{!rowNumSogishaOption}" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="padding:0">
+                                              <div style="display:flex;">
+                                                <div style="margin:0 5px 0 10px">
+                                                  <input type="button" value="+" style="width:40px" onclick="addSogishaOptionItem(this);" id="idAddSogishaOptionItem-{!rowNumSogishaOption}" />
+                                                </div>
+                                                <div style="margin:0 5px 0 10px;display: {!IF(displayKeisanhyoData.ryokinhyoSogishaOptionList.size > 1, '', 'none')}">
+                                                  <input type="button" value="-" style="width:40px" onclick="delSogishaOptionItem(this);" id="idDelSogishaOptionItem-{!rowNumSogishaOption}" />
+                                                </div>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!item.keisanhyoMeisai.SltFlg__c}" onclick="chgBackColorSogishaOption(this, '{!rowNumSogishaOption}', '{!displayKeisanhyoData.ryokinhyoYorisoOptionList.size}');setRyokinhyoSogishaOption('{!rowNumSogishaOption}');" /></th>
+                                            <th style="text-align: left">葬儀社ｵﾌﾟｼｮﾝ&nbsp;&nbsp;
+                                              <apex:selectList id="idSogishaOptionItem" value="{!item.keisanhyoMeisai.ItemCode__c}" size="1" onchange="setSogishaOptionKingaku('{!rowNumSogishaOption}');" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                                <apex:selectOptions value="{!displayKeisanhyoData.sogishaOption}"/>
+                                              </apex:selectList></th>
+                                            <th style="text-align: center;"></th>
+                                            <th><apex:inputField id="idSogishaOptionKingaku" value="{!item.keisanhyoMeisai.UnitPriceZeinuki__c}" style="width:65px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onchange="setRyokinhyoSogishaOption('{!rowNumSogishaOption}');" /></th>
+                                              <th style="text-align: right;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKingakuZeikomi">
+                                                  <apex:param value="{!item.keisanhyoMeisai.UnitPriceZeikomi__c}"></apex:param>
+                                                </apex:outputText>
+                                                <apex:inputHidden value="{!item.keisanhyoMeisai.UnitPriceZeikomi__c}" id="idSogishaOptionKingakuZeikomiHidden" />
+                                              </th>
+                                            <th><apex:inputField id="idSogishaOptionSuryo" value="{!item.keisanhyoMeisai.Suryo__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onchange="setRyokinhyoSogishaOption('{!rowNumSogishaOption}');" /></th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKazoku1NichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKazoku2NichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKazokuHanayakaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKasoSimpleKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKasoKihonKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKasoButsuguKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idSogishaOptionKasoOhanaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: left;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!item.keisanhyoMeisai.Biko__c}" id="idSogishaOptionBiko" />
+                                              </div>
+                                            </th>
+                                          </tr>
+                                            <apex:variable var="rowNumSogishaOption" value="{!rowNumSogishaOption + 1}" />
+                                          </apex:repeat>
+                                          <script>
+                                            function addSogishaOptionItem(obj){
+                                              var ojbIndex = obj.id.replace('idAddSogishaOptionItem-', '');
+                                              addSogishaOptionItemJs(ojbIndex);
+                                            }
+
+                                            function delSogishaOptionItem(obj){
+                                              var ojbIndex = obj.id.replace('idDelSogishaOptionItem-', '');
+                                              delSogishaOptionItemJs(ojbIndex);
+                                            }
+
+                                            function chgBackColorSogishaOption(obj, index, maxIndex){
+                                              var bgColor = 'gray';
+                                              if(obj.checked) bgColor = '#FFFFFF';
+                                              
+                                              document.getElementById('idSogishaOptionTr' + index).style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoSogishaOptionList:' + index + ':idSogishaOptionItem').style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoSogishaOptionList:' + index + ':idSogishaOptionKingaku').style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoSogishaOptionList:' + index + ':idSogishaOptionSuryo').style.backgroundColor = bgColor;
+                                            }
+
+                                            function setSogishaOptionKingaku(objIndex){
+                                              setRyokinhyoSogishaOption(objIndex)
+                                            }
+
+                                            function setRyokinhyoSogishaOption(objIndex){
+                                              var kingaku = document.getElementById('idPage:idForm:idRyokinhyoSogishaOptionList:' + objIndex + ':idSogishaOptionKingaku').value;
+                                              if(kingaku != '' && !kingaku.match(/[0-9]+/)) return;
+
+                                              var suryo = document.getElementById('idPage:idForm:idRyokinhyoSogishaOptionList:' + objIndex + ':idSogishaOptionSuryo').value;
+                                              if(suryo != '' && !suryo.match(/[0-9]+/)) return;
+
+                                              priceCalculationJs();
+                                            }
+                                          </script>
+                                          <apex:actionFunction name="addSogishaOptionItemJs" action="{!addSogishaOptionItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbAddIndex}" name="ojbAddIndex" value="" /> </apex:actionFunction>
+                                          <apex:actionFunction name="delSogishaOptionItemJs" action="{!delSogishaOptionItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbDelIndex}" name="ojbDelIndex" value="" /> </apex:actionFunction>
+                                          <!-- その他オプション -->
+                                          <apex:variable var="rowNumFreeWord" value="{!0}" />
+                                          <apex:repeat value="{!displayKeisanhyoData.ryokinhyoShikiFreeWordList}" var="item" id="idRyokinhyoShikiFreeWordList">
+                                          <tr id="idFreeWordTr{!rowNumFreeWord}" style="background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th style="padding:0">
+                                              <div style="display:flex;">
+                                                <div style="margin:0 5px 0 10px">
+                                                  <input type="button" value="+" style="width:40px" onclick="addFreeWordItem(this);" id="idAddFreeWordItem-{!rowNumFreeWord}" />
+                                                </div>
+                                                <div style="margin:0 5px 0 10px;display: {!IF(displayKeisanhyoData.ryokinhyoShikiFreeWordList.size > 1, '', 'none')}">
+                                                  <input type="button" value="-" style="width:40px" onclick="delFreeWordItem(this);" id="idDelFreeWordItem-{!rowNumFreeWord}" />
+                                                </div>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: center;"><apex:inputCheckbox value="{!item.keisanhyoMeisai.SltFlg__c}" onclick="chgBackColorFreeWord(this, '{!rowNumFreeWord}', '{!displayKeisanhyoData.ryokinhyoShikiFreeWordList.size}');priceCalculationJs()" /></th>
+                                            <th style="text-align: left"><apex:inputText id="idFreeWordItem" value="{!item.keisanhyoMeisai.OptionName__c}" style="width:185px;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}"/></th>
+                                            <th style="text-align: center;"></th>
+                                            <th><apex:inputField id="idFreeWordKingaku" value="{!item.keisanhyoMeisai.UnitPriceZeinuki__c}" style="width:65px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onblur="setRyokinhyoShikiFreeWord('{!rowNumFreeWord}');" /></th>
+                                            <th style="text-align: right;"><apex:outputText value="{0, number, ###,###}" id="idFreeWordKingakuZeikomi">
+                                                <apex:param value="{!item.keisanhyoMeisai.UnitPriceZeikomi__c}"></apex:param>
+                                              </apex:outputText>
+                                            </th>
+                                            <th><apex:inputField id="idFreeWordSuryo" value="{!item.keisanhyoMeisai.Suryo__c}" style="width:60px;text-align: right;background-color: {!IF(item.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}" onblur="setRyokinhyoShikiFreeWord('{!rowNumFreeWord}');" /></th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordKasoKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordIchinichiKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordKazokuKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordSimpleKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordKihonKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordButsuguKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idFreeWordKasoOhanaKei">
+                                                  <apex:param value="{!item.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: left;"></th>
+                                          </tr>
+                                            <apex:variable var="rowNumFreeWord" value="{!rowNumFreeWord + 1}" />
+                                          </apex:repeat>
+                                          <script>
+                                            function addFreeWordItem(obj){
+                                              var ojbIndex = obj.id.replace('idAddFreeWordItem-', '');
+                                              addFreeWordItemJs(ojbIndex);
+                                            }
+
+                                            function delFreeWordItem(obj){
+                                              var ojbIndex = obj.id.replace('idDelFreeWordItem-', '');
+                                              delFreeWordItemJs(ojbIndex);
+                                            }
+
+                                            function chgBackColorFreeWord(obj, index, maxIndex){
+                                              var bgColor = 'gray';
+                                              if(obj.checked) bgColor = '#FFFFFF';
+                                              
+                                              document.getElementById('idFreeWordTr' + index).style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + index + ':idFreeWordItem').style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + index + ':idFreeWordKingaku').style.backgroundColor = bgColor;
+                                              document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + index + ':idFreeWordSuryo').style.backgroundColor = bgColor;
+                                            }
+
+                                            function setRyokinhyoShikiFreeWord(objIndex){
+                                              var item = document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + objIndex + ':idFreeWordItem').value;
+                                              if(item == null || item == '') return;
+
+                                              var kingaku = document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + objIndex + ':idFreeWordKingaku').value;
+                                              if(kingaku == null || kingaku == '') return;
+                                              if(!kingaku.match(/[0-9]+/)) return;
+
+                                              var suryo = document.getElementById('idPage:idForm:idRyokinhyoShikiFreeWordList:' + objIndex + ':idFreeWordSuryo').value;
+                                              if(suryo == null || suryo == '') return;
+                                              if(!suryo.match(/[0-9]+/)) return;
+
+                                              priceCalculationJs();
+                                            }
+                                          </script>
+                                          <apex:actionFunction name="addFreeWordItemJs" action="{!addFreeWordItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbAddIndex}" name="ojbAddIndex" value="" /> </apex:actionFunction>
+                                          <apex:actionFunction name="delFreeWordItemJs" action="{!delFreeWordItem}" reRender="idKeisanhyoEditPanel">
+                                            <apex:param assignTo="{!ojbDelIndex}" name="ojbDelIndex" value="" /> </apex:actionFunction>
+                                          <!-- 葬儀用ブーケキャンペーン -->
+                                          <tr id="idCampaignSogiyoBouquetTr" style="background-color: {!IF(displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.SltFlg__c, '#FFFFFF', 'gray')}">
+                                            <th></th>
+                                            <th style="text-align: center;"><apex:inputCheckbox id="idCampaignSogiyoBouquetChk" value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.SltFlg__c}" onclick="chgBackColorRyoriCampaignSogiyoBouquet(this);priceCalculationJs();" /></th>
+                                            <th style="text-align: left"><apex:outputText value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.ItemName__c}" /></th>
+                                            <th style="text-align: center;"></th>
+                                            <th></th>
+                                            <th style="text-align: right;">
+                                            </th>
+                                            <th>
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.Suryo__c}" />
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetKasoKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetIchinichiKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetKazokuKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetSimpleKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetIppanKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetButsuguKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: right;">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}" id="idCampaignSogiyoBouquetKasoOhanaKei">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoCampaignSogiyoBouquet.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="text-align: left;"></th>
+                                          </tr>
+                                          <script>
+                                            function chgBackColorRyoriCampaignSogiyoBouquet(obj){
+                                              if(obj.checked){
+                                                document.getElementById('idCampaignSogiyoBouquetTr').style.backgroundColor = '#FFFFFF';
+                                              }
+                                              else{
+                                                document.getElementById('idSaidanUpGreadTr').style.backgroundColor = 'gray';
+                                              }
+                                            }
+                                          </script>
+                                          <tr>
+                                            <th colspan="7" style="text-align: right;"><font color="red">オプション小計（税込）&nbsp;&nbsp;</font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKazoku1Nichi">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKazoku2Nichi">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKazokuHanayaka">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKasoSimple">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKasoKihon">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKasoButsugu">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;" id="idOptionShokeiZeikomiKasoOhana">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiOptionShokei.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: lightcyan;"></th>
+                                          </tr>
+                                          <tr>
+                                            <th colspan="7" style="text-align: right;"><font color="red">合計（税込）&nbsp;&nbsp;</font></th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku1nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKazoku1NichiGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.Kazoku1nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.Kazoku2nichiTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKazoku2NichiGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.Kazoku2nichiFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KazokuhanayakaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKazokuHanayakaGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.KazokuhanayakaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoSimpleTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKasoSimpleGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.KasoSimpleFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoKihonTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKasoKihonGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.KasoKihonFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoButsuguTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKasoButsuguGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.KasoButsuguFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: {!IF(displayKeisanhyoData.ryokinhyoTeianTaisho.keisanhyoMeisai.KasoOhanaTeianTaisho__c, 'rgb(255, 162, 128);', 'lightcyan;')} text-align: right;font-weight: bold" id="idKasoOhanaGokei">
+                                              <div style="padding-right: 4px;">
+                                                <apex:outputText value="{0, number, ###,###}">
+                                                  <apex:param value="{!displayKeisanhyoData.ryokinhyoShikiGokei.keisanhyoMeisai.KasoOhanaFee__c}"></apex:param>
+                                                </apex:outputText>
+                                              </div>
+                                            </th>
+                                            <th style="background-color: lightcyan;"></th>
+                                          </tr>
+                                        </table>
+                                        <script>
+                                          function chgZeiritsu(){
+                                            var zeiritsu = document.getElementById('idPage:idForm:idRyokinHyoZeiritsu').value;
+                                            if(zeiritsu == null || zeiritsu == ''){
+                                              zeiritsu = 1;
+                                            }
+                                            else{
+                                              zeiritsu = parseFloat(zeiritsu) + 1;
+                                            }
+
+                                            var saijoSize = '{!displayKeisanhyoData.ryokinhyoShikiSaijoRyokinList.size}';
+                                            for(var i=0; i<saijoSize; i++){
+                                              var kingaku = document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoKingaku').value;
+                                              if(kingaku != ''){
+                                                var intKingakuZeikomi = Math.floor(parseInt(kingaku) * parseFloat(zeiritsu));
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoKingakuZeikomi').value = intKingakuZeikomi;
+                                                if(document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoJuto').checked){
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIchinichiKei').value = intKingakuZeikomi - 25000;
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoKazokuKei').value = intKingakuZeikomi - 50000;
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIppanKei').value = intKingakuZeikomi - 50000;
+                                                }
+                                                else{
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIchinichiKei').value = intKingakuZeikomi;
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoKazokuKei').value = intKingakuZeikomi;
+                                                  document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIppanKei').value = intKingakuZeikomi;
+                                                }
+                                                
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIchinichiKei').disabled = true;
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoKazokuKei').disabled = true;
+                                                document.getElementById('idPage:idForm:idRyokinhyoShikiSaijoRyokinList:' + i + ':idSaijoIppanKei').disabled = true;
+                                              }
+                                            }
+
+                                            setRyokinHyoRyoriMain();
+
+                                            var freeWordSize = '{!displayKeisanhyoData.ryokinhyoShikiFreeWordList.size}';
+                                            for(var i=0; i<freeWordSize; i++){
+                                              setRyokinhyoShikiFreeWord(i);
+                                            }
+                                          }
+                                        </script>
+                                      </div>
+                                      <div style="text-align: right;">
+                                        <div>※追加安置料金、追加搬送料金がかかる場合があります。</div>
+                                      </div>
+                                    </apex:outputpanel>
+                                  </div>
+                                    <div>
+                                      <div id="idRyokinHyoOpenClosePanel">
+                                        <div>
+                                          <apex:outputpanel id="idKeisanhyoConditionPanel">
+                                              <div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">仏具有無</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.ButsuguUmu__c}" id="idMKJokenButsuguUmu" onchange="priceCalculationJs();"/></div>
+                                                  </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">割引</div>
+                                                      <div><apex:inputField value="{!displayKeisanhyoData.keisanhyoObj.WaribikiService__c}" id="idMKJokenWaribiki" style="width:120px" onchange="chgKaiinWaribiki();"/></div>
+                                                  </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">事前アンケート</div>
+                                                      <div><apex:inputCheckbox value="{!displayKeisanhyoData.keisanhyoObj.JizenSurvey__c}" id="idMKJokenJizenSurvey" onclick="priceCalculationJs();" /></div>
+                                                      <div style="width:100px;text-align:right;font-weight: bold;padding-right: 5px;">式後アンケート</div>
+                                                      <div><apex:inputCheckbox value="{!displayKeisanhyoData.keisanhyoObj.ShikigoSurvey__c}" id="idMKJokenShikigoSurvey" onclick="priceCalculationJs();" /></div>
+                                                  </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                    <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">アライアンス</div>
+                                                    <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.Alliance__c}" id="idMKJokenAlliance" onchange="priceCalculationJs();"/></div>
+                                                </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">参列者数 親族</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.SanretsushaShinzokuFrom__c}" style="width:25px" id="idRyokinHyoSanretsushaShinzokuFrom" onchange="setRyokinHyoRyoriMain();" type="tel" /></div>
+                                                      <div>～</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.SanretsushaShinzokuTo__c}" style="width:25px" id="idRyokinHyoSanretsushaShinzokuTo" onchange="setRyokinHyoRyoriMain();" type="tel" />&nbsp;名</div>
+                                                      <div style="width:100px;text-align:right;font-weight: bold;padding-right: 5px;">親族以外</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.SanretsushaShinzokuigaiFrom__c}" style="width:25px" id="idRyokinHyoSanretsushaShinzokuigaiFrom" onchange="setRyokinHyoRyoriMain();" type="tel" /></div>
+                                                      <div>～</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.SanretsushaShinzokuigaiTo__c}" style="width:25px" id="idRyokinHyoSanretsushaShinzokuigaiTo" onchange="setRyokinHyoRyoriMain();" type="tel" />&nbsp;名</div>
+                                                  </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">僧侶手配</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.SoryoTehaiKibo__c}" id="idRyokinHyoSoryoTehaiKiboUmu" onchange="setSoryoTehaiKiboMain();priceCalculationJs();"/> </div>
+                                                  </div>
+                                                  <div style="display:flex;padding-top:4px;">
+                                                      <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">戒名希望</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.KaimyoKibo__c}" id="idRyokinHyoKaimyoJuyoKiboUmu" onchange="setKaimyoKiboMain();priceCalculationJs();"/> </div>
+                                                      <div style="width:100px;text-align:right;font-weight: bold;padding-right: 5px;">戒名・法名</div>
+                                                      <div><apex:inputfield value="{!displayKeisanhyoData.keisanhyoObj.KaimyoHomyo__c}" id="idRyokinHyoKaimyoHomyo" onchange="priceCalculationJs();"/> </div>
+                                                  </div>
+                                              </div>
+                                              <div style="padding-top: 10px">
+                                                <div style="display:flex;">
+                                                  <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">希望エリア</div>
+                                                  <div><apex:inputField value="{!displayKeisanhyoData.keisanhyoObj.KiboAreaRef__c}" style="width: 200px;" /></div>
+                                                </div>
+                                              </div>
+                                              <div style="padding-top: 4px">
+                                                <div style="display:flex;">
+                                                  <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">火葬場明細表記名</div>
+                                                  <div><apex:inputField value="{!displayKeisanhyoData.keisanhyoObj.KasobaMeisaiHyokimei__c}" style="width: 200px;" /></div>
+                                                </div>
+                                              </div>
+                                              <div style="padding-top: 4px">
+                                                <div style="display:flex;">
+                                                  <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">式場明細表記名</div>
+                                                  <div><apex:inputField value="{!displayKeisanhyoData.keisanhyoObj.ShikijoMeisaiHyokimei__c}" style="width: 200px;" /></div>
+                                                </div>
+                                              </div>
+                                              <div style="padding-top: 10px">
+                                                <div style="display:flex;">
+                                                  <div style="width:110px;text-align:right;font-weight: bold;padding-right: 5px;">料金案内備考</div>
+                                                  <div><apex:inputField value="{!displayKeisanhyoData.keisanhyoObj.MitsumoriKeisanBiko__c}" style="width: 320px;height:100px" onkeypress="enterActive(this);"/></div>
+                                                </div>
+                                              </div>
+                                              <div style="padding-top: 10px;">
+                                                <div style="display:flex;">
+                                                  <div style="margin:0 0 0 115px" id="idKeisanhyoUpdateBtn">
+                                                    <input type="button" class="btn" id="idUpdateBtn" style="background: #e9e9e9;color: gray;font-weight: inherit;width:100px;" value="更新" onclick="showLoadingDialog();updateKeisanhyo();" disabled="disabled"/>
+                                                    <apex:actionFunction name="updateKeisanhyo" action="{!actUpdateKeisanhyo}" reRender="idKeisanhyoWrapListPanel,idKeisanhyoEditPanel,idKeisanhyoConditionPanel" oncomplete="hideLoadingDialog();" />
+                                                    <script>
+                                                      function disUpdateBtn(){
+                                                        document.getElementById('idUpdateBtn').disabled = false;
+                                                        document.getElementById('idUpdateBtn').style.background = 'brown';
+                                                        document.getElementById('idUpdateBtn').style.color = 'white';
+                                                      }
+                                                    </script>
+                                                  </div>
+                                                  <div style="margin:0 0 0 10px" id="idKeisanhyoCreateBtn">
+                                                    <input type="button" class="btn" style="background: brown;color: #fff;font-weight: inherit;width:100px" value="新規登録" onclick="showLoadingDialog();insertKeisanhyo();" />
+                                                    <apex:actionFunction name="insertKeisanhyo" action="{!actInsertKeisanhyo}" reRender="idKeisanhyoWrapListPanel,idKeisanhyoEditPanel,idKeisanhyoConditionPanel," oncomplete="disUpdateBtn();hideLoadingDialog();" />
+                                                  </div>
+                                                </div>
+                                              </div>
+                                          </apex:outputpanel>
+                                        </div>
+                                      </div>
+                                  </div>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

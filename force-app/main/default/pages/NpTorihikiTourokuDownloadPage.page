@@ -1,0 +1,4 @@
+<apex:page controller="NpTorihikiTourokuController" sidebar="false" showHeader="false" readOnly="true" contentType="text/csv;charset=Shift_JIS;#download.csv">加盟店取引ID,加盟店取引受注日,企業名,部署名,担当者名,購入企業ID,郵便番号,住所,電話番号,メールアドレス,配送先企業名,配送先部署名,配送先担当者名,配送先担当者名（カナ）,配送先郵便番号,配送先住所,配送先電話番号,決済方法,FAX番号,請求書送付方法,予備項目,取引金額,明細,単価,数量{!LINE_CODE}
+<apex:repeat value="{!allrecords}" var="item">{!item.ShodanBangoF__c},<apex:outputtext value="{0,date,yyyy/MM/dd}"><apex:param value="{!item.Utiagebi__c}"></apex:param></apex:outputtext>,,,,{!item.ObosanbinRef__r.ObosanbinKeiyakuMadoguchi__r.Teikeisaki__r.TorihikisakiBangoF__c},,,,,,,,,,,,2,,,,{!item.SeikyuZandakaPartnerExp__c},お客様ID：{!item.ShodanBangoF__c}｜プラン：{!item.KetteiPlanName__c}｜施行者：{!item.SekouTantoRef__r.Teikeisaki__r.Name},{!item.SeikyuZandakaPartnerExp__c},1{!LINE_CODE}
+</apex:repeat>
+</apex:page>
