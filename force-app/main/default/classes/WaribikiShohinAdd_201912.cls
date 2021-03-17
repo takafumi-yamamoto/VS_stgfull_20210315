@@ -69,6 +69,7 @@ public class WaribikiShohinAdd_201912 {
 		WrTkCtxs.ContextData theWaribikiContext = new WrTkCtxs().selectContextDataByOppIds( new List<String>{opp.Id} ).values().get(0);
 		if(planShohinBango == 'SBG-0005104') butsugu_kibo = '仏具あり';
 		theWaribikiContext.butsuguNashiKibo = butsugu_kibo;
+		theWaribikiContext.campaignSogiBouquetAchievement = false;
 		Set<String> theWaribikiShohinBangos = new WrTks().getWaribikiShohinBangos(theWaribikiContext, planShohinBango);
 
 		List<Data> waribikiList = new List<Data>();

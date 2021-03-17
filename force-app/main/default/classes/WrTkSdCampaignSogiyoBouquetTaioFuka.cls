@@ -3,7 +3,6 @@ public class WrTkSdCampaignSogiyoBouquetTaioFuka implements WrTkSds.IWrTkSeido, 
     public WrTkSds.WaribikiSeidoCodes waribikiSeidoCode(){ return WrTkSds.WaribikiSeidoCodes.CampaignSogiyoBouquetTaioFuka; }
 
     public Boolean isContextMatch( WrTkCtxs.ContextData pContext, String pShohinBango ){
-        
         if( !this.m_shohinToWaribiki.containsKey(pShohinBango) ) return false;
         return pContext.campaignSogiBouquetAchievement && pContext.campaignSogiBouquetTaio == '対応不可';
     }

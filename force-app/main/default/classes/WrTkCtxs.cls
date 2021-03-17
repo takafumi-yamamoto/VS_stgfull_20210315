@@ -27,7 +27,7 @@ public class WrTkCtxs {
 		public ContextData setSodanshaId(String pValue){ this.sodanshaId = pValue; return this; }
 		public String keiyakuId;
 		public ContextData setKeiyakuId(String pValue){ this.keiyakuId = pValue; return this; }
-		public Boolean campaignSogiBouquetAchievement;
+		public Boolean campaignSogiBouquetAchievement = false;
 		public ContextData setCampaignSogiBouquetAchievement(Boolean pValue){ this.campaignSogiBouquetAchievement = pValue; return this; }
 		public String campaignSogiBouquetTaio;
 		public ContextData setCampaignSogiBouquetTaio(String pValue){ this.campaignSogiBouquetTaio = pValue; return this; }
